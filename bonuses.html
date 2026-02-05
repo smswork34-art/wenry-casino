@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Бонусы | ORANGEWIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --orange-main: #FF6B35;
+            --orange-dark: #FF4D00;
+            --accent-gold: #FFB347;
+            --accent-green: #00FF88;
+            --dark-bg: #0F0A07;
+            --card-bg: #1A130F;
+            --text-light: #FFFFFF;
+            --text-dim: #CCB7A6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 12px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Хедер */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        .balance-card {
+            background: rgba(255, 107, 53, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: right;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 2px;
+        }
+
+        .balance-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Бонусы */
+        .bonus-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bonus-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .bonus-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 18px;
+            border: 2px solid rgba(255, 107, 53, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bonus-card.active {
+            border-color: var(--accent-green);
+        }
+
+        .bonus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .bonus-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+
+        .bonus-badge {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .bonus-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .bonus-reward {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .reward-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 53, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+        }
+
+        .reward-info {
+            flex-grow: 1;
+        }
+
+        .reward-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 2px;
+        }
+
+        .reward-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .bonus-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .bonus-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .bonus-button.claimed {
+            background: linear-gradient(135deg, #00FF88, #00CC6A);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 107, 53, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 19, 15, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(255, 107, 53, 0.2);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-dim);
+            padding: 5px;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--orange-main);
+        }
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            color: white;
+        }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 360px) {
+            .bonus-card {
+                padding: 15px;
+            }
+            
+            .reward-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="game-header">
+            <div class="back-button" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="game-title">БОНУСЫ</div>
+            <div class="balance-card">
+                <div class="balance-label">БАЛАНС</div>
+                <div class="balance-amount">2 480 ₽</div>
+            </div>
+        </div>
+
+        <!-- Ежедневные бонусы -->
+        <div class="bonus-section">
+            <div class="section-title">
+                <i class="fas fa-calendar-day"></i> ЕЖЕДНЕВНЫЕ БОНУСЫ
+            </div>
+            <div class="bonus-grid">
+                <!-- Бонус 1 -->
+                <div class="bonus-card active">
+                    <div class="bonus-header">
+                        <div class="bonus-title">Ежедневный бонус</div>
+                        <div class="bonus-badge">ДОСТУПНО</div>
+                    </div>
+                    <div class="bonus-desc">Заходи каждый день и получай увеличенные бонусы</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 40%"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>День 2 из 7</span>
+                        <span>+40% к бонусу</span>
+                    </div>
+                    <div class="bonus-reward">
+                        <div class="reward-icon">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="reward-info">
+                            <div class="reward-amount">+140 ₽</div>
+                            <div class="reward-label">Сегодняшний бонус</div>
+                        </div>
+                    </div>
+                    <button class="bonus-button" onclick="claimBonus('daily')">
+                        ПОЛУЧИТЬ БОНУС
+                    </button>
+                </div>
+
+                <!-- Бонус 2 -->
+                <div class="bonus-card">
+                    <div class="bonus-header">
+                        <div class="bonus-title">Колесо фортуны</div>
+                        <div class="bonus-badge">ЧЕРЕЗ 4:32:15</div>
+                    </div>
+                    <div class="bonus-desc">Крути колесо каждый день и получай призы до 1000%</div>
+                    <div class="bonus-reward">
+                        <div class="reward-icon">
+                            <i class="fas fa-gift"></i>
+                        </div>
+                        <div class="reward-info">
+                            <div class="reward-amount">Бесплатный спин</div>
+                            <div class="reward-label">Доступен через 4 часа</div>
+                        </div>
+                    </div>
+                    <button class="bonus-button" disabled>
+                        ДОСТУПНО ЧЕРЕЗ 4:32:15
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Приветственные бонусы -->
+        <div class="bonus-section">
+            <div class="section-title">
+                <i class="fas fa-gift"></i> ПРИВЕТСТВЕННЫЕ БОНУСЫ
+            </div>
+            <div class="bonus-grid">
+                <!-- Бонус 3 -->
+                <div class="bonus-card">
+                    <div class="bonus-header">
+                        <div class="bonus-title">+100% к первому депозиту</div>
+                        <div class="bonus-badge">НОВИЧКАМ</div>
+                    </div>
+                    <div class="bonus-desc">Пополни баланс впервые и получи удвоение депозита</div>
+                    <div class="bonus-reward">
+                        <div class="reward-icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <div class="reward-info">
+                            <div class="reward-amount">До 10 000 ₽</div>
+                            <div class="reward-label">Максимальный бонус</div>
+                        </div>
+                    </div>
+                    <button class="bonus-button" onclick="claimBonus('firstDeposit')">
+                        АКТИВИРОВАТЬ
+                    </button>
+                </div>
+
+                <!-- Бонус 4 -->
+                <div class="bonus-card">
+                    <div class="bonus-header">
+                        <div class="bonus-title">50 бесплатных спинов</div>
+                        <div class="bonus-badge">ДЛЯ НОВИЧКОВ</div>
+                    </div>
+                    <div class="bonus-desc">Получи 50 фриспинов на слоты после регистрации</div>
+                    <div class="bonus-reward">
+                        <div class="reward-icon">
+                            <i class="fas fa-dice"></i>
+                        </div>
+                        <div class="reward-info">
+                            <div class="reward-amount">50 СПИНОВ</div>
+                            <div class="reward-label">Без депозита</div>
+                        </div>
+                    </div>
+                    <button class="bonus-button claimed">
+                        УЖЕ ПОЛУЧЕНО
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кэшбэк -->
+        <div class="bonus-section">
+            <div class="section-title">
+                <i class="fas fa-undo"></i> КЭШБЭК
+            </div>
+            <div class="bonus-grid">
+                <div class="bonus-card">
+                    <div class="bonus-header">
+                        <div class="bonus-title">Еженедельный кэшбэк</div>
+                        <div class="bonus-badge">КАЖДУЮ ПЯТНИЦУ</div>
+                    </div>
+                    <div class="bonus-desc">Возвращаем до 15% от проигранных средств каждую неделю</div>
+                    <div class="bonus-reward">
+                        <div class="reward-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="reward-info">
+                            <div class="reward-amount">До 15% кэшбэка</div>
+                            <div class="reward-label">За прошедшую неделю</div>
+                        </div>
+                    </div>
+                    <div class="progress-text">
+                        <span>До кэшбэка: 2 дня</span>
+                        <span>Проиграно: 1 240 ₽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='index.html'">
+            <div class="nav-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="nav-label">Игры</div>
+        </div>
+        
+        <div class="nav-item active">
+            <div class="nav-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="nav-label">Бонусы</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='history.html'">
+            <div class="nav-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="nav-label">История</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='profile.html'">
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Профиль</div>
+        </div>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        function claimBonus(bonusId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            let message = '';
+            let amount = 0;
+            
+            switch(bonusId) {
+                case 'daily':
+                    message = '🎉 Ежедневный бонус получен! +140 ₽';
+                    amount = 140;
+                    break;
+                case 'firstDeposit':
+                    message = '✨ Бонус активирован! Получите +100% к первому депозиту';
+                    amount = 0;
+                    break;
+            }
+            
+            tg.showAlert(message);
+            
+            // Обновляем кнопку
+            const button = event.target;
+            button.textContent = 'ПОЛУЧЕНО';
+            button.classList.add('claimed');
+            button.disabled = true;
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Обновляем таймеры
+            function updateTimers() {
+                const timerElement = document.querySelector('.bonus-badge');
+                if (timerElement && timerElement.textContent.includes('ЧЕРЕЗ')) {
+                    // Здесь можно добавить логику обновления таймеров
+                }
+            }
+            
+            setInterval(updateTimers, 1000);
+        });
+    </script>
+</body>
+</html>
