@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ORANGEWIN | Быстрые игры</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -26,10 +26,10 @@
             --gradient-orange: linear-gradient(135deg, var(--orange-main) 0%, var(--orange-dark) 100%);
             --gradient-gold: linear-gradient(135deg, var(--accent-gold) 0%, #FF8A00 100%);
             --gradient-card: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
-            --shadow-glow: 0 0 40px rgba(255, 107, 53, 0.5);
-            --shadow-strong: 0 15px 35px rgba(255, 77, 0, 0.3);
-            --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.4);
-            --border-glow: 1px solid rgba(255, 107, 53, 0.3);
+            --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
+            --shadow-strong: 0 8px 25px rgba(255, 77, 0, 0.2);
+            --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --border-glow: 1px solid rgba(255, 107, 53, 0.2);
         }
 
         * {
@@ -37,6 +37,17 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            font-size: 14px;
+        }
+
+        @media (min-width: 768px) {
+            html {
+                font-size: 16px;
+            }
         }
 
         body {
@@ -46,165 +57,158 @@
             font-family: 'Rajdhani', sans-serif;
             position: relative;
             overflow-x: hidden;
+            padding-bottom: 80px;
         }
 
         /* Адаптивный контейнер */
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 15px;
-            padding-bottom: 110px;
+            padding: 12px;
         }
 
-        /* Для ПК увеличиваем отступы */
         @media (min-width: 768px) {
             .container {
-                padding: 25px;
-                padding-bottom: 120px;
+                padding: 20px;
             }
         }
 
-        /* Анимированный оранжевый фон */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(255, 77, 0, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 40% 80%, rgba(255, 179, 71, 0.08) 0%, transparent 40%);
-            animation: pulse 8s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; }
-        }
-
-        /* Шапка */
+        /* Компактная шапка */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 10px 15px;
             background: rgba(26, 19, 15, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 20px;
-            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            margin-bottom: 20px;
             border: var(--border-glow);
             box-shadow: var(--shadow-card);
             position: relative;
-            overflow: hidden;
+            min-height: 60px;
         }
 
-        /* Для ПК увеличиваем шапку */
         @media (min-width: 768px) {
             .header {
-                padding: 20px 30px;
-                border-radius: 25px;
+                padding: 15px 20px;
+                border-radius: 20px;
+                margin-bottom: 25px;
             }
         }
 
+        /* Логотип */
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex-shrink: 0;
         }
 
         .logo-icon {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: var(--gradient-orange);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 900;
             color: white;
             font-family: 'Orbitron', sans-serif;
             box-shadow: var(--shadow-glow);
+            flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
             .logo-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 2rem;
-                border-radius: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                border-radius: 12px;
             }
         }
 
         .logo-text {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 900;
             font-family: 'Orbitron', sans-serif;
             background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            white-space: nowrap;
         }
 
         @media (min-width: 768px) {
             .logo-text {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
         }
 
-        /* Карточка баланса */
+        /* Компактная карточка баланса */
         .balance-card {
             background: var(--gradient-card);
-            padding: 12px 20px;
-            border-radius: 15px;
+            padding: 8px 12px;
+            border-radius: 12px;
             border: var(--border-glow);
             text-align: right;
-            transition: all 0.3s ease;
-            cursor: pointer;
+            min-width: 120px;
+            max-width: 160px;
+            flex-shrink: 0;
+            overflow: hidden;
         }
 
         @media (min-width: 768px) {
             .balance-card {
-                padding: 16px 25px;
-                border-radius: 20px;
-            }
-            
-            .balance-card:hover {
-                transform: translateY(-5px);
-                box-shadow: var(--shadow-glow);
+                padding: 10px 15px;
+                border-radius: 15px;
+                min-width: 150px;
+                max-width: 200px;
             }
         }
 
         .balance-label {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--text-dim);
-            margin-bottom: 5px;
+            margin-bottom: 2px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (min-width: 768px) {
+            .balance-label {
+                font-size: 0.8rem;
+                margin-bottom: 4px;
+            }
         }
 
         .balance-amount {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 900;
             color: var(--accent-gold);
-            text-shadow: 0 0 20px rgba(255, 179, 71, 0.5);
             font-family: 'Orbitron', sans-serif;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         @media (min-width: 768px) {
             .balance-amount {
-                font-size: 2.2rem;
+                font-size: 1.6rem;
             }
         }
 
         /* Баннеры */
         .banners-container {
             display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 20px;
             overflow-x: auto;
-            padding: 10px 5px 20px;
+            padding: 8px 4px 16px;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
         }
@@ -214,28 +218,20 @@
         }
 
         .banner {
-            flex: 0 0 280px;
-            height: 140px;
-            border-radius: 20px;
+            flex: 0 0 240px;
+            height: 120px;
+            border-radius: 16px;
             overflow: hidden;
             position: relative;
             box-shadow: var(--shadow-strong);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
+            flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
             .banner {
-                flex: 0 0 320px;
-                height: 160px;
-                border-radius: 25px;
-            }
-            
-            .banner:hover {
-                transform: translateY(-8px) scale(1.02);
-                box-shadow: 0 25px 50px rgba(255, 77, 0, 0.4);
-                border-color: var(--orange-main);
+                flex: 0 0 280px;
+                height: 140px;
+                border-radius: 20px;
             }
         }
 
@@ -251,56 +247,44 @@
             left: 0;
             right: 0;
             background: linear-gradient(to top, rgba(15, 10, 7, 0.9), transparent);
-            padding: 15px;
+            padding: 12px;
         }
 
         @media (min-width: 768px) {
             .banner-overlay {
-                padding: 20px;
+                padding: 15px;
             }
         }
 
         .banner-title {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: 900;
             color: white;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             font-family: 'Orbitron', sans-serif;
         }
 
         @media (min-width: 768px) {
             .banner-title {
-                font-size: 1.5rem;
+                font-size: 1.2rem;
             }
         }
 
-        .banner-subtitle {
-            font-size: 0.9rem;
-            color: var(--orange-light);
-            font-weight: 600;
-        }
-
-        @media (min-width: 768px) {
-            .banner-subtitle {
-                font-size: 1rem;
-            }
-        }
-
-        /* Быстрые игры */
+        /* Секция игр */
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin: 30px 0 20px;
-            padding: 0 10px;
+            margin: 25px 0 15px;
+            padding: 0 5px;
         }
 
         .section-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 900;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-family: 'Orbitron', sans-serif;
             background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
             -webkit-background-clip: text;
@@ -309,47 +293,30 @@
 
         @media (min-width: 768px) {
             .section-title {
-                font-size: 1.8rem;
-                gap: 15px;
+                font-size: 1.4rem;
+                gap: 12px;
             }
         }
 
         .section-icon {
-            width: 45px;
-            height: 45px;
+            width: 35px;
+            height: 35px;
             background: var(--gradient-orange);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1rem;
             box-shadow: var(--shadow-glow);
+            flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
             .section-icon {
-                width: 50px;
-                height: 50px;
-                border-radius: 15px;
-                font-size: 1.5rem;
-            }
-        }
-
-        .games-counter {
-            background: rgba(255, 107, 53, 0.15);
-            color: var(--orange-light);
-            padding: 6px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            border: 2px solid rgba(255, 107, 53, 0.3);
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        @media (min-width: 768px) {
-            .games-counter {
-                padding: 8px 20px;
-                font-size: 1rem;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                font-size: 1.2rem;
             }
         }
 
@@ -357,124 +324,105 @@
         .games-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 25px;
         }
 
         @media (min-width: 768px) {
             .games-grid {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
-
-        @media (min-width: 1200px) {
-            .games-grid {
-                gap: 25px;
+                gap: 15px;
             }
         }
 
         .game-card {
             background: var(--gradient-card);
-            border-radius: 20px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 15px;
             border: var(--border-glow);
-            transition: all 0.3s ease;
-            cursor: pointer;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
         }
 
         @media (min-width: 768px) {
             .game-card {
-                padding: 25px;
-                border-radius: 25px;
-            }
-            
-            .game-card:hover {
-                transform: translateY(-10px);
-                box-shadow: var(--shadow-strong);
-                border-color: var(--orange-main);
+                padding: 18px;
+                border-radius: 18px;
+                min-height: 160px;
             }
         }
 
         .game-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             background: var(--gradient-orange);
             color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.6rem;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             z-index: 2;
         }
 
-        @media (min-width: 768px) {
-            .game-badge {
-                top: 15px;
-                right: 15px;
-                padding: 5px 12px;
-                border-radius: 15px;
-                font-size: 0.8rem;
-            }
-        }
-
         .game-icon {
-            width: 60px;
-            height: 60px;
+            width: 45px;
+            height: 45px;
             background: rgba(255, 107, 53, 0.15);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 15px;
-            font-size: 1.8rem;
+            margin-bottom: 12px;
+            font-size: 1.5rem;
             color: var(--orange-light);
             border: 2px solid rgba(255, 107, 53, 0.2);
+            flex-shrink: 0;
         }
 
         @media (min-width: 768px) {
             .game-icon {
-                width: 70px;
-                height: 70px;
-                border-radius: 20px;
-                font-size: 2.2rem;
-                margin-bottom: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 14px;
+                font-size: 1.7rem;
+                margin-bottom: 15px;
             }
         }
 
         .game-name {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 900;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-light);
             font-family: 'Orbitron', sans-serif;
+            line-height: 1.2;
         }
 
         @media (min-width: 768px) {
             .game-name {
-                font-size: 1.4rem;
-                margin-bottom: 10px;
+                font-size: 1.1rem;
+                margin-bottom: 8px;
             }
         }
 
         .game-desc {
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             color: var(--text-dim);
-            margin-bottom: 15px;
-            line-height: 1.4;
-            min-height: 40px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            flex-grow: 1;
         }
 
         @media (min-width: 768px) {
             .game-desc {
-                font-size: 0.95rem;
-                min-height: 45px;
-                line-height: 1.5;
+                font-size: 0.8rem;
             }
         }
 
@@ -482,62 +430,54 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: auto;
         }
 
         .stat {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             color: var(--text-dim);
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
 
         @media (min-width: 768px) {
             .stat {
-                gap: 8px;
-                font-size: 0.9rem;
+                gap: 6px;
+                font-size: 0.75rem;
             }
         }
 
         .stat i {
             color: var(--orange-main);
-            font-size: 0.9rem;
-        }
-
-        .stat.highlight {
-            color: var(--success);
-            font-weight: 700;
+            font-size: 0.8rem;
         }
 
         /* Колесо фортуны */
         .wheel-card {
             background: linear-gradient(135deg, var(--orange-dark) 0%, #E65100 100%);
-            border-radius: 25px;
-            padding: 25px;
-            margin: 30px 0;
+            border-radius: 18px;
+            padding: 18px;
+            margin: 25px 0;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-strong);
-            cursor: pointer;
-            border: 3px solid rgba(255, 255, 255, 0.1);
         }
 
         @media (min-width: 768px) {
             .wheel-card {
-                border-radius: 30px;
-                padding: 30px;
-                margin: 35px 0;
+                border-radius: 22px;
+                padding: 22px;
+                margin: 30px 0;
             }
         }
 
         .wheel-header {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-            position: relative;
-            z-index: 2;
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
         @media (min-width: 768px) {
@@ -546,12 +486,12 @@
                 justify-content: space-between;
                 align-items: center;
                 gap: 0;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
             }
         }
 
         .wheel-title {
-            font-size: 1.6rem;
+            font-size: 1.3rem;
             font-weight: 900;
             color: white;
             font-family: 'Orbitron', sans-serif;
@@ -559,80 +499,44 @@
 
         @media (min-width: 768px) {
             .wheel-title {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
         }
 
         .wheel-timer {
             background: rgba(0, 0, 0, 0.4);
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 6px 12px;
+            border-radius: 15px;
             font-weight: 900;
             color: white;
             font-family: 'Orbitron', sans-serif;
             border: 2px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
             align-self: flex-start;
         }
 
-        @media (min-width: 768px) {
-            .wheel-timer {
-                padding: 10px 20px;
-                border-radius: 25px;
-                align-self: auto;
-            }
-        }
-
         .wheel-desc {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        @media (min-width: 768px) {
-            .wheel-desc {
-                font-size: 1.1rem;
-                margin-bottom: 25px;
-            }
+            margin-bottom: 15px;
+            line-height: 1.4;
         }
 
         .wheel-prizes {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            position: relative;
-            z-index: 2;
-        }
-
-        @media (min-width: 768px) {
-            .wheel-prizes {
-                gap: 15px;
-            }
         }
 
         .wheel-prize {
             background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            padding: 10px 18px;
-            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            padding: 8px 14px;
+            border-radius: 12px;
             font-weight: 900;
             color: white;
             border: 2px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9rem;
-        }
-
-        @media (min-width: 768px) {
-            .wheel-prize {
-                padding: 12px 25px;
-                border-radius: 20px;
-                font-size: 1rem;
-            }
-            
-            .wheel-prize:hover {
-                background: rgba(255, 255, 255, 0.25);
-                transform: scale(1.05);
-            }
+            font-size: 0.8rem;
         }
 
         /* Нижняя навигация */
@@ -642,19 +546,23 @@
             left: 0;
             right: 0;
             background: rgba(26, 19, 15, 0.98);
-            backdrop-filter: blur(20px);
-            border-top: 2px solid rgba(255, 107, 53, 0.3);
-            padding: 12px 20px;
+            backdrop-filter: blur(15px);
+            border-top: 2px solid rgba(255, 107, 53, 0.2);
+            padding: 10px 15px;
             display: flex;
             justify-content: space-around;
             z-index: 100;
-            box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
         }
 
         @media (min-width: 768px) {
             .bottom-nav {
-                padding: 18px 30px;
-                box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+                padding: 12px 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 20px 20px 0 0;
             }
         }
 
@@ -662,19 +570,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             color: var(--text-dim);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            padding: 5px;
-        }
-
-        @media (min-width: 768px) {
-            .nav-item {
-                gap: 8px;
-                padding: 0;
-            }
+            transition: all 0.2s ease;
+            padding: 4px;
+            min-width: 60px;
         }
 
         .nav-item.active {
@@ -684,79 +584,57 @@
         .nav-item.active .nav-icon {
             background: var(--gradient-orange);
             color: white;
-            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
-            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+            transform: translateY(-3px);
         }
 
         .nav-icon {
-            width: 45px;
-            height: 45px;
+            width: 38px;
+            height: 38px;
             background: var(--card-bg);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
             border: 2px solid rgba(255, 107, 53, 0.1);
         }
 
         @media (min-width: 768px) {
             .nav-icon {
-                width: 55px;
-                height: 55px;
-                border-radius: 18px;
-                font-size: 1.5rem;
-            }
-            
-            .nav-icon:hover {
-                transform: translateY(-3px);
+                width: 42px;
+                height: 42px;
+                font-size: 1.2rem;
             }
         }
 
         .nav-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        @media (min-width: 768px) {
-            .nav-label {
-                font-size: 0.85rem;
-                letter-spacing: 1px;
-            }
+            letter-spacing: 0.3px;
+            white-space: nowrap;
         }
 
         .nav-notification {
             position: absolute;
             top: 0;
             right: 0;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             background: var(--accent-red);
             color: white;
             border-radius: 50%;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             font-weight: 900;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid var(--dark-bg);
-            box-shadow: 0 3px 8px rgba(255, 94, 98, 0.4);
         }
 
-        @media (min-width: 768px) {
-            .nav-notification {
-                width: 24px;
-                height: 24px;
-                font-size: 0.8rem;
-                top: -8px;
-                right: -8px;
-            }
-        }
-
-        /* Попапы (адаптивные) */
+        /* Попап депозита */
         .deposit-popup {
             position: fixed;
             top: 0;
@@ -774,77 +652,76 @@
             padding: 20px;
         }
 
+        .deposit-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
         .deposit-content {
             background: var(--card-bg);
-            padding: 25px;
-            border-radius: 25px;
+            padding: 20px;
+            border-radius: 20px;
             border: 3px solid var(--orange-main);
-            box-shadow: 0 0 50px rgba(255, 107, 53, 0.5);
+            box-shadow: 0 0 40px rgba(255, 107, 53, 0.5);
             width: 100%;
-            max-width: 400px;
+            max-width: 320px;
         }
 
-        @media (min-width: 768px) {
-            .deposit-content {
-                padding: 30px;
-                border-radius: 30px;
-            }
-        }
-
-        /* Медиа запросы для очень маленьких устройств */
-        @media (max-width: 360px) {
+        /* Для очень маленьких экранов */
+        @media (max-width: 320px) {
             .banner {
-                flex: 0 0 250px;
-                height: 130px;
+                flex: 0 0 220px;
+                height: 110px;
+            }
+            
+            .balance-card {
+                min-width: 100px;
+                padding: 6px 10px;
+            }
+            
+            .balance-amount {
+                font-size: 1.1rem;
+            }
+            
+            .game-card {
+                padding: 12px;
+                min-height: 130px;
             }
             
             .game-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-            }
-            
-            .game-name {
-                font-size: 1.1rem;
-            }
-            
-            .nav-icon {
                 width: 40px;
                 height: 40px;
-                font-size: 1.1rem;
+                font-size: 1.3rem;
             }
         }
 
-        /* Медиа запросы для горизонтальной ориентации */
-        @media (max-height: 600px) and (orientation: landscape) {
+        /* Горизонтальная ориентация */
+        @media (max-height: 500px) and (orientation: landscape) {
             .container {
-                padding-bottom: 90px;
+                padding-bottom: 70px;
             }
             
             .bottom-nav {
-                padding: 8px 15px;
+                padding: 8px 12px;
             }
             
             .nav-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.1rem;
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
             
             .nav-label {
-                font-size: 0.7rem;
+                font-size: 0.6rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Анимированный фон -->
-    <div class="bg-animation"></div>
-
     <div class="container">
         <!-- Шапка -->
         <header class="header">
-            <div class="logo">
+            <div class="logo" onclick="window.location.href='index.html'">
                 <div class="logo-icon">O</div>
                 <div class="logo-text">ORANGEWIN</div>
             </div>
@@ -856,27 +733,24 @@
 
         <!-- Баннеры -->
         <div class="banners-container">
-            <!-- Баннер 1 -->
             <div class="banner" onclick="openBanner('banner1')">
-                <img src="banner1.png" alt="Баннер 1" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=600&h=160&fit=crop'">
+                <img src="banner1.png" alt="Баннер 1" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">НОВИНКА</div>
                     <div class="banner-subtitle">Играй и выигрывай до 1000%</div>
                 </div>
             </div>
             
-            <!-- Баннер 2 -->
             <div class="banner" onclick="openBanner('banner2')">
-                <img src="banner2.png" alt="Баннер 2" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=600&h=160&fit=crop'">
+                <img src="banner2.png" alt="Баннер 2" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">ХИТ СЕЗОНА</div>
                     <div class="banner-subtitle">Топ-игры с максимальным RTP</div>
                 </div>
             </div>
             
-            <!-- Баннер 3 -->
             <div class="banner" onclick="openBanner('banner3')">
-                <img src="banner3.png" alt="Баннер 3" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&h=160&fit=crop'">
+                <img src="banner3.png" alt="Баннер 3" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">БОНУСЫ</div>
                     <div class="banner-subtitle">До 200% на первый депозит</div>
@@ -897,7 +771,6 @@
 
         <!-- Сетка игр -->
         <div class="games-grid">
-            <!-- Игра 1: Кости -->
             <div class="game-card" onclick="openGame('dice')">
                 <div class="game-badge">ТОП</div>
                 <div class="game-icon">
@@ -908,7 +781,7 @@
                 <div class="game-stats">
                     <div class="stat">
                         <i class="fas fa-users"></i>
-                        3.2K онлайн
+                        3.2K
                     </div>
                     <div class="stat highlight">
                         <i class="fas fa-chart-line"></i>
@@ -917,7 +790,6 @@
                 </div>
             </div>
 
-            <!-- Игра 2: Монетка -->
             <div class="game-card" onclick="openGame('coin')">
                 <div class="game-badge">НОВИНКА</div>
                 <div class="game-icon">
@@ -928,7 +800,7 @@
                 <div class="game-stats">
                     <div class="stat">
                         <i class="fas fa-users"></i>
-                        2.1K онлайн
+                        2.1K
                     </div>
                     <div class="stat highlight">
                         <i class="fas fa-chart-line"></i>
@@ -937,7 +809,6 @@
                 </div>
             </div>
 
-            <!-- Игра 3: Минёр -->
             <div class="game-card" onclick="openGame('mines')">
                 <div class="game-badge">ХИТ</div>
                 <div class="game-icon">
@@ -948,7 +819,7 @@
                 <div class="game-stats">
                     <div class="stat">
                         <i class="fas fa-users"></i>
-                        5.3K онлайн
+                        5.3K
                     </div>
                     <div class="stat highlight">
                         <i class="fas fa-chart-line"></i>
@@ -957,7 +828,6 @@
                 </div>
             </div>
 
-            <!-- Игра 4: Слот -->
             <div class="game-card" onclick="openGame('slot')">
                 <div class="game-icon">
                     <i class="fas fa-sliders-h"></i>
@@ -967,7 +837,7 @@
                 <div class="game-stats">
                     <div class="stat">
                         <i class="fas fa-users"></i>
-                        4.5K онлайн
+                        4.5K
                     </div>
                     <div class="stat highlight">
                         <i class="fas fa-chart-line"></i>
@@ -991,104 +861,97 @@
                 <div class="wheel-prize">1/5 СПИНОВ</div>
             </div>
         </div>
-
-        <!-- Навигация -->
-        <nav class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('games')">
-                <div class="nav-icon">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <div class="nav-label">Игры</div>
-            </div>
-            
-            <div class="nav-item" onclick="switchTab('bonuses')">
-                <div class="nav-icon">
-                    <i class="fas fa-gift"></i>
-                </div>
-                <div class="nav-label">Бонусы</div>
-                <div class="nav-notification">3</div>
-            </div>
-            
-            <div class="nav-item" onclick="switchTab('history')">
-                <div class="nav-icon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <div class="nav-label">История</div>
-            </div>
-            
-            <div class="nav-item" onclick="switchTab('profile')">
-                <div class="nav-icon">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div class="nav-label">Профиль</div>
-            </div>
-        </nav>
     </div>
+
+    <!-- Нижняя навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('games')">
+            <div class="nav-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="nav-label">Игры</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('bonuses')">
+            <div class="nav-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="nav-label">Бонусы</div>
+            <div class="nav-notification">3</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('history')">
+            <div class="nav-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="nav-label">История</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('profile')">
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Профиль</div>
+        </div>
+    </nav>
 
     <!-- Попап депозита -->
     <div class="deposit-popup" id="depositPopup">
         <div class="deposit-content">
-            <div class="deposit-title" style="font-size: 1.8rem; font-weight: 900; text-align: center; margin-bottom: 25px; color: var(--accent-gold); font-family: 'Orbitron', sans-serif;">
+            <div style="font-size: 1.5rem; font-weight: 900; text-align: center; margin-bottom: 20px; color: var(--accent-gold); font-family: 'Orbitron', sans-serif;">
                 ПОПОЛНЕНИЕ
             </div>
-            <div class="deposit-options" style="display: grid; gap: 15px; margin-bottom: 25px;">
-                <div class="deposit-option" onclick="selectDeposit('card')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s ease;">
-                    <div class="deposit-icon" style="width: 50px; height: 50px; background: var(--gradient-orange); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white;">
+            <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+                <div onclick="selectDeposit('card')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         <i class="fas fa-credit-card"></i>
                     </div>
-                    <div class="deposit-text" style="flex: 1;">
-                        <div class="deposit-name" style="font-weight: 700; margin-bottom: 5px; color: var(--text-light);">Банковская карта</div>
-                        <div class="deposit-desc" style="font-size: 0.9rem; color: var(--text-dim);">Visa, Mastercard, Мир</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; margin-bottom: 3px; color: var(--text-light); font-size: 0.9rem;">Банковская карта</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">Visa, Mastercard, Мир</div>
                     </div>
                 </div>
                 
-                <div class="deposit-option" onclick="selectDeposit('crypto')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s ease;">
-                    <div class="deposit-icon" style="width: 50px; height: 50px; background: var(--gradient-orange); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white;">
+                <div onclick="selectDeposit('crypto')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         <i class="fas fa-bitcoin"></i>
                     </div>
-                    <div class="deposit-text" style="flex: 1;">
-                        <div class="deposit-name" style="font-weight: 700; margin-bottom: 5px; color: var(--text-light);">Криптовалюта</div>
-                        <div class="deposit-desc" style="font-size: 0.9rem; color: var(--text-dim);">Bitcoin, Ethereum, USDT</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; margin-bottom: 3px; color: var(--text-light); font-size: 0.9rem;">Криптовалюта</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">Bitcoin, Ethereum, USDT</div>
                     </div>
                 </div>
                 
-                <div class="deposit-option" onclick="selectDeposit('telegram')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: all 0.3s ease;">
-                    <div class="deposit-icon" style="width: 50px; height: 50px; background: var(--gradient-orange); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white;">
+                <div onclick="selectDeposit('telegram')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         <i class="fas fa-star"></i>
                     </div>
-                    <div class="deposit-text" style="flex: 1;">
-                        <div class="deposit-name" style="font-weight: 700; margin-bottom: 5px; color: var(--text-light);">Telegram Stars</div>
-                        <div class="deposit-desc" style="font-size: 0.9rem; color: var(--text-dim);">Мгновенное пополнение</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; margin-bottom: 3px; color: var(--text-light); font-size: 0.9rem;">Telegram Stars</div>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">Мгновенное пополнение</div>
                     </div>
                 </div>
             </div>
-            <button class="close-deposit" onclick="closeDepositPopup()" style="width: 100%; background: rgba(255, 107, 53, 0.2); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 20px; padding: 15px; color: var(--text-light); font-weight: 700; cursor: pointer; transition: all 0.3s ease;">
+            <button onclick="closeDepositPopup()" style="width: 100%; background: rgba(255, 107, 53, 0.2); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 12px; color: var(--text-light); font-weight: 700; cursor: pointer; font-size: 0.9rem;">
                 ЗАКРЫТЬ
             </button>
         </div>
     </div>
 
     <script>
-        // Инициализация Telegram WebApp
+        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor('#0F0A07');
         tg.setBackgroundColor('#0F0A07');
         
-        // Игровые переменные
+        // Переменные
         let currentBalance = 2480;
-        let userName = "Игрок";
-        
-        // DOM элементы
         const balanceEl = document.getElementById('balanceAmount');
         const depositPopup = document.getElementById('depositPopup');
         const wheelTimer = document.getElementById('wheelTimer');
-
-        // Определяем тип устройства
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isTablet = /iPad|Android(?!.*Mobile)|Tablet/i.test(navigator.userAgent);
-
-        // Таймер колеса фортуны
+        
+        // Таймер колеса
         function updateWheelTimer() {
             const now = new Date();
             const tomorrow = new Date();
@@ -1100,231 +963,123 @@
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
-            wheelTimer.textContent = 
-                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            wheelTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
-
-        // Основные функции
-        function showDepositPopup() {
-            tg.HapticFeedback.impactOccurred('medium');
-            depositPopup.classList.add('active');
-            
-            // На мобильных добавляем класс для предотвращения скролла
-            if (isMobile) {
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        function closeDepositPopup() {
-            tg.HapticFeedback.impactOccurred('light');
-            depositPopup.classList.remove('active');
-            
-            // Восстанавливаем скролл
-            if (isMobile) {
-                document.body.style.overflow = '';
-            }
-        }
-
-        function selectDeposit(method) {
-            tg.HapticFeedback.impactOccurred('medium');
-            tg.showAlert(`Выбран способ оплаты: ${method === 'card' ? 'Банковская карта' : 
-                         method === 'crypto' ? 'Криптовалюта' : 'Telegram Stars'}`);
-            
-            // Здесь будет интеграция с платежной системой
-            setTimeout(() => {
-                // Пример успешного пополнения
-                const depositAmount = 1000;
-                currentBalance += depositAmount;
-                updateBalance();
-                closeDepositPopup();
-                
-                tg.showPopup({
-                    title: '✅ УСПЕШНО!',
-                    message: `Ваш баланс пополнен на ${depositAmount} ₽`,
-                    buttons: [{type: 'ok', text: 'ОТЛИЧНО'}]
-                });
-            }, 500);
-        }
-
+        
+        // Функции навигации
         function openGame(gameId) {
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Эффект нажатия на карточку
-            const card = event.currentTarget;
-            card.style.transform = 'scale(0.95)';
-            setTimeout(() => card.style.transform = '', 200);
-            
-            // Переход на соответствующую игру
-            setTimeout(() => {
-                switch(gameId) {
-                    case 'dice':
-                        window.location.href = 'dice.html';
-                        break;
-                    case 'coin':
-                        window.location.href = 'coin.html';
-                        break;
-                    case 'mines':
-                        window.location.href = 'mines.html';
-                        break;
-                    case 'slot':
-                        tg.showPopup({
-                            title: '🎰 СКОРО!',
-                            message: 'Мгновенный слот находится в разработке',
-                            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
-                        });
-                        break;
-                    default:
-                        tg.showPopup({
-                            title: '🎮 СКОРО!',
-                            message: `Игра "${gameId}" находится в разработке`,
-                            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
-                        });
-                }
-            }, 300);
-        }
-
-        function openBanner(bannerId) {
             tg.HapticFeedback.impactOccurred('light');
             
-            const bannerTitles = {
-                'banner1': 'НОВИНКА СЕЗОНА',
-                'banner2': 'ТОПОВЫЕ ИГРЫ', 
-                'banner3': 'БОНУСНАЯ АКЦИЯ'
-            };
-            
-            tg.showPopup({
-                title: bannerTitles[bannerId] || 'АКЦИЯ',
-                message: 'Получи специальные условия и повышенные бонусы!',
-                buttons: [
-                    {id: 'claim', type: 'default', text: '🎁 ЗАБРАТЬ БОНУС'},
-                    {type: 'cancel', text: 'ПОЗЖЕ'}
-                ]
-            });
+            switch(gameId) {
+                case 'dice':
+                    window.location.href = 'dice.html';
+                    break;
+                case 'coin':
+                    window.location.href = 'coin.html';
+                    break;
+                case 'mines':
+                    window.location.href = 'mines.html';
+                    break;
+                case 'slot':
+                    tg.showAlert('Слот скоро будет доступен!');
+                    break;
+            }
         }
-
-        function openWheel() {
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.showPopup({
-                title: '🎡 КОЛЕСО ФОРТУНЫ',
-                message: 'Крутите ежедневно и получайте бонусы до 1000%!',
-                buttons: [
-                    {id: 'spin', type: 'default', text: '🎯 КРУТИТЬ СЕЙЧАС'},
-                    {type: 'cancel', text: 'ПОЗЖЕ'}
-                ]
-            });
-        }
-
+        
         function switchTab(tabId) {
             tg.HapticFeedback.impactOccurred('light');
             
-            // Снимаем активный класс со всех вкладок
+            // Снимаем активный класс
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // Добавляем активный класс текущей вкладке
+            // Добавляем активный класс
             event.currentTarget.classList.add('active');
             
-            // Обновляем контент в зависимости от вкладки
-            const tabContents = {
-                'games': '🎮 ИГРЫ',
-                'bonuses': '🎁 БОНУСЫ', 
-                'history': '📊 ИСТОРИЯ',
-                'profile': '👤 ПРОФИЛЬ'
-            };
-            
-            console.log(`Переключение на вкладку: ${tabContents[tabId]}`);
-        }
-
-        function updateBalance() {
-            balanceEl.textContent = `${currentBalance.toLocaleString('ru-RU')} ₽`;
-        }
-
-        // Адаптивная обработка касаний
-        document.addEventListener('touchstart', function() {}, {passive: true});
-
-        // Предотвращение масштабирования при двойном тапе
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', function(event) {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                event.preventDefault();
+            // Перенаправляем на соответствующую страницу
+            switch(tabId) {
+                case 'games':
+                    window.location.href = 'index.html';
+                    break;
+                case 'bonuses':
+                    window.location.href = 'bonuses.html';
+                    break;
+                case 'history':
+                    window.location.href = 'history.html';
+                    break;
+                case 'profile':
+                    window.location.href = 'profile.html';
+                    break;
             }
-            lastTouchEnd = now;
-        }, false);
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            updateBalance();
+        }
+        
+        function showDepositPopup() {
+            tg.HapticFeedback.impactOccurred('light');
+            depositPopup.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeDepositPopup() {
+            tg.HapticFeedback.impactOccurred('light');
+            depositPopup.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function selectDeposit(method) {
+            tg.HapticFeedback.impactOccurred('medium');
             
-            // Запуск таймера колеса
+            // Здесь будет интеграция с платежной системой
+            setTimeout(() => {
+                const depositAmount = 1000;
+                currentBalance += depositAmount;
+                balanceEl.textContent = `${currentBalance.toLocaleString('ru-RU')} ₽`;
+                closeDepositPopup();
+                
+                tg.showAlert(`Баланс пополнен на ${depositAmount} ₽`);
+            }, 500);
+        }
+        
+        function openBanner(bannerId) {
+            tg.HapticFeedback.impactOccurred('light');
+            tg.showAlert(`Баннер ${bannerId}`);
+        }
+        
+        function openWheel() {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showAlert('Колесо фортуны');
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            // Запускаем таймер
             setInterval(updateWheelTimer, 1000);
             updateWheelTimer();
             
-            // Автопрокрутка баннеров (только на ПК/планшетах)
-            if (!isMobile || isTablet) {
-                let scrollPos = 0;
-                const bannerContainer = document.querySelector('.banners-container');
-                
-                setInterval(() => {
-                    if (bannerContainer) {
-                        scrollPos += 295;
-                        if (scrollPos >= bannerContainer.scrollWidth) scrollPos = 0;
-                        bannerContainer.scrollTo({
-                            left: scrollPos,
-                            behavior: 'smooth'
-                        });
-                    }
-                }, 5000);
-            }
-            
-            // Получение данных пользователя из Telegram
+            // Загружаем данные пользователя
             if (tg.initDataUnsafe.user) {
                 const user = tg.initDataUnsafe.user;
-                userName = user.first_name || 'Игрок';
-                
-                // Приветственное сообщение
                 setTimeout(() => {
-                    tg.showPopup({
-                        title: `🔥 ДОБРО ПОЖАЛОВАТЬ, ${userName}!`,
-                        message: 'Ваш баланс: 2 480 ₽\nПолучи +100% к первому депозиту!',
-                        buttons: [
-                            {id: 'claim', type: 'default', text: '🎁 ЗАБРАТЬ БОНУС'},
-                            {type: 'cancel', text: 'ПОЗЖЕ'}
-                        ]
-                    });
+                    tg.showAlert(`Добро пожаловать, ${user.first_name}!`);
                 }, 1000);
             }
             
-            // Оптимизация для мобильных
+            // Адаптация для мобильных
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (isMobile) {
-                // Уменьшаем размеры некоторых элементов на маленьких экранах
-                if (window.innerWidth <= 360) {
-                    document.querySelectorAll('.game-card').forEach(card => {
-                        card.style.padding = '15px';
-                    });
-                }
+                // Улучшаем отзывчивость на мобильных
+                document.documentElement.style.touchAction = 'manipulation';
                 
-                // Добавляем паддинг для безопасной зоны (iPhone X и новее)
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                const hasNotch = isIOS && (window.screen.height >= 812 || window.screen.width >= 812);
-                
-                if (hasNotch) {
-                    const bottomNav = document.querySelector('.bottom-nav');
-                    bottomNav.style.paddingBottom = 'calc(12px + env(safe-area-inset-bottom))';
-                }
+                // Предотвращаем масштабирование при двойном тапе
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (e) => {
+                    const now = Date.now();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, { passive: false });
             }
-            
-            // Проверка новых бонусов
-            setTimeout(() => {
-                const notification = document.querySelector('.nav-notification');
-                if (notification) {
-                    notification.style.animation = 'none';
-                    setTimeout(() => {
-                        notification.style.animation = 'pulse 2s infinite';
-                    }, 10);
-                }
-            }, 2000);
         });
     </script>
 </body>
