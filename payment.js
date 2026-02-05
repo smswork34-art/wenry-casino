@@ -1,4 +1,4 @@
-// payment.js - Полноценная система оплаты USDT TRC20
+// payment.js - Полная система оплаты USDT TRC20
 window.Payment = {
     currentDepositId: null,
     
@@ -6,18 +6,16 @@ window.Payment = {
     async createDepositRequest(amountUSDT) {
         console.log('💎 Создание заявки на', amountUSDT, 'USDT');
         
-        const app = window.App;
-        if (!app || !app.getCurrentUser()) {
-            alert('Пользователь не авторизован');
-            return null;
-        }
-        
-        const user = app.getCurrentUser();
-        const supabase = app.getSupabaseClient();
-        
         try {
-            // 1. Получаем активный кошелек из БД
-            console.log('🔍 Поиск активного кошелька USDT...');
+            const user = window.Database.getUserData();
+            if (!user) {
+                this.showAlert('Пользователь не авторизован', 'error');
+                return null;
+            }
+            
+            const supabase = window.Database.getSupabaseClient();
+            
+            // 1. Получаем активный кошелек
             const { data: wallets, error: walletError } = await supabase
                 .from('payment_wallets')
                 .select('wallet_address')
@@ -28,39 +26,35 @@ window.Payment = {
             
             if (walletError || !wallets || wallets.length === 0) {
                 console.error('❌ Нет активных кошельков:', walletError);
-                alert('Ошибка: нет доступных кошельков для оплаты');
+                this.showAlert('Ошибка: нет доступных кошельков для оплаты', 'error');
                 return null;
             }
             
             const depositWallet = wallets[0].wallet_address;
-            console.log('✅ Кошелек найден:', depositWallet);
             
-            // 2. Создаем заявку в deposit_requests
-            const depositData = {
-                user_id: user.id,
-                amount: amountUSDT,
-                wallet_address: depositWallet,
-                status: 'pending',
-                admin_note: `USDT TRC20: ${amountUSDT} USDT`
-            };
-            
-            console.log('📝 Создаем запись в БД:', depositData);
+            // 2. Создаем заявку в БД
             const { data: deposit, error: depositError } = await supabase
                 .from('deposit_requests')
-                .insert([depositData])
+                .insert([{
+                    user_id: user.id,
+                    amount: amountUSDT,
+                    wallet_address: depositWallet,
+                    status: 'pending',
+                    admin_note: `USDT TRC20: ${amountUSDT} USDT`,
+                    created_at: new Date().toISOString()
+                }])
                 .select()
                 .single();
             
             if (depositError) {
                 console.error('❌ Ошибка создания заявки:', depositError);
-                alert('Ошибка создания заявки');
+                this.showAlert('Ошибка создания заявки', 'error');
                 return null;
             }
             
-            console.log('✅ Заявка создана ID:', deposit.id);
             this.currentDepositId = deposit.id;
             
-            // 3. Показываем пользователю информацию для оплаты
+            // 3. Показываем инструкции
             this.showDepositInfo(depositWallet, amountUSDT, deposit.id);
             
             // 4. Отправляем уведомление админу
@@ -70,14 +64,14 @@ window.Payment = {
             
         } catch (error) {
             console.error('🔥 Критическая ошибка:', error);
-            alert('Произошла ошибка при создании заявки');
+            this.showAlert('Произошла ошибка при создании заявки', 'error');
             return null;
         }
     },
     
     // Показать информацию для оплаты
     showDepositInfo(wallet, amount, depositId) {
-        const amountRUB = amount * 100; // Конвертация в рубли
+        const amountRUB = amount * 100;
         
         const modalHTML = `
             <div id="paymentInfoModal" style="
@@ -145,9 +139,9 @@ window.Payment = {
                         <div style="color: #aaa; font-size: 12px; line-height: 1.4;">
                             1. Отправляйте ТОЧНО ${amount} USDT<br>
                             2. Только сеть TRC20 (Tron)<br>
-                            3. Комиссия: 0%<br>
-                            4. Зачисление: 5-15 минут после оплаты<br>
-                            5. Не забудьте TX Hash для подтверждения
+                            3. Сохраните TX Hash (обязательно)<br>
+                            4. Зачисление: 5-15 минут после подтверждения<br>
+                            5. При проблемах - свяжитесь с поддержкой
                         </div>
                     </div>
                     
@@ -179,31 +173,30 @@ window.Payment = {
     // Копировать в буфер обмена
     copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Кошелек скопирован в буфер обмена!');
+            this.showAlert('Кошелек скопирован!', 'success');
         }).catch(err => {
             console.error('Ошибка копирования:', err);
+            this.showAlert('Ошибка копирования', 'error');
         });
     },
     
     // Подтвердить оплату
     async confirmPayment() {
         if (!this.currentDepositId) {
-            alert('Ошибка: ID заявки не найден');
+            this.showAlert('Ошибка: ID заявки не найден', 'error');
             return;
         }
         
-        // Запрашиваем TX Hash у пользователя
         const txHash = prompt('📝 Введите TX Hash транзакции (обязательно):\n\nВы можете найти его в истории переводов вашего крипто-кошелька.', '');
         
         if (!txHash || txHash.trim() === '') {
-            alert('TX Hash обязателен для подтверждения оплаты');
+            this.showAlert('TX Hash обязателен для подтверждения оплаты', 'error');
             return;
         }
         
-        const app = window.App;
-        const supabase = app.getSupabaseClient();
-        
         try {
+            const supabase = window.Database.getSupabaseClient();
+            
             // Обновляем заявку с хэшем
             const { error } = await supabase
                 .from('deposit_requests')
@@ -216,31 +209,52 @@ window.Payment = {
             
             if (error) {
                 console.error('❌ Ошибка обновления:', error);
-                alert('Ошибка при отправке заявки');
+                this.showAlert('Ошибка при отправке заявки', 'error');
                 return;
             }
             
             this.closePaymentModal();
-            alert('✅ Заявка отправлена на проверку!\n\nАдминистратор получил уведомление. Зачисление обычно занимает 5-15 минут после подтверждения.');
+            this.showAlert('✅ Заявка отправлена на проверку!\n\nАдминистратор получил уведомление. Зачисление обычно занимает 5-15 минут после подтверждения.', 'success');
             
-            // Обновляем баланс через 30 секунд (на случай быстрого подтверждения)
-            setTimeout(() => {
-                if (app && app.updateBalance) {
-                    app.updateBalance();
-                }
-            }, 30000);
+            // Автоматическая проверка статуса каждые 30 секунд
+            this.startStatusChecker(this.currentDepositId);
             
         } catch (error) {
             console.error('🔥 Ошибка:', error);
-            alert('Произошла ошибка');
+            this.showAlert('Произошла ошибка', 'error');
         }
     },
     
-    // Закрыть модальное окно
-    closePaymentModal() {
-        const modal = document.getElementById('paymentInfoModal');
-        if (modal) modal.remove();
-        this.currentDepositId = null;
+    // Автоматическая проверка статуса депозита
+    async startStatusChecker(depositId) {
+        const checkInterval = setInterval(async () => {
+            try {
+                const supabase = window.Database.getSupabaseClient();
+                const { data: deposit, error } = await supabase
+                    .from('deposit_requests')
+                    .select('status, amount')
+                    .eq('id', depositId)
+                    .single();
+                
+                if (!error && deposit) {
+                    if (deposit.status === 'completed') {
+                        clearInterval(checkInterval);
+                        this.showAlert(`✅ Депозит ${deposit.amount} USDT подтвержден! Баланс пополнен.`, 'success');
+                        if (window.App && window.App.updateBalance) {
+                            window.App.updateBalance();
+                        }
+                    } else if (deposit.status === 'rejected') {
+                        clearInterval(checkInterval);
+                        this.showAlert('❌ Депозит отклонен администратором. Свяжитесь с поддержкой.', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка проверки статуса:', error);
+            }
+        }, 30000); // Проверять каждые 30 секунд
+        
+        // Остановить проверку через 10 минут
+        setTimeout(() => clearInterval(checkInterval), 600000);
     },
     
     // Отправить уведомление админу
@@ -296,5 +310,57 @@ window.Payment = {
         } catch (error) {
             console.error('Ошибка отправки уведомления:', error);
         }
+    },
+    
+    // Закрыть модальное окно
+    closePaymentModal() {
+        const modal = document.getElementById('paymentInfoModal');
+        if (modal) modal.remove();
+        this.currentDepositId = null;
+    },
+    
+    // Показать уведомление
+    showAlert(message, type = 'success') {
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: ${type === 'error' ? '#ff5555' : 
+                        type === 'warning' ? '#ffcc00' : '#00b894'};
+            color: white;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        `;
+        
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            alertDiv.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(alertDiv);
+            }, 300);
+        }, 5000);
     }
 };
+
+// Добавляем CSS для анимации
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
