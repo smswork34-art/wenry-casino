@@ -1,5 +1,110 @@
 <!DOCTYPE html>
+<html lang="ru"><!DOCTYPE html>
 <html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORANGEWIN | Быстрые игры</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Все стили остаются как в предыдущей версии */
+        /* ... */
+    </style>
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Шапка -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">O</div>
+            <div class="logo-text">ORANGEWIN</div>
+        </div>
+        <div class="balance-card" onclick="showDeposit()">
+            <div class="balance-label">Ваш баланс</div>
+            <div class="balance-amount">2 480 ₽</div>
+            <div class="balance-sub">+380 ₽ сегодня</div>
+        </div>
+    </header>
+
+    <!-- Баннеры -->
+    <div class="banners-container">
+        <!-- Баннеры остаются -->
+    </div>
+
+    <!-- Быстрые игры -->
+    <div class="section-header">
+        <div class="section-title">
+            <div class="section-icon">
+                <i class="fas fa-bolt"></i>
+            </div>
+            БЫСТРЫЕ ИГРЫ
+        </div>
+        <div class="games-counter">4 ИГРЫ</div>
+    </div>
+
+    <!-- Сетка игр -->
+    <div class="games-grid">
+        <!-- Игра 1: Кости -->
+        <div class="game-card" onclick="openGame('dice')">
+            <div class="game-badge">ТОП</div>
+            <div class="game-icon">
+                <i class="fas fa-dice"></i>
+            </div>
+            <div class="game-name">БЫСТРЫЕ КОСТИ</div>
+            <div class="game-desc">Угадай число от 1 до 6. Множитель до 10x</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    3.2K онлайн
+                </div>
+                <div class="stat highlight">
+                    <i class="fas fa-chart-line"></i>
+                    98.5%
+                </div>
+            </div>
+        </div>
+
+        <!-- Другие игры -->
+    </div>
+
+    <!-- Колесо фортуны -->
+    <div class="wheel-card" onclick="openWheel()">
+        <!-- ... -->
+    </div>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <!-- ... -->
+    </nav>
+
+    <script>
+        // Инициализация Telegram
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#0F0A07');
+        tg.setBackgroundColor('#0F0A07');
+        
+        // Функция открытия игры в кости
+        function openGame(gameId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            if (gameId === 'dice') {
+                // Переход на страницу игры в кости
+                window.location.href = 'dice.html';
+            } else {
+                tg.showAlert(`Игра "${gameId}" скоро будет доступна!`);
+            }
+        }
+        
+        // Остальные функции остаются...
+    </script>
+</body>
+</html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
