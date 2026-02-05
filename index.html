@@ -3,6 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎰 Казино | Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+    <!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORANGEWIN | Быстрые игры</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -1091,27 +1101,32 @@
             }, 500);
         }
 
-        function openGame(gameId) {
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            // Эффект нажатия на карточку
-            const card = event.currentTarget;
-            card.style.transform = 'scale(0.95)';
-            setTimeout(() => card.style.transform = '', 200);
-            
-            if (gameId === 'dice') {
-                // Переход на игру в кости
-                setTimeout(() => {
-                    window.location.href = 'dice.html';
-                }, 300);
-            } else {
-                tg.showPopup({
-                    title: '🎮 СКОРО!',
-                    message: `Игра "${gameId}" находится в разработке`,
-                    buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
-                });
-            }
-        }
+       function openGame(gameId) {
+    tg.HapticFeedback.impactOccurred('medium');
+    
+    // Эффект нажатия на карточку
+    const card = event.currentTarget;
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => card.style.transform = '', 200);
+    
+    if (gameId === 'dice') {
+        // Переход на игру в кости
+        setTimeout(() => {
+            window.location.href = 'dice.html';
+        }, 300);
+    } else if (gameId === 'coin') {
+        // Переход на игру Орёл и Решка
+        setTimeout(() => {
+            window.location.href = 'coin.html';
+        }, 300);
+    } else {
+        tg.showPopup({
+            title: '🎮 СКОРО!',
+            message: `Игра "${gameId}" находится в разработке`,
+            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
+        });
+    }
+}
 
         function openBanner(bannerId) {
             tg.HapticFeedback.impactOccurred('light');
@@ -1225,5 +1240,28 @@
             }, 2000);
         });
     </script>
+</body>
+</html>        padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #2c3e50;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .logo {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <img src="logo.png" alt="Логотип Казино" class="logo">
 </body>
 </html>
