@@ -280,9 +280,31 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
+
+        /* Кнопка админки */
+        .admin-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b35, #ff4d00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
     </style>
 </head>
 <body>
+    <!-- Кнопка админки (видна только админу) -->
+    <div class="admin-btn" id="adminBtn" style="display: none;">👑</div>
+    
     <div class="container">
         <!-- Шапка -->
         <div class="header">
@@ -356,7 +378,7 @@
                 border-radius: 25px;
                 font-weight: bold;
                 cursor: pointer;
-            " onclick="claimBonus()">ЗАБРАТЬ 100 ₽</button>
+            " onclick="claimDailyBonus()">ЗАБРАТЬ 100 ₽</button>
         </div>
     </div>
     
@@ -422,6 +444,7 @@
         let selectedAmount = 500;
         let currentUser = null;
         let supabaseClient = null;
+        let isAdmin = false;
         
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', async () => {
@@ -451,6 +474,9 @@
             setInterval(async () => {
                 await updateBalanceDisplay();
             }, 10000);
+            
+            // Проверка новых депозитов
+            setInterval(checkPendingDeposits, 30000);
             
             console.log('✅ Приложение запущено');
         });
@@ -510,11 +536,23 @@
                         .eq('id', tgUser.id);
                 }
                 
+                // Проверяем админ ли пользователь
+                isAdmin = await checkIfAdmin(tgUser.id);
+                if (isAdmin) {
+                    document.getElementById('adminBtn').style.display = 'flex';
+                    document.getElementById('adminBtn').onclick = () => {
+                        window.location.href = 'admin.html';
+                    };
+                }
+                
                 // Обновляем аватар
                 if (tgUser.photo_url) {
                     document.getElementById('userAvatar').style.backgroundImage = 
                         `url(${tgUser.photo_url})`;
                     document.getElementById('userAvatar').textContent = '';
+                } else if (tgUser.first_name) {
+                    document.getElementById('userAvatar').textContent = 
+                        tgUser.first_name.charAt(0).toUpperCase();
                 }
                 
                 // Обновляем баланс
@@ -522,6 +560,16 @@
                 
             } catch (error) {
                 console.error('❌ Ошибка загрузки пользователя:', error);
+            }
+        }
+        
+        // Проверка прав администратора
+        async function checkIfAdmin(userId) {
+            try {
+                return userId.toString() === window.SUPABASE_CONFIG.adminId.toString();
+            } catch (error) {
+                console.error('Ошибка проверки прав:', error);
+                return false;
             }
         }
         
@@ -558,6 +606,41 @@
                 
             } catch (error) {
                 console.error('❌ Ошибка обновления баланса:', error);
+            }
+        }
+        
+        // Проверка ожидающих депозитов
+        async function checkPendingDeposits() {
+            if (!currentUser) return;
+            
+            try {
+                const { data: deposits, error } = await supabaseClient
+                    .from('deposit_requests')
+                    .select('status, amount, amount_rub')
+                    .eq('user_id', currentUser.id)
+                    .eq('status', 'completed')
+                    .eq('notified', false)
+                    .limit(5);
+                
+                if (error || !deposits) return;
+                
+                for (const deposit of deposits) {
+                    if (deposit.status === 'completed') {
+                        showAlert(`✅ Депозит ${deposit.amount} USDT подтвержден!`, 'success');
+                        
+                        // Помечаем как уведомленное
+                        await supabaseClient
+                            .from('deposit_requests')
+                            .update({ notified: true })
+                            .eq('id', deposit.id);
+                        
+                        // Обновляем баланс
+                        await updateBalanceDisplay();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Ошибка проверки депозитов:', error);
             }
         }
         
@@ -675,14 +758,62 @@
             }, 3000);
         }
         
-        // Функция бонуса (заглушка)
-        function claimBonus() {
-            showAlert('Бонус зачислен! +100 ₽', 'success');
+        // Функция ежедневного бонуса
+        async function claimDailyBonus() {
+            if (!currentUser) {
+                showAlert('Сначала авторизуйтесь', 'error');
+                return;
+            }
             
-            // В реальном приложении здесь будет добавление баланса
-            if (currentUser) {
-                currentUser.balance += 100;
-                updateBalanceDisplay();
+            try {
+                // Проверяем, получал ли уже сегодня бонус
+                const today = new Date().toISOString().split('T')[0];
+                const { data: todayBonus, error: bonusError } = await supabaseClient
+                    .from('transactions')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .eq('description', 'Ежедневный бонус')
+                    .gte('created_at', today + 'T00:00:00')
+                    .limit(1);
+                
+                if (bonusError) throw bonusError;
+                
+                if (todayBonus && todayBonus.length > 0) {
+                    showAlert('Вы уже получали бонус сегодня', 'warning');
+                    return;
+                }
+                
+                // Добавляем бонус
+                const bonusAmount = 10000; // 100 ₽ в копейках
+                const { error: updateError } = await supabaseClient
+                    .from('users')
+                    .update({ 
+                        balance: (currentUser.balance || 0) + bonusAmount,
+                        last_seen: new Date().toISOString()
+                    })
+                    .eq('id', currentUser.id);
+                
+                if (updateError) throw updateError;
+                
+                // Записываем транзакцию
+                await supabaseClient
+                    .from('transactions')
+                    .insert({
+                        user_id: currentUser.id,
+                        type: 'bonus',
+                        amount: bonusAmount,
+                        description: 'Ежедневный бонус',
+                        created_at: new Date().toISOString()
+                    });
+                
+                showAlert('🎉 Бонус 100 ₽ зачислен!', 'success');
+                
+                // Обновляем баланс
+                await updateBalanceDisplay();
+                
+            } catch (error) {
+                console.error('Ошибка получения бонуса:', error);
+                showAlert('❌ Ошибка при получении бонуса', 'error');
             }
         }
         
