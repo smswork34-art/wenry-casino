@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html lang="ru"><!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -9,8 +8,738 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Все стили остаются как в предыдущей версии */
-        /* ... */
+        :root {
+            --orange-main: #FF6B35;
+            --orange-dark: #FF4D00;
+            --orange-light: #FF8E53;
+            --orange-glow: #FF9E6D;
+            --dark-bg: #0F0A07;
+            --card-bg: #1A130F;
+            --card-dark: #15100C;
+            --accent-gold: #FFB347;
+            --accent-red: #FF5E62;
+            --accent-blue: #4ECDC4;
+            --accent-green: #00FF88;
+            --text-light: #FFFFFF;
+            --text-dim: #CCB7A6;
+            --success: #7CFC00;
+            --gradient-orange: linear-gradient(135deg, var(--orange-main) 0%, var(--orange-dark) 100%);
+            --gradient-gold: linear-gradient(135deg, var(--accent-gold) 0%, #FF8A00 100%);
+            --gradient-card: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
+            --shadow-glow: 0 0 40px rgba(255, 107, 53, 0.5);
+            --shadow-strong: 0 15px 35px rgba(255, 77, 0, 0.3);
+            --shadow-card: 0 8px 25px rgba(0, 0, 0, 0.4);
+            --border-glow: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 110px;
+            font-family: 'Rajdhani', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный оранжевый фон */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 107, 53, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 77, 0, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 40% 80%, rgba(255, 179, 71, 0.08) 0%, transparent 40%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        /* Оранжевые частицы */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 22px;
+            background: rgba(26, 19, 15, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            margin-bottom: 25px;
+            border: var(--border-glow);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-orange);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine-icon 3s infinite;
+        }
+
+        @keyframes shine-icon {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .logo-text {
+            font-size: 2rem;
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 15px rgba(255, 107, 53, 0.3);
+            letter-spacing: 1px;
+        }
+
+        /* Карточка баланса */
+        .balance-card {
+            background: var(--gradient-card);
+            padding: 16px 24px;
+            border-radius: 20px;
+            border: var(--border-glow);
+            text-align: right;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .balance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-orange);
+        }
+
+        .balance-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 20px rgba(255, 179, 71, 0.5);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .balance-sub {
+            font-size: 0.8rem;
+            color: var(--success);
+            margin-top: 3px;
+            font-weight: 600;
+        }
+
+        /* Баннеры */
+        .banners-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 35px;
+            overflow-x: auto;
+            padding: 10px 5px 25px;
+            scrollbar-width: none;
+        }
+
+        .banners-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .banner {
+            flex: 0 0 320px;
+            height: 160px;
+            border-radius: 25px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-strong);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .banner:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(255, 77, 0, 0.4);
+            border-color: var(--orange-main);
+        }
+
+        .banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .banner:hover .banner-img {
+            transform: scale(1.08);
+        }
+
+        .banner-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(15, 10, 7, 0.9), transparent);
+            padding: 20px;
+        }
+
+        .banner-title {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            margin-bottom: 5px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .banner-subtitle {
+            font-size: 1rem;
+            color: var(--orange-light);
+            font-weight: 600;
+        }
+
+        .banner-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--gradient-orange);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Быстрые игры */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 35px 0 25px;
+            padding: 0 10px;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-orange);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .games-counter {
+            background: rgba(255, 107, 53, 0.15);
+            color: var(--orange-light);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 700;
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Сетка игр */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .game-card {
+            background: var(--gradient-card);
+            border-radius: 25px;
+            padding: 25px;
+            border: var(--border-glow);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-strong);
+            border-color: var(--orange-main);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--gradient-orange);
+        }
+
+        .game-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--gradient-orange);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 2;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 107, 53, 0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            color: var(--orange-light);
+            border: 2px solid rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .game-card:hover .game-icon {
+            background: rgba(255, 107, 53, 0.25);
+            transform: scale(1.1);
+            color: var(--accent-gold);
+        }
+
+        .game-name {
+            font-size: 1.4rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            color: var(--text-light);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .game-desc {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            line-height: 1.5;
+            min-height: 45px;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .stat i {
+            color: var(--orange-main);
+        }
+
+        .stat.highlight {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        /* Колесо фортуны */
+        .wheel-card {
+            background: linear-gradient(135deg, var(--orange-dark) 0%, #E65100 100%);
+            border-radius: 30px;
+            padding: 30px;
+            margin: 35px 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-strong);
+            cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wheel-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 1%, transparent 1%);
+            background-size: 40px 40px;
+            opacity: 0.5;
+            animation: wheel-spin 20s linear infinite;
+        }
+
+        @keyframes wheel-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .wheel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wheel-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .wheel-timer {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 900;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .wheel-desc {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wheel-prizes {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+
+        .wheel-prize {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 12px 25px;
+            border-radius: 20px;
+            font-weight: 900;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .wheel-prize:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.05);
+        }
+
+        /* Нижняя навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 19, 15, 0.98);
+            backdrop-filter: blur(25px);
+            border-top: 2px solid rgba(255, 107, 53, 0.3);
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--orange-main);
+        }
+
+        .nav-item.active .nav-icon {
+            background: var(--gradient-orange);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+            transform: translateY(-5px);
+        }
+
+        .nav-icon {
+            width: 55px;
+            height: 55px;
+            background: var(--card-bg);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(255, 107, 53, 0.1);
+        }
+
+        .nav-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-notification {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: var(--accent-red);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--dark-bg);
+            box-shadow: 0 3px 10px rgba(255, 94, 98, 0.4);
+        }
+
+        /* Уведомления */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-red);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Попап депозита */
+        .deposit-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 10, 7, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .deposit-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .deposit-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 30px;
+            border: 3px solid var(--orange-main);
+            box-shadow: 0 0 50px rgba(255, 107, 53, 0.5);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .deposit-title {
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--accent-gold);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .deposit-options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .deposit-option {
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .deposit-option:hover {
+            background: rgba(255, 107, 53, 0.2);
+            transform: translateX(5px);
+        }
+
+        .deposit-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-orange);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .deposit-text {
+            flex: 1;
+        }
+
+        .deposit-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-light);
+        }
+
+        .deposit-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .close-deposit {
+            width: 100%;
+            background: rgba(255, 107, 53, 0.2);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            border-radius: 20px;
+            padding: 15px;
+            color: var(--text-light);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-deposit:hover {
+            background: rgba(255, 107, 53, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -24,16 +753,44 @@
             <div class="logo-icon">O</div>
             <div class="logo-text">ORANGEWIN</div>
         </div>
-        <div class="balance-card" onclick="showDeposit()">
+        <div class="balance-card" onclick="showDepositPopup()">
             <div class="balance-label">Ваш баланс</div>
-            <div class="balance-amount">2 480 ₽</div>
+            <div class="balance-amount" id="balanceAmount">2 480 ₽</div>
             <div class="balance-sub">+380 ₽ сегодня</div>
         </div>
     </header>
 
     <!-- Баннеры -->
     <div class="banners-container">
-        <!-- Баннеры остаются -->
+        <!-- Баннер 1 -->
+        <div class="banner" onclick="openBanner('banner1')">
+            <img src="banner1.png" alt="Баннер 1" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=600&h=160&fit=crop'">
+            <div class="banner-overlay">
+                <div class="banner-title">НОВИНКА</div>
+                <div class="banner-subtitle">Играй и выигрывай до 1000%</div>
+            </div>
+            <div class="banner-badge">НОВОЕ</div>
+        </div>
+        
+        <!-- Баннер 2 -->
+        <div class="banner" onclick="openBanner('banner2')">
+            <img src="banner2.png" alt="Баннер 2" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1600857062241-98e5dba7f214?w=600&h=160&fit=crop'">
+            <div class="banner-overlay">
+                <div class="banner-title">ХИТ СЕЗОНА</div>
+                <div class="banner-subtitle">Топ-игры с максимальным RTP</div>
+            </div>
+            <div class="banner-badge">ХИТ</div>
+        </div>
+        
+        <!-- Баннер 3 -->
+        <div class="banner" onclick="openBanner('banner3')">
+            <img src="banner3.png" alt="Баннер 3" class="banner-img" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1533105079780-92b9be482077?w=600&h=160&fit=crop'">
+            <div class="banner-overlay">
+                <div class="banner-title">БОНУСЫ</div>
+                <div class="banner-subtitle">До 200% на первый депозит</div>
+            </div>
+            <div class="banner-badge">+200%</div>
+        </div>
     </div>
 
     <!-- Быстрые игры -->
@@ -69,1017 +826,404 @@
             </div>
         </div>
 
-        <!-- Другие игры -->
+        <!-- Игра 2: Монетка -->
+        <div class="game-card" onclick="openGame('coin')">
+            <div class="game-badge">НОВИНКА</div>
+            <div class="game-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="game-name">ОРЁЛ И РЕШКА</div>
+            <div class="game-desc">Классика с мгновенным результатом</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    2.1K онлайн
+                </div>
+                <div class="stat highlight">
+                    <i class="fas fa-chart-line"></i>
+                    99.2%
+                </div>
+            </div>
+        </div>
+
+        <!-- Игра 3: Слот -->
+        <div class="game-card" onclick="openGame('slot')">
+            <div class="game-icon">
+                <i class="fas fa-sliders-h"></i>
+            </div>
+            <div class="game-name">МГНОВЕННЫЙ СЛОТ</div>
+            <div class="game-desc">3 барабана, 5 линий, множители до 100x</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    4.5K онлайн
+                </div>
+                <div class="stat highlight">
+                    <i class="fas fa-chart-line"></i>
+                    96.8%
+                </div>
+            </div>
+        </div>
+
+        <!-- Игра 4: Сапёр -->
+        <div class="game-card" onclick="openGame('mines')">
+            <div class="game-badge">ХИТ</div>
+            <div class="game-icon">
+                <i class="fas fa-bomb"></i>
+            </div>
+            <div class="game-name">САПЁР</div>
+            <div class="game-desc">Найди сокровища, избегая мин</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    5.3K онлайн
+                </div>
+                <div class="stat highlight">
+                    <i class="fas fa-chart-line"></i>
+                    97.3%
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Колесо фортуны -->
     <div class="wheel-card" onclick="openWheel()">
-        <!-- ... -->
+        <div class="wheel-header">
+            <div class="wheel-title">КРУТИ КАЖДЫЙ ДЕНЬ!</div>
+            <div class="wheel-timer" id="wheelTimer">23:59:45</div>
+        </div>
+        <div class="wheel-desc">Ежедневный бонусный спин с призами до 1000%</div>
+        <div class="wheel-prizes">
+            <div class="wheel-prize">375% БОНУС</div>
+            <div class="wheel-prize">+200$</div>
+            <div class="wheel-prize">БОНУС НА ДЕПОЗИТ</div>
+            <div class="wheel-prize">1/5 СПИНОВ</div>
+        </div>
+    </div>
+
+    <!-- Попап депозита -->
+    <div class="deposit-popup" id="depositPopup">
+        <div class="deposit-content">
+            <div class="deposit-title">ПОПОЛНЕНИЕ</div>
+            <div class="deposit-options">
+                <div class="deposit-option" onclick="selectDeposit('card')">
+                    <div class="deposit-icon">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <div class="deposit-text">
+                        <div class="deposit-name">Банковская карта</div>
+                        <div class="deposit-desc">Visa, Mastercard, Мир</div>
+                    </div>
+                </div>
+                
+                <div class="deposit-option" onclick="selectDeposit('crypto')">
+                    <div class="deposit-icon">
+                        <i class="fas fa-bitcoin"></i>
+                    </div>
+                    <div class="deposit-text">
+                        <div class="deposit-name">Криптовалюта</div>
+                        <div class="deposit-desc">Bitcoin, Ethereum, USDT</div>
+                    </div>
+                </div>
+                
+                <div class="deposit-option" onclick="selectDeposit('telegram')">
+                    <div class="deposit-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="deposit-text">
+                        <div class="deposit-name">Telegram Stars</div>
+                        <div class="deposit-desc">Мгновенное пополнение</div>
+                    </div>
+                </div>
+            </div>
+            <button class="close-deposit" onclick="closeDepositPopup()">ЗАКРЫТЬ</button>
+        </div>
     </div>
 
     <!-- Навигация -->
     <nav class="bottom-nav">
-        <!-- ... -->
+        <div class="nav-item active" onclick="switchTab('games')">
+            <div class="nav-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="nav-label">Игры</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('bonuses')">
+            <div class="nav-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="nav-label">Бонусы</div>
+            <div class="nav-notification">3</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('history')">
+            <div class="nav-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="nav-label">История</div>
+        </div>
+        
+        <div class="nav-item" onclick="switchTab('profile')">
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Профиль</div>
+        </div>
     </nav>
 
     <script>
-        // Инициализация Telegram
+        // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
         tg.setHeaderColor('#0F0A07');
         tg.setBackgroundColor('#0F0A07');
         
-        // Функция открытия игры в кости
-        function openGame(gameId) {
-            tg.HapticFeedback.impactOccurred('medium');
+        // Игровые переменные
+        let currentBalance = 2480;
+        let userName = "Игрок";
+        
+        // DOM элементы
+        const balanceEl = document.getElementById('balanceAmount');
+        const depositPopup = document.getElementById('depositPopup');
+        const wheelTimer = document.getElementById('wheelTimer');
+
+        // Создание оранжевых частиц
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const colors = [
+                'rgba(255, 107, 53, 0.6)',
+                'rgba(255, 77, 0, 0.5)',
+                'rgba(255, 179, 71, 0.4)',
+                'rgba(255, 142, 83, 0.3)'
+            ];
             
-            if (gameId === 'dice') {
-                // Переход на страницу игры в кости
-                window.location.href = 'dice.html';
-            } else {
-                tg.showAlert(`Игра "${gameId}" скоро будет доступна!`);
+            for (let i = 0; i < 60; i++) {
+                const particle = document.createElement('div');
+                const size = Math.random() * 6 + 2;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                particle.style.position = 'absolute';
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.background = color;
+                particle.style.borderRadius = '50%';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.boxShadow = `0 0 ${size * 3}px ${color}`;
+                particle.style.zIndex = '-1';
+                
+                container.appendChild(particle);
+                animateOrangeParticle(particle);
             }
         }
         
-        // Остальные функции остаются...
-    </script>
-</body>
-</html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monkey Casino</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background-color: #0f172a;
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Фон с галактикой */
-        .galaxy-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 300%;
-            background: 
-                radial-gradient(circle at 30% 20%, rgba(105, 148, 196, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(105, 148, 196, 0.08) 0%, transparent 50%),
-                linear-gradient(to bottom, 
-                    rgba(15, 23, 42, 0) 0%,
-                    rgba(30, 41, 59, 0.3) 30%,
-                    rgba(15, 23, 42, 0.9) 100%);
-            z-index: -2;
-            transition: transform 0.1s linear;
-        }
-
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 300%;
-            background: 
-                radial-gradient(1px 1px at 20% 30%, white 0%, transparent 100%),
-                radial-gradient(1px 1px at 40% 70%, white 0%, transparent 100%),
-                radial-gradient(1px 1px at 60% 20%, white 0%, transparent 100%),
-                radial-gradient(1px 1px at 80% 50%, white 0%, transparent 100%);
-            background-size: 300px 300px;
-            opacity: 0.3;
-            z-index: -1;
-            transition: transform 0.1s linear;
-        }
-
-        .content-container {
-            position: relative;
-            z-index: 2;
-            padding: 16px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        /* Шапка */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 12px 16px;
-            background-color: rgba(30, 41, 59, 0.8);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background-color: #6994c4;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 18px;
-            color: white;
-        }
-
-        .balance-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .balance {
-            background-color: rgba(51, 65, 85, 0.8);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .balance-amount {
-            color: #6994c4;
-            font-weight: 700;
-        }
-
-        .deposit-btn {
-            background-color: #6994c4;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        /* Игровое поле */
-        .game-field {
-            position: relative;
-            height: 400px;
-            margin-bottom: 20px;
-            background-color: rgba(15, 23, 42, 0.5);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Платформа */
-        .platform {
-            position: absolute;
-            bottom: 0;
-            left: 40%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 60px;
-            z-index: 3;
-            transition: bottom 0.1s linear;
-        }
-
-        .platform-base {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 180px;
-            height: 40px;
-            background-color: #475569;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .platform-pillar {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 20px;
-            background-color: #64748b;
-        }
-
-        .platform-holder {
-            position: absolute;
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 10px;
-            background-color: #94a3b8;
-        }
-
-        /* Ракета */
-        .rocket-container {
-            position: absolute;
-            bottom: 70px;
-            left: 35%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 160px;
-            z-index: 4;
-        }
-
-        .rocket {
-            width: 100%;
-            height: 100%;
-            background-image: url('rocket.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
-        /* Пламя ракеты */
-        .rocket-flame {
-            position: absolute;
-            bottom: -40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 60px;
-            z-index: 3;
-            display: none;
-        }
-
-        .flame-path {
-            stroke-dasharray: 100;
-            stroke-dashoffset: 100;
-            animation: flameDash 0.5s linear infinite;
-        }
-
-        /* Взрыв */
-        .explosion {
-            position: absolute;
-            left: 35%;
-            bottom: 150px;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 120px;
-            z-index: 5;
-            display: none;
-        }
-
-        .explosion.active {
-            display: block;
-            animation: explodeScale 0.8s ease-out forwards;
-        }
-
-        .explosion-circle {
-            fill: none;
-            stroke-width: 3;
-        }
-
-        /* Таймер */
-        .lucky-timer {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            background-color: rgba(15, 23, 42, 0.95);
-            border-radius: 12px;
-            padding: 20px 40px;
-            border: 2px solid #6994c4;
-            min-width: 180px;
-            text-align: center;
-            backdrop-filter: blur(20px);
-        }
-
-        .timer-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #94a3b8;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-        }
-
-        .timer-display {
-            font-size: 48px;
-            font-weight: 900;
-            color: #6994c4;
-            font-feature-settings: "tnum";
-        }
-
-        .timer-label {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 4px;
-            text-transform: uppercase;
-        }
-
-        /* Множитель */
-        .flight-multiplier {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            text-align: center;
-            z-index: 2;
-            background-color: rgba(15, 23, 42, 0.8);
-            padding: 12px 20px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: none;
-        }
-
-        .current-multiplier {
-            font-size: 36px;
-            font-weight: 900;
-            color: #6994c4;
-            margin-bottom: 4px;
-            line-height: 1;
-        }
-
-        .multiplier-label {
-            font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        /* Панель управления */
-        .control-panel {
-            background-color: rgba(30, 41, 59, 0.8);
-            border-radius: 16px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        /* Блок ставки */
-        .bet-section {
-            margin-bottom: 20px;
-        }
-
-        .bet-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .bet-title {
-            font-weight: 700;
-            font-size: 16px;
-            color: #e2e8f0;
-        }
-
-        .bet-range {
-            font-size: 12px;
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        .bet-input-container {
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .bet-input {
-            width: 100%;
-            background-color: rgba(51, 65, 85, 0.8);
-            border: 2px solid #475569;
-            border-radius: 12px;
-            padding: 16px;
-            color: white;
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-            outline: none;
-        }
-
-        .currency {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-weight: 600;
-        }
-
-        /* Быстрые ставки */
-        .quick-bet {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .quick-bet-btn {
-            background-color: rgba(51, 65, 85, 0.8);
-            border: 1px solid #475569;
-            border-radius: 10px;
-            padding: 12px;
-            color: #e2e8f0;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .quick-bet-btn.active {
-            background-color: #6994c4;
-            border-color: transparent;
-            color: white;
-        }
-
-        /* Автовывод */
-        .auto-withdraw-section {
-            background-color: rgba(51, 65, 85, 0.8);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-        }
-
-        .auto-withdraw-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .auto-withdraw-title {
-            font-weight: 700;
-            font-size: 16px;
-            color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-        }
-
-        .toggle-checkbox {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #64748b;
-            border-radius: 34px;
-            transition: .4s;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            border-radius: 50%;
-            transition: .4s;
-        }
-
-        .toggle-checkbox:checked + .toggle-slider {
-            background-color: #6994c4;
-        }
-
-        .toggle-checkbox:checked + .toggle-slider:before {
-            transform: translateX(24px);
-        }
-
-        .multiplier-selector {
-            background-color: #6994c4;
-            border-radius: 10px;
-            padding: 10px 20px;
-            font-size: 20px;
-            font-weight: 900;
-            color: white;
-            text-align: center;
-            min-width: 70px;
-        }
-
-        /* Состояние ожидания */
-        .waiting-state {
-            text-align: center;
-            padding: 16px;
-            background-color: rgba(51, 65, 85, 0.8);
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .waiting-label {
-            font-size: 12px;
-            color: #94a3b8;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .waiting-value {
-            font-size: 18px;
-            font-weight: 900;
-            color: #6994c4;
-        }
-
-        .waiting-hint {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 8px;
-        }
-
-        /* Кнопки действий */
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .action-btn {
-            padding: 18px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 900;
-            font-size: 16px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .action-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .place-bet-btn {
-            background-color: #6994c4;
-            color: white;
-        }
-
-        .cash-out-btn {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        /* Анимации */
-        @keyframes flameDash {
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        @keyframes explodeScale {
-            0% {
-                transform: translateX(-50%) scale(0);
-                opacity: 1;
-            }
-            50% {
-                transform: translateX(-50%) scale(1.2);
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateX(-50%) scale(1.5);
-                opacity: 0;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Фон галактики -->
-    <div class="galaxy-background" id="galaxyBackground"></div>
-    <div class="stars" id="stars"></div>
-
-    <div class="content-container">
-        <!-- Шапка -->
-        <div class="header">
-            <div class="logo-container">
-                <div class="logo">M</div>
-            </div>
-            <div class="balance-section">
-                <div class="balance">
-                    Баланс: <span class="balance-amount" id="balance">1 234.56 ₽</span>
-                </div>
-                <button class="deposit-btn" id="depositBtn">Пополнить</button>
-            </div>
-        </div>
-
-        <!-- Игровое поле -->
-        <div class="game-field" id="gameField">
-            <!-- Платформа -->
-            <div class="platform" id="platform">
-                <div class="platform-base"></div>
-                <div class="platform-pillar"></div>
-                <div class="platform-holder"></div>
-            </div>
+        function animateOrangeParticle(particle) {
+            let x = parseFloat(particle.style.left);
+            let y = parseFloat(particle.style.top);
+            let dx = (Math.random() - 0.5) * 0.15;
+            let dy = (Math.random() - 0.5) * 0.15;
             
-            <!-- Ракета -->
-            <div class="rocket-container" id="rocketContainer">
-                <div class="rocket"></div>
-            </div>
-            
-            <!-- Пламя ракеты -->
-            <svg class="rocket-flame" id="rocketFlame" viewBox="0 0 40 60">
-                <path class="flame-path" d="M20,0 C10,15 5,40 20,60 C35,40 30,15 20,0 Z" 
-                      fill="url(#flameGradient)" stroke="#ff6b00" stroke-width="1"/>
-                <defs>
-                    <radialGradient id="flameGradient" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#ff6b00" stop-opacity="0.9"/>
-                        <stop offset="70%" stop-color="#ffa500" stop-opacity="0.6"/>
-                        <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
-                    </radialGradient>
-                </defs>
-            </svg>
-            
-            <!-- Взрыв -->
-            <svg class="explosion" id="explosion" viewBox="0 0 120 120">
-                <circle class="explosion-circle" cx="60" cy="60" r="50" stroke="#ff6b00" stroke-width="4"/>
-                <circle class="explosion-circle" cx="60" cy="60" r="35" stroke="#ffa500" stroke-width="3"/>
-                <circle class="explosion-circle" cx="60" cy="60" r="20" stroke="#ffd700" stroke-width="2"/>
-            </svg>
-            
-            <!-- Таймер -->
-            <div class="lucky-timer" id="luckyTimer">
-                <div class="timer-title">До старта</div>
-                <div class="timer-display" id="timerDisplay">10</div>
-                <div class="timer-label">секунд</div>
-            </div>
-            
-            <!-- Множитель -->
-            <div class="flight-multiplier" id="flightMultiplier">
-                <div class="current-multiplier" id="currentMultiplier">1.00×</div>
-                <div class="multiplier-label">Множитель</div>
-            </div>
-        </div>
-
-        <!-- Панель управления -->
-        <div class="control-panel">
-            <!-- Секция ставки -->
-            <div class="bet-section">
-                <div class="bet-header">
-                    <div class="bet-title">Ставка</div>
-                    <div class="bet-range">От 10 до 25 000 ₽</div>
-                </div>
-                <div class="bet-input-container">
-                    <input type="number" class="bet-input" id="betInput" value="10.00" min="10" max="25000" step="0.01">
-                    <div class="currency">₽</div>
-                </div>
+            function move() {
+                x += dx;
+                y += dy;
                 
-                <!-- Быстрые ставки -->
-                <div class="quick-bet">
-                    <button class="quick-bet-btn active" data-bet="10">10 ₽</button>
-                    <button class="quick-bet-btn" data-bet="50">50 ₽</button>
-                    <button class="quick-bet-btn" data-bet="100">100 ₽</button>
-                    <button class="quick-bet-btn" data-bet="500">500 ₽</button>
-                </div>
-            </div>
-
-            <!-- Автовывод -->
-            <div class="auto-withdraw-section">
-                <div class="auto-withdraw-header">
-                    <div class="auto-withdraw-title">
-                        АВТО-ВЫВОД
-                        <label class="toggle-switch">
-                            <input type="checkbox" class="toggle-checkbox" id="autoWithdrawToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="multiplier-selector" id="autoWithdrawMultiplier">X 2</div>
-                </div>
-            </div>
-
-            <!-- Состояние ожидания -->
-            <div class="waiting-state" id="waitingState">
-                <div class="waiting-label" id="waitingLabel">ОЖИДАНИЕ</div>
-                <div class="waiting-value" id="waitingValue">СЛЕД. РАУНДА</div>
-                <div class="waiting-hint" id="waitingHint">Успейте поставить в течение 10 секунд</div>
-            </div>
-
-            <!-- Кнопки действий -->
-            <div class="action-buttons">
-                <button class="action-btn place-bet-btn" id="placeBetBtn">
-                    СТАВКА
-                </button>
-                <button class="action-btn cash-out-btn" id="cashOutBtn" disabled>
-                    ВЫВОД
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Инициализация Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.enableClosingConfirmation();
-        tg.setHeaderColor('#0f172a');
-        tg.setBackgroundColor('#0f172a');
-
-        // Игровые переменные
-        let gameState = 'WAITING'; // WAITING, BETTING, FLYING, CRASHED
-        let roundTimer = 10;
-        let flightTimer = 0;
-        let currentMultiplier = 1.00;
-        let maxMultiplier = 15.00;
-        let playerBet = 10.00;
-        let playerHasBet = false;
-        let autoWithdrawEnabled = true;
-        let autoWithdrawMultiplier = 2.00;
-        let gameInterval;
-        let roundInterval;
-        let backgroundOffset = 0;
-        let platformPosition = 0;
-
-        // Элементы
-        const galaxyBackground = document.getElementById('galaxyBackground');
-        const stars = document.getElementById('stars');
-        const luckyTimer = document.getElementById('luckyTimer');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const flightMultiplier = document.getElementById('flightMultiplier');
-        const rocketContainer = document.getElementById('rocketContainer');
-        const rocketFlame = document.getElementById('rocketFlame');
-        const explosion = document.getElementById('explosion');
-        const platform = document.getElementById('platform');
-        const currentMultiplierEl = document.getElementById('currentMultiplier');
-        const betInput = document.getElementById('betInput');
-        const placeBetBtn = document.getElementById('placeBetBtn');
-        const cashOutBtn = document.getElementById('cashOutBtn');
-        const waitingState = document.getElementById('waitingState');
-        const waitingLabel = document.getElementById('waitingLabel');
-        const waitingValue = document.getElementById('waitingValue');
-        const waitingHint = document.getElementById('waitingHint');
-        const quickBetButtons = document.querySelectorAll('.quick-bet-btn');
-        const autoWithdrawToggle = document.getElementById('autoWithdrawToggle');
-        const balanceEl = document.getElementById('balance');
-        const depositBtn = document.getElementById('depositBtn');
-
-        // Начало нового раунда
-        function startNewRound() {
-            gameState = 'BETTING';
-            roundTimer = 10;
-            currentMultiplier = 1.00;
-            playerHasBet = false;
-            backgroundOffset = 0;
-            platformPosition = 0;
-            
-            // Сбросить позиции
-            galaxyBackground.style.transform = `translateY(${backgroundOffset}px)`;
-            stars.style.transform = `translateY(${backgroundOffset}px)`;
-            platform.style.bottom = `${platformPosition}px`;
-            
-            // Показать таймер и скрыть множитель, пламя
-            luckyTimer.style.display = 'block';
-            flightMultiplier.style.display = 'none';
-            rocketFlame.style.display = 'none';
-            rocketContainer.style.opacity = '1';
-            
-            // Скрыть взрыв
-            explosion.classList.remove('active');
-            
-            // Активировать кнопки
-            placeBetBtn.disabled = false;
-            cashOutBtn.disabled = true;
-            
-            // Обновить состояние ожидания
-            waitingLabel.textContent = 'ОЖИДАНИЕ';
-            waitingValue.textContent = 'СЛЕД. РАУНДА';
-            waitingHint.textContent = 'Успейте поставить в течение 10 секунд';
-            waitingState.style.backgroundColor = 'rgba(51, 65, 85, 0.8)';
-            
-            // Запуск таймера ставок
-            roundInterval = setInterval(updateRoundTimer, 1000);
+                if (x < -5 || x > 105) dx = -dx * 0.9;
+                if (y < -5 || y > 105) dy = -dy * 0.9;
+                
+                particle.style.left = x + '%';
+                particle.style.top = y + '%';
+                
+                // Пульсация
+                const scale = 0.9 + Math.sin(Date.now() * 0.001 + x) * 0.1;
+                particle.style.transform = `scale(${scale})`;
+                
+                requestAnimationFrame(move);
+            }
+            move();
         }
 
-        // Обновление таймера раунда
-        function updateRoundTimer() {
-            roundTimer--;
-            timerDisplay.textContent = roundTimer;
+        // Таймер колеса фортуны
+        function updateWheelTimer() {
+            const now = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
             
-            // Пульсация при последних 3 секундах
-            if (roundTimer <= 3) {
-                luckyTimer.style.borderColor = '#ef4444';
-            }
+            const diff = tomorrow - now;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
-            if (roundTimer <= 0) {
-                clearInterval(roundInterval);
-                luckyTimer.style.display = 'none';
-                startFlight();
-            }
+            wheelTimer.textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        // Начало полета
-        function startFlight() {
-            gameState = 'FLYING';
-            flightTimer = 0;
-            flightMultiplier.style.display = 'block';
-            rocketFlame.style.display = 'block';
-            
-            waitingLabel.textContent = 'ПОЛЕТ';
-            waitingValue.textContent = 'В ПОЛЕТЕ';
-            waitingHint.textContent = playerHasBet ? 'Нажмите ВЫВОД чтобы зафиксировать выигрыш' : 'Вы не успели поставить';
-            waitingState.style.backgroundColor = 'rgba(71, 85, 105, 0.8)';
-            
-            // Запуск анимации полета
-            gameInterval = setInterval(updateFlight, 50);
+        // Основные функции
+        function showDepositPopup() {
+            tg.HapticFeedback.impactOccurred('medium');
+            depositPopup.classList.add('active');
         }
 
-        // Обновление полета
-        function updateFlight() {
-            flightTimer += 50;
-            
-            // Увеличение множителя
-            const progress = flightTimer / 10000;
-            currentMultiplier = 1.00 + Math.pow(progress, 1.5) * (maxMultiplier - 1);
-            
-            // Случайный краш (вероятность растет с множителем)
-            const crashChance = Math.min(0.001 + (currentMultiplier * 0.003), 0.1);
-            if (Math.random() < crashChance) {
-                crashGame();
-                return;
-            }
-            
-            // Автовывод
-            if (playerHasBet && autoWithdrawEnabled && currentMultiplier >= autoWithdrawMultiplier) {
-                cashOut();
-                return;
-            }
-            
-            // Обновление отображения множителя
-            currentMultiplierEl.textContent = currentMultiplier.toFixed(2) + '×';
-            
-            // Движение фона вверх (иллюзия полета ракеты)
-            backgroundOffset += 2;
-            galaxyBackground.style.transform = `translateY(${-backgroundOffset}px)`;
-            stars.style.transform = `translateY(${-backgroundOffset * 1.5}px)`;
-            
-            // Платформа движется вниз
-            platformPosition += 1;
-            platform.style.bottom = `${Math.min(platformPosition, 400)}px`;
-            
-            // Автоматический краш после 10 секунд полета
-            if (flightTimer >= 10000) {
-                crashGame();
-            }
+        function closeDepositPopup() {
+            tg.HapticFeedback.impactOccurred('light');
+            depositPopup.classList.remove('active');
         }
 
-        // Крах игры
-        function crashGame() {
-            if (gameState !== 'FLYING') return;
+        function selectDeposit(method) {
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showAlert(`Выбран способ оплаты: ${method === 'card' ? 'Банковская карта' : 
+                         method === 'crypto' ? 'Криптовалюта' : 'Telegram Stars'}`);
             
-            clearInterval(gameInterval);
-            gameState = 'CRASHED';
-            
-            // Скрыть ракету и пламя
-            rocketContainer.style.opacity = '0';
-            rocketFlame.style.display = 'none';
-            
-            // Показать взрыв
-            explosion.classList.add('active');
-            
-            waitingLabel.textContent = 'КРАШ';
-            waitingValue.textContent = `x${currentMultiplier.toFixed(2)}`;
-            waitingHint.textContent = 'Игра закончилась. Ожидайте новый раунд';
-            waitingState.style.backgroundColor = 'rgba(127, 29, 29, 0.8)';
-            
-            // Если игрок не успел вывести
-            if (playerHasBet) {
-                playerHasBet = false;
+            // Здесь будет интеграция с платежной системой
+            setTimeout(() => {
+                // Пример успешного пополнения
+                const depositAmount = 1000;
+                currentBalance += depositAmount;
+                updateBalance();
+                closeDepositPopup();
+                
                 tg.showPopup({
-                    title: '💥 Крах!',
-                    message: `Вы проиграли ${playerBet} ₽`,
-                    buttons: [{type: 'ok'}]
+                    title: '✅ УСПЕШНО!',
+                    message: `Ваш баланс пополнен на ${depositAmount} ₽`,
+                    buttons: [{type: 'ok', text: 'ОТЛИЧНО'}]
+                });
+            }, 500);
+        }
+
+        function openGame(gameId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Эффект нажатия на карточку
+            const card = event.currentTarget;
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.style.transform = '', 200);
+            
+            if (gameId === 'dice') {
+                // Переход на игру в кости
+                setTimeout(() => {
+                    window.location.href = 'dice.html';
+                }, 300);
+            } else {
+                tg.showPopup({
+                    title: '🎮 СКОРО!',
+                    message: `Игра "${gameId}" находится в разработке`,
+                    buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
                 });
             }
-            
-            // Запуск нового раунда через 3 секунды
-            setTimeout(startNewRound, 3000);
         }
 
-        // Размещение ставки
-        function placeBet() {
-            if (gameState !== 'BETTING') {
-                tg.showAlert('Ставки принимаются только в течение 10 секунд до старта!');
-                return;
-            }
+        function openBanner(bannerId) {
+            tg.HapticFeedback.impactOccurred('light');
             
-            const betAmount = parseFloat(betInput.value);
-            if (betAmount < 10) {
-                tg.showAlert('Минимальная ставка - 10 ₽');
-                return;
-            }
-            
-            if (betAmount > 25000) {
-                tg.showAlert('Максимальная ставка - 25 000 ₽');
-                return;
-            }
-            
-            playerBet = betAmount;
-            playerHasBet = true;
-            placeBetBtn.disabled = true;
-            cashOutBtn.disabled = false;
+            const bannerTitles = {
+                'banner1': 'НОВИНКА СЕЗОНА',
+                'banner2': 'ТОПОВЫЕ ИГРЫ', 
+                'banner3': 'БОНУСНАЯ АКЦИЯ'
+            };
             
             tg.showPopup({
-                title: '✅ Ставка принята!',
-                message: `Ставка: ${playerBet} ₽`,
-                buttons: [{type: 'ok'}]
+                title: bannerTitles[bannerId] || 'АКЦИЯ',
+                message: 'Получи специальные условия и повышенные бонусы!',
+                buttons: [
+                    {id: 'claim', type: 'default', text: '🎁 ЗАБРАТЬ БОНУС'},
+                    {type: 'cancel', text: 'ПОЗЖЕ'}
+                ]
             });
         }
 
-        // Вывод средств
-        function cashOut() {
-            if (!playerHasBet || gameState !== 'FLYING') return;
-            
-            clearInterval(gameInterval);
-            gameState = 'CRASHED';
-            
-            const winAmount = playerBet * currentMultiplier;
-            playerHasBet = false;
-            
-            // Обновление баланса
-            const currentBalance = parseFloat(balanceEl.textContent.replace(/[^\d.]/g, ''));
-            const newBalance = currentBalance + winAmount;
-            balanceEl.textContent = newBalance.toFixed(2) + ' ₽';
-            
-            // Анимация победы
-            waitingLabel.textContent = 'ВЫИГРЫШ';
-            waitingValue.textContent = `${winAmount.toFixed(2)} ₽`;
-            waitingHint.textContent = `Множитель: x${currentMultiplier.toFixed(2)}`;
-            waitingState.style.backgroundColor = 'rgba(20, 83, 45, 0.8)';
-            
+        function openWheel() {
+            tg.HapticFeedback.impactOccurred('heavy');
             tg.showPopup({
-                title: '🎉 Победа!',
-                message: `Вы выиграли ${winAmount.toFixed(2)} ₽ (x${currentMultiplier.toFixed(2)})`,
-                buttons: [{type: 'ok'}]
+                title: '🎡 КОЛЕСО ФОРТУНЫ',
+                message: 'Крутите ежедневно и получайте бонусы до 1000%!',
+                buttons: [
+                    {id: 'spin', type: 'default', text: '🎯 КРУТИТЬ СЕЙЧАС'},
+                    {type: 'cancel', text: 'ПОЗЖЕ'}
+                ]
             });
-            
-            // Запуск нового раунда через 3 секунды
-            setTimeout(startNewRound, 3000);
         }
 
-        // Инициализация игры
-        function initGame() {
-            startNewRound();
+        function switchTab(tabId) {
+            tg.HapticFeedback.impactOccurred('light');
             
-            // Обработчики событий
-            placeBetBtn.addEventListener('click', placeBet);
-            cashOutBtn.addEventListener('click', cashOut);
-            
-            // Быстрые ставки
-            quickBetButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    quickBetButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    betInput.value = btn.getAttribute('data-bet');
-                });
+            // Снимаем активный класс со всех вкладок
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
             });
             
-            // Переключатель автовывода
-            autoWithdrawToggle.addEventListener('change', function() {
-                autoWithdrawEnabled = this.checked;
-            });
+            // Добавляем активный класс текущей вкладке
+            event.currentTarget.classList.add('active');
             
-            // Валидация ввода ставки
-            betInput.addEventListener('input', function() {
-                let value = parseFloat(this.value);
-                if (value < 10) this.value = 10;
-                if (value > 25000) this.value = 25000;
+            // Обновляем контент в зависимости от вкладки
+            const tabContents = {
+                'games': '🎮 ИГРЫ',
+                'bonuses': '🎁 БОНУСЫ', 
+                'history': '📊 ИСТОРИЯ',
+                'profile': '👤 ПРОФИЛЬ'
+            };
+            
+            // В реальном приложении здесь будет загрузка контента
+            console.log(`Переключение на вкладку: ${tabContents[tabId]}`);
+        }
+
+        function updateBalance() {
+            balanceEl.textContent = `${currentBalance.toLocaleString('ru-RU')} ₽`;
+        }
+
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            updateBalance();
+            
+            // Запуск таймера колеса
+            setInterval(updateWheelTimer, 1000);
+            updateWheelTimer();
+            
+            // Автопрокрутка баннеров
+            let scrollPos = 0;
+            const bannerContainer = document.querySelector('.banners-container');
+            
+            setInterval(() => {
+                if (bannerContainer) {
+                    scrollPos += 340;
+                    if (scrollPos >= bannerContainer.scrollWidth) scrollPos = 0;
+                    bannerContainer.scrollTo({
+                        left: scrollPos,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 5000);
+            
+            // Получение данных пользователя из Telegram
+            if (tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                userName = user.first_name || 'Игрок';
                 
-                quickBetButtons.forEach(b => b.classList.remove('active'));
-            });
+                // Приветственное сообщение
+                setTimeout(() => {
+                    tg.showPopup({
+                        title: `🔥 ДОБРО ПОЖАЛОВАТЬ, ${userName}!`,
+                        message: 'Ваш баланс: 2 480 ₽\nПолучи +100% к первому депозиту!',
+                        buttons: [
+                            {id: 'claim', type: 'default', text: '🎁 ЗАБРАТЬ БОНУС'},
+                            {type: 'cancel', text: 'ПОЗЖЕ'}
+                        ]
+                    });
+                }, 1000);
+            }
             
-            // Кнопка пополнения
-            depositBtn.addEventListener('click', function() {
-                tg.showPopup({
-                    title: '💰 Пополнение баланса',
-                    message: 'Выберите способ пополнения:',
-                    buttons: [
-                        {id: 'card', type: 'default', text: '💳 Карта'},
-                        {id: 'qiwi', type: 'default', text: '🥝 QIWI'},
-                        {id: 'crypto', type: 'default', text: '₿ Crypto'},
-                        {type: 'cancel', text: 'Отмена'}
-                    ]
-                });
-            });
-        }
-
-        // Запуск игры при загрузке
-        tg.ready();
-        initGame();
+            // Проверка новых бонусов
+            setTimeout(() => {
+                const notification = document.querySelector('.nav-notification');
+                if (notification) {
+                    notification.style.animation = 'none';
+                    setTimeout(() => {
+                        notification.style.animation = 'pulse 2s infinite';
+                    }, 10);
+                }
+            }, 2000);
+        });
     </script>
 </body>
 </html>
