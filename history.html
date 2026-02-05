@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>История | ORANGEWIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --orange-main: #FF6B35;
+            --orange-dark: #FF4D00;
+            --accent-gold: #FFB347;
+            --accent-green: #00FF88;
+            --accent-red: #FF5E62;
+            --dark-bg: #0F0A07;
+            --card-bg: #1A130F;
+            --text-light: #FFFFFF;
+            --text-dim: #CCB7A6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 12px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Хедер */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        .balance-card {
+            background: rgba(255, 107, 53, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: right;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 2px;
+        }
+
+        .balance-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Фильтры */
+        .history-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .filter-btn {
+            padding: 8px 15px;
+            background: rgba(255, 107, 53, 0.1);
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Статистика */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* История */
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 53, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            flex-shrink: 0;
+        }
+
+        .history-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .history-game {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-details {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            display: flex;
+            gap: 8px;
+        }
+
+        .history-amount {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-width: 80px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .amount-win {
+            color: var(--accent-green);
+        }
+
+        .amount-lose {
+            color: var(--accent-red);
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        /* Навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 19, 15, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(255, 107, 53, 0.2);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-dim);
+            padding: 5px;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--orange-main);
+        }
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            color: white;
+        }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 360px) {
+            .history-item {
+                padding: 12px;
+            }
+            
+            .history-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+            
+            .history-amount {
+                min-width: 70px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="game-header">
+            <div class="back-button" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="game-title">ИСТОРИЯ</div>
+            <div class="balance-card">
+                <div class="balance-label">БАЛАНС</div>
+                <div class="balance-amount">2 480 ₽</div>
+            </div>
+        </div>
+
+        <!-- Фильтры -->
+        <div class="history-filters">
+            <button class="filter-btn active" onclick="filterHistory('all')">ВСЁ</button>
+            <button class="filter-btn" onclick="filterHistory('today')">СЕГОДНЯ</button>
+            <button class="filter-btn" onclick="filterHistory('week')">НЕДЕЛЯ</button>
+            <button class="filter-btn" onclick="filterHistory('wins')">ВЫИГРЫШИ</button>
+            <button class="filter-btn" onclick="filterHistory('deposits')">ПОПОЛНЕНИЯ</button>
+        </div>
+
+        <!-- Статистика -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value">+1 240 ₽</div>
+                <div class="stat-label">ВЫИГРАНО ЗА НЕДЕЛЮ</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">48</div>
+                <div class="stat-label">СЫГРАНО ИГР</div>
+            </div>
+        </div>
+
+        <!-- Список истории -->
+        <div class="history-list" id="historyList">
+            <!-- История загружается динамически -->
+        </div>
+
+        <!-- Если история пуста -->
+        <div class="empty-history" id="emptyHistory" style="display: none;">
+            <div class="empty-icon">📊</div>
+            <div style="font-size: 1rem; margin-bottom: 10px; font-weight: 600;">История пуста</div>
+            <div style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;">
+                Сыграйте в игры, чтобы увидеть здесь историю
+            </div>
+            <button onclick="window.location.href='index.html'" style="
+                padding: 12px 24px;
+                background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+                border: none;
+                border-radius: 10px;
+                color: white;
+                font-weight: 700;
+                font-size: 0.9rem;
+                cursor: pointer;
+            ">
+                НАЧАТЬ ИГРАТЬ
+            </button>
+        </div>
+    </div>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='index.html'">
+            <div class="nav-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="nav-label">Игры</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='bonuses.html'">
+            <div class="nav-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="nav-label">Бонусы</div>
+        </div>
+        
+        <div class="nav-item active">
+            <div class="nav-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="nav-label">История</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='profile.html'">
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Профиль</div>
+        </div>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        let currentFilter = 'all';
+        const historyList = document.getElementById('historyList');
+        const emptyHistory = document.getElementById('emptyHistory');
+        
+        // Примерные данные истории
+        const historyData = [
+            { id: 1, game: 'Быстрые кости', type: 'win', amount: 100, time: '10:25', details: 'Ставка: 10 ₽, Число: 4' },
+            { id: 2, game: 'Минёр', type: 'win', amount: 240, time: '09:48', details: 'Открыто: 8 ячеек' },
+            { id: 3, game: 'Орёл и решка', type: 'lose', amount: 50, time: '09:12', details: 'Ставка: 50 ₽' },
+            { id: 4, game: 'Пополнение', type: 'deposit', amount: 1000, time: 'Вчера, 18:30', details: 'Банковская карта' },
+            { id: 5, game: 'Быстрые кости', type: 'lose', amount: 100, time: 'Вчера, 17:45', details: 'Ставка: 100 ₽, Число: 2' },
+            { id: 6, game: 'Минёр', type: 'win', amount: 150, time: 'Вчера, 16:20', details: 'Открыто: 5 ячеек' },
+            { id: 7, game: 'Бонус', type: 'bonus', amount: 140, time: 'Вчера, 12:00', details: 'Ежедневный бонус' },
+            { id: 8, game: 'Орёл и решка', type: 'win', amount: 100, time: '2 дня назад', details: 'Ставка: 50 ₽' }
+        ];
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        function filterHistory(filter) {
+            currentFilter = filter;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Фильтруем и показываем историю
+            displayHistory();
+        }
+        
+        function getGameIcon(gameName) {
+            const icons = {
+                'Быстрые кости': 'fas fa-dice',
+                'Орёл и решка': 'fas fa-coins',
+                'Минёр': 'fas fa-bomb',
+                'Пополнение': 'fas fa-plus-circle',
+                'Бонус': 'fas fa-gift',
+                'Вывод': 'fas fa-minus-circle'
+            };
+            return icons[gameName] || 'fas fa-gamepad';
+        }
+        
+        function displayHistory() {
+            // Фильтруем данные
+            let filteredData = historyData;
+            
+            if (currentFilter === 'today') {
+                filteredData = historyData.filter(item => item.time.includes(':') || item.time.includes('Сегодня'));
+            } else if (currentFilter === 'wins') {
+                filteredData = historyData.filter(item => item.type === 'win' || item.type === 'bonus' || item.type === 'deposit');
+            } else if (currentFilter === 'deposits') {
+                filteredData = historyData.filter(item => item.type === 'deposit');
+            }
+            
+            // Очищаем список
+            historyList.innerHTML = '';
+            
+            // Если нет данных
+            if (filteredData.length === 0) {
+                emptyHistory.style.display = 'block';
+                historyList.style.display = 'none';
+                return;
+            }
+            
+            emptyHistory.style.display = 'none';
+            historyList.style.display = 'flex';
+            
+            // Добавляем элементы
+            filteredData.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const amountClass = item.type === 'win' || item.type === 'deposit' || item.type === 'bonus' 
+                    ? 'amount-win' 
+                    : 'amount-lose';
+                
+                const amountSign = item.type === 'win' || item.type === 'deposit' || item.type === 'bonus' ? '+' : '-';
+                
+                historyItem.innerHTML = `
+                    <div class="history-icon">
+                        <i class="${getGameIcon(item.game)}"></i>
+                    </div>
+                    <div class="history-info">
+                        <div class="history-game">${item.game}</div>
+                        <div class="history-details">
+                            <span>${item.details}</span>
+                            <span>•</span>
+                            <span>${item.time}</span>
+                        </div>
+                    </div>
+                    <div class="history-amount ${amountClass}">
+                        ${amountSign}${item.amount} ₽
+                    </div>
+                `;
+                
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            displayHistory();
+        });
+    </script>
+</body>
+</html>
