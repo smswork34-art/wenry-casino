@@ -1,285 +1,300 @@
-// payment.js - Система оплаты USDT TRC20
-let currentDepositId = null;
-
-// Создать заявку на пополнение
-async function createDepositRequest(amount) {
-    if (!window.Database.getUserData()) {
-        await window.Database.initSupabase();
-    }
+// payment.js - Полноценная система оплаты USDT TRC20
+window.Payment = {
+    currentDepositId: null,
     
-    const user = window.Database.getUserData();
-    
-    try {
-        // Получаем активный кошелек из таблицы payment_wallets
-        const { data: wallets, error: walletError } = await supabaseClient
-            .from('payment_wallets')
-            .select('*')
-            .eq('is_active', true)
-            .eq('network', 'TRC20')
-            .eq('currency', 'USDT')
-            .limit(1);
+    // Создать заявку на пополнение
+    async createDepositRequest(amountUSDT) {
+        console.log('💎 Создание заявки на', amountUSDT, 'USDT');
         
-        if (walletError || !wallets || wallets.length === 0) {
-            showAlert('Ошибка: нет доступных кошельков для оплаты');
+        const app = window.App;
+        if (!app || !app.getCurrentUser()) {
+            alert('Пользователь не авторизован');
             return null;
         }
         
-        const depositWallet = wallets[0].wallet_address;
+        const user = app.getCurrentUser();
+        const supabase = app.getSupabaseClient();
         
-        // Создаем заявку в deposit_requests
-        const { data: deposit, error: depositError } = await supabaseClient
-            .from('deposit_requests')
-            .insert([
-                {
-                    user_id: user.id,
-                    amount: amount,
-                    wallet_address: depositWallet,
-                    status: 'pending',
-                    admin_note: `USDT TRC20 payment to ${depositWallet}`
-                }
-            ])
-            .select()
-            .single();
-        
-        if (depositError) {
-            console.error('Ошибка создания заявки:', depositError);
-            showAlert('Ошибка создания заявки');
+        try {
+            // 1. Получаем активный кошелек из БД
+            console.log('🔍 Поиск активного кошелька USDT...');
+            const { data: wallets, error: walletError } = await supabase
+                .from('payment_wallets')
+                .select('wallet_address')
+                .eq('is_active', true)
+                .eq('network', 'TRC20')
+                .eq('currency', 'USDT')
+                .limit(1);
+            
+            if (walletError || !wallets || wallets.length === 0) {
+                console.error('❌ Нет активных кошельков:', walletError);
+                alert('Ошибка: нет доступных кошельков для оплаты');
+                return null;
+            }
+            
+            const depositWallet = wallets[0].wallet_address;
+            console.log('✅ Кошелек найден:', depositWallet);
+            
+            // 2. Создаем заявку в deposit_requests
+            const depositData = {
+                user_id: user.id,
+                amount: amountUSDT,
+                wallet_address: depositWallet,
+                status: 'pending',
+                admin_note: `USDT TRC20: ${amountUSDT} USDT`
+            };
+            
+            console.log('📝 Создаем запись в БД:', depositData);
+            const { data: deposit, error: depositError } = await supabase
+                .from('deposit_requests')
+                .insert([depositData])
+                .select()
+                .single();
+            
+            if (depositError) {
+                console.error('❌ Ошибка создания заявки:', depositError);
+                alert('Ошибка создания заявки');
+                return null;
+            }
+            
+            console.log('✅ Заявка создана ID:', deposit.id);
+            this.currentDepositId = deposit.id;
+            
+            // 3. Показываем пользователю информацию для оплаты
+            this.showDepositInfo(depositWallet, amountUSDT, deposit.id);
+            
+            // 4. Отправляем уведомление админу
+            this.sendAdminNotification(user, amountUSDT, depositWallet, deposit.id);
+            
+            return deposit;
+            
+        } catch (error) {
+            console.error('🔥 Критическая ошибка:', error);
+            alert('Произошла ошибка при создании заявки');
             return null;
         }
+    },
+    
+    // Показать информацию для оплаты
+    showDepositInfo(wallet, amount, depositId) {
+        const amountRUB = amount * 100; // Конвертация в рубли
         
-        currentDepositId = deposit.id;
-        
-        // Показываем информацию для оплаты
-        showDepositInfo(depositWallet, amount, deposit.id);
-        
-        // Отправляем уведомление админу (симуляция)
-        sendAdminNotification(user, amount, depositWallet, deposit.id);
-        
-        return deposit;
-        
-    } catch (error) {
-        console.error('Ошибка в createDepositRequest:', error);
-        showAlert('Произошла ошибка');
-        return null;
-    }
-}
-
-// Показать информацию для оплаты
-function showDepositInfo(wallet, amount, depositId) {
-    const modalHTML = `
-        <div id="depositModal" style="
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; justify-content: center;
-            align-items: center; z-index: 1000;
-        ">
-            <div style="
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                padding: 25px; border-radius: 15px; max-width: 90%;
-                width: 400px; border: 2px solid #00d4ff;
-                box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        const modalHTML = `
+            <div id="paymentInfoModal" style="
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.95); display: flex; justify-content: center;
+                align-items: center; z-index: 9999; padding: 20px;
             ">
-                <h3 style="color: #00d4ff; margin-top: 0; text-align: center;">
-                    💎 Пополнение USDT
-                </h3>
-                
-                <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                    <p style="color: #fff; margin: 5px 0;">
-                        <strong>Сумма:</strong> ${amount} USDT (TRC20)
-                    </p>
-                    <p style="color: #fff; margin: 5px 0;">
-                        <strong>Кошелек для оплаты:</strong>
-                    </p>
-                    <div style="background: rgba(0,212,255,0.1); padding: 10px; border-radius: 5px; margin: 10px 0;">
-                        <code style="color: #00ff88; font-size: 14px; word-break: break-all;">
-                            ${wallet}
-                        </code>
-                        <button onclick="copyToClipboard('${wallet}')" style="
-                            background: #00d4ff; color: #000; border: none;
-                            padding: 5px 10px; border-radius: 5px; margin-left: 10px;
-                            cursor: pointer; font-weight: bold;
+                <div style="
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                    padding: 25px; border-radius: 20px; max-width: 90%;
+                    width: 400px; border: 2px solid #00d4ff;
+                    box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+                ">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 40px;">💎</div>
+                        <h2 style="color: #00d4ff; margin: 10px 0;">ОПЛАТА USDT</h2>
+                        <div style="color: #aaa;">TRC20 (Tron Network)</div>
+                    </div>
+                    
+                    <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #aaa;">Сумма:</span>
+                            <span style="color: white; font-weight: bold;">${amount} USDT</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color: #aaa;">В рублях:</span>
+                            <span style="color: #00ff88; font-weight: bold;">${amountRUB.toFixed(2)} ₽</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #aaa;">ID заявки:</span>
+                            <span style="color: #ffcc00; font-size: 12px;">${depositId}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <div style="color: #aaa; margin-bottom: 10px; font-size: 14px;">
+                            Отправьте точную сумму на кошелек:
+                        </div>
+                        <div style="
+                            background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px;
+                            border: 1px solid rgba(0,212,255,0.3); margin-bottom: 15px;
                         ">
-                            Копировать
+                            <code style="
+                                color: #00ff88; font-size: 14px; word-break: break-all;
+                                display: block; text-align: center; font-family: monospace;
+                            ">${wallet}</code>
+                        </div>
+                        <button onclick="Payment.copyToClipboard('${wallet}')" style="
+                            width: 100%; background: #00d4ff; color: #000;
+                            border: none; padding: 12px; border-radius: 10px;
+                            font-weight: bold; cursor: pointer; margin-bottom: 10px;
+                        ">
+                            📋 СКОПИРОВАТЬ КОШЕЛЕК
                         </button>
                     </div>
-                    <p style="color: #ffcc00; font-size: 12px; margin-top: 10px;">
-                        ⚠️ Отправляйте ТОЧНУЮ сумму ${amount} USDT<br>
-                        ⚠️ Сеть: TRC20 (Tron)<br>
-                        ⚠️ ID заявки: ${depositId}
-                    </p>
-                </div>
-                
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="confirmPayment()" style="
-                        flex: 1; background: linear-gradient(90deg, #00b09b, #96c93d);
-                        color: white; border: none; padding: 12px;
-                        border-radius: 8px; cursor: pointer; font-weight: bold;
-                        font-size: 16px;
+                    
+                    <div style="
+                        background: rgba(255, 193, 7, 0.1); padding: 15px;
+                        border-radius: 10px; border: 1px solid rgba(255, 193, 7, 0.3);
+                        margin-bottom: 20px;
                     ">
-                        ✅ Я оплатил
-                    </button>
-                    <button onclick="closeDepositModal()" style="
-                        flex: 1; background: linear-gradient(90deg, #ff416c, #ff4b2b);
-                        color: white; border: none; padding: 12px;
-                        border-radius: 8px; cursor: pointer; font-weight: bold;
-                    ">
-                        ❌ Отмена
-                    </button>
+                        <div style="color: #ffcc00; font-weight: bold; margin-bottom: 5px;">
+                            ⚠️ ВАЖНАЯ ИНФОРМАЦИЯ
+                        </div>
+                        <div style="color: #aaa; font-size: 12px; line-height: 1.4;">
+                            1. Отправляйте ТОЧНО ${amount} USDT<br>
+                            2. Только сеть TRC20 (Tron)<br>
+                            3. Комиссия: 0%<br>
+                            4. Зачисление: 5-15 минут после оплаты<br>
+                            5. Не забудьте TX Hash для подтверждения
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="Payment.confirmPayment()" style="
+                            flex: 2; background: linear-gradient(90deg, #00b09b, #96c93d);
+                            color: white; border: none; padding: 15px;
+                            border-radius: 10px; cursor: pointer; font-weight: bold;
+                            font-size: 16px;
+                        ">
+                            ✅ Я ОПЛАТИЛ
+                        </button>
+                        <button onclick="Payment.closePaymentModal()" style="
+                            flex: 1; background: rgba(255, 85, 85, 0.2);
+                            color: #ff5555; border: 2px solid #ff5555;
+                            padding: 15px; border-radius: 10px; cursor: pointer;
+                            font-weight: bold;
+                        ">
+                            ❌ Отмена
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// Копировать в буфер обмена
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showAlert('Кошелек скопирован!', 'success');
-    });
-}
-
-// Подтвердить оплату
-async function confirmPayment() {
-    if (!currentDepositId) {
-        showAlert('Ошибка: ID заявки не найден');
-        return;
-    }
-    
-    // Показываем окно для ввода хэша транзакции
-    const txHash = prompt('Введите TX Hash транзакции (обязательно):');
-    if (!txHash || txHash.trim() === '') {
-        showAlert('TX Hash обязателен для подтверждения');
-        return;
-    }
-    
-    // Обновляем заявку с хэшем
-    const { error } = await supabaseClient
-        .from('deposit_requests')
-        .update({
-            tx_hash: txHash,
-            updated_at: new Date().toISOString(),
-            admin_note: 'Ожидает подтверждения админом'
-        })
-        .eq('id', currentDepositId);
-    
-    if (error) {
-        console.error('Ошибка обновления:', error);
-        showAlert('Ошибка при отправке заявки');
-        return;
-    }
-    
-    closeDepositModal();
-    showAlert('✅ Заявка отправлена! Ожидайте подтверждения администратора.', 'success');
-    
-    // Обновляем историю транзакций
-    if (window.location.pathname.includes('history.html')) {
-        loadTransactionHistory();
-    }
-}
-
-// Закрыть модальное окно
-function closeDepositModal() {
-    const modal = document.getElementById('depositModal');
-    if (modal) modal.remove();
-    currentDepositId = null;
-}
-
-// Отправить уведомление админу (симуляция через Telegram Bot API)
-async function sendAdminNotification(user, amount, wallet, depositId) {
-    // В реальном проекте здесь будет вызов Telegram Bot API
-    console.log(`📨 Уведомление админу:
-    Пользователь: ${user.username} (ID: ${user.id})
-    Сумма: ${amount} USDT
-    Кошелек: ${wallet}
-    ID заявки: ${depositId}
-    Ссылка на подтверждение: telegram.me/youbot?start=deposit_${depositId}
-    `);
-    
-    // Для реального бота нужно использовать:
-    // fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage`, {
-    //     method: 'POST',
-    //     headers: {'Content-Type': 'application/json'},
-    //     body: JSON.stringify({
-    //         chat_id: ADMIN_CHAT_ID,
-    //         text: `Новая заявка на пополнение!`,
-    //         reply_markup: {
-    //             inline_keyboard: [[
-    //                 {text: '✅ Принять', callback_data: `accept_${depositId}`},
-    //                 {text: '❌ Отклонить', callback_data: `reject_${depositId}`}
-    //             ]]
-    //         }
-    //     })
-    // });
-}
-
-// Проверить статус депозитов
-async function checkDepositStatus() {
-    const user = window.Database.getUserData();
-    if (!user) return;
-    
-    const { data: deposits, error } = await supabaseClient
-        .from('deposit_requests')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('status', 'completed')
-        .is('tx_hash', null)
-        .order('created_at', { ascending: false });
-    
-    if (error || !deposts) return;
-    
-    // Если есть завершенные депозиты без уведомления
-    deposits.forEach(deposit => {
-        showAlert(`✅ Ваш депозит ${deposit.amount} USDT подтвержден!`, 'success');
-        
-        // Помечаем как уведомленный
-        supabaseClient
-            .from('deposit_requests')
-            .update({ admin_note: 'Уведомление отправлено' })
-            .eq('id', deposit.id);
-    });
-}
-
-// Вспомогательная функция для алертов
-function showAlert(message, type = 'info') {
-    const alertDiv = document.createElement('div');
-    alertDiv.style.cssText = `
-        position: fixed; top: 20px; right: 20px; 
-        padding: 15px 25px; border-radius: 10px; z-index: 9999;
-        background: ${type === 'success' ? '#00b894' : type === 'error' ? '#ff7675' : '#0984e3'};
-        color: white; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        animation: slideIn 0.3s ease;
-    `;
-    alertDiv.textContent = message;
-    
-    document.body.appendChild(alertDiv);
-    
-    setTimeout(() => {
-        alertDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => alertDiv.remove(), 300);
-    }, 3000);
-    
-    // Добавляем стили анимации
-    if (!document.querySelector('#alertStyles')) {
-        const style = document.createElement('style');
-        style.id = 'alertStyles';
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
         `;
-        document.head.appendChild(style);
-    }
-}
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    },
+    
+    // Копировать в буфер обмена
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Кошелек скопирован в буфер обмена!');
+        }).catch(err => {
+            console.error('Ошибка копирования:', err);
+        });
+    },
+    
+    // Подтвердить оплату
+    async confirmPayment() {
+        if (!this.currentDepositId) {
+            alert('Ошибка: ID заявки не найден');
+            return;
+        }
+        
+        // Запрашиваем TX Hash у пользователя
+        const txHash = prompt('📝 Введите TX Hash транзакции (обязательно):\n\nВы можете найти его в истории переводов вашего крипто-кошелька.', '');
+        
+        if (!txHash || txHash.trim() === '') {
+            alert('TX Hash обязателен для подтверждения оплаты');
+            return;
+        }
+        
+        const app = window.App;
+        const supabase = app.getSupabaseClient();
+        
+        try {
+            // Обновляем заявку с хэшем
+            const { error } = await supabase
+                .from('deposit_requests')
+                .update({
+                    tx_hash: txHash.trim(),
+                    updated_at: new Date().toISOString(),
+                    admin_note: 'Ожидает подтверждения админом. TX: ' + txHash.substring(0, 20) + '...'
+                })
+                .eq('id', this.currentDepositId);
+            
+            if (error) {
+                console.error('❌ Ошибка обновления:', error);
+                alert('Ошибка при отправке заявки');
+                return;
+            }
+            
+            this.closePaymentModal();
+            alert('✅ Заявка отправлена на проверку!\n\nАдминистратор получил уведомление. Зачисление обычно занимает 5-15 минут после подтверждения.');
+            
+            // Обновляем баланс через 30 секунд (на случай быстрого подтверждения)
+            setTimeout(() => {
+                if (app && app.updateBalance) {
+                    app.updateBalance();
+                }
+            }, 30000);
+            
+        } catch (error) {
+            console.error('🔥 Ошибка:', error);
+            alert('Произошла ошибка');
+        }
+    },
+    
+    // Закрыть модальное окно
+    closePaymentModal() {
+        const modal = document.getElementById('paymentInfoModal');
+        if (modal) modal.remove();
+        this.currentDepositId = null;
+    },
+    
+    // Отправить уведомление админу
+    async sendAdminNotification(user, amount, wallet, depositId) {
+        const botToken = window.SUPABASE_CONFIG?.botToken;
+        const adminId = window.SUPABASE_CONFIG?.adminId;
+        
+        if (!botToken || !adminId) {
+            console.warn('⚠️ Не настроен бот для уведомлений');
+            return;
+        }
+        
+        try {
+            const message = `
+💰 *НОВАЯ ЗАЯВКА НА ПОПОЛНЕНИЕ*
 
-// Экспортируем функции
-window.Payment = {
-    createDepositRequest,
-    checkDepositStatus,
-    showAlert
+👤 Пользователь: ${user.username || `ID: ${user.id}`}
+🆔 ID пользователя: \`${user.id}\`
+💎 Сумма: *${amount} USDT* (${amount * 100} ₽)
+🏦 Кошелек: \`${wallet}\`
+⏰ Дата: ${new Date().toLocaleString('ru-RU')}
+
+🆔 ID заявки: \`${depositId}\`
+            `;
+            
+            const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: adminId,
+                    text: message,
+                    parse_mode: 'Markdown',
+                    reply_markup: {
+                        inline_keyboard: [
+                            [
+                                { 
+                                    text: '✅ Принять заявку', 
+                                    callback_data: `accept_${depositId}` 
+                                },
+                                { 
+                                    text: '❌ Отклонить', 
+                                    callback_data: `reject_${depositId}` 
+                                }
+                            ]
+                        ]
+                    }
+                })
+            });
+            
+            const result = await response.json();
+            console.log('📨 Уведомление админу отправлено:', result.ok);
+            
+        } catch (error) {
+            console.error('Ошибка отправки уведомления:', error);
+        }
+    }
 };
