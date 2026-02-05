@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    <script>
+    // Фикс для старых версий Telegram WebApp
+    if (window.Telegram && window.Telegram.WebApp) {
+        try {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand();
+            window.Telegram.WebApp.setHeaderColor('#0f0c29');
+            window.Telegram.WebApp.setBackgroundColor('#0f0c29');
+        } catch (e) {
+            console.log('Telegram WebApp фикс применен');
+        }
+    }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wenry Casino | Telegram Mini App</title>
