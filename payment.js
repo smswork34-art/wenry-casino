@@ -1,4 +1,4 @@
-// payment.js - Полная система оплаты USDT TRC20
+// payment.js - Система оплаты USDT
 window.Payment = {
     currentDepositId: null,
     
@@ -33,14 +33,15 @@ window.Payment = {
             const depositWallet = wallets[0].wallet_address;
             
             // 2. Создаем заявку в БД
+            const amountRUB = amountUSDT * 100;
             const { data: deposit, error: depositError } = await supabase
                 .from('deposit_requests')
                 .insert([{
                     user_id: user.id,
                     amount: amountUSDT,
+                    amount_rub: amountRUB,
                     wallet_address: depositWallet,
                     status: 'pending',
-                    admin_note: `USDT TRC20: ${amountUSDT} USDT`,
                     created_at: new Date().toISOString()
                 }])
                 .select()
@@ -56,9 +57,6 @@ window.Payment = {
             
             // 3. Показываем инструкции
             this.showDepositInfo(depositWallet, amountUSDT, deposit.id);
-            
-            // 4. Отправляем уведомление админу
-            this.sendAdminNotification(user, amountUSDT, depositWallet, deposit.id);
             
             return deposit;
             
@@ -202,8 +200,7 @@ window.Payment = {
                 .from('deposit_requests')
                 .update({
                     tx_hash: txHash.trim(),
-                    updated_at: new Date().toISOString(),
-                    admin_note: 'Ожидает подтверждения админом. TX: ' + txHash.substring(0, 20) + '...'
+                    updated_at: new Date().toISOString()
                 })
                 .eq('id', this.currentDepositId);
             
@@ -216,7 +213,7 @@ window.Payment = {
             this.closePaymentModal();
             this.showAlert('✅ Заявка отправлена на проверку!\n\nАдминистратор получил уведомление. Зачисление обычно занимает 5-15 минут после подтверждения.', 'success');
             
-            // Автоматическая проверка статуса каждые 30 секунд
+            // Автоматическая проверка статуса
             this.startStatusChecker(this.currentDepositId);
             
         } catch (error) {
@@ -251,65 +248,10 @@ window.Payment = {
             } catch (error) {
                 console.error('Ошибка проверки статуса:', error);
             }
-        }, 30000); // Проверять каждые 30 секунд
+        }, 30000);
         
         // Остановить проверку через 10 минут
         setTimeout(() => clearInterval(checkInterval), 600000);
-    },
-    
-    // Отправить уведомление админу
-    async sendAdminNotification(user, amount, wallet, depositId) {
-        const botToken = window.SUPABASE_CONFIG?.botToken;
-        const adminId = window.SUPABASE_CONFIG?.adminId;
-        
-        if (!botToken || !adminId) {
-            console.warn('⚠️ Не настроен бот для уведомлений');
-            return;
-        }
-        
-        try {
-            const message = `
-💰 *НОВАЯ ЗАЯВКА НА ПОПОЛНЕНИЕ*
-
-👤 Пользователь: ${user.username || `ID: ${user.id}`}
-🆔 ID пользователя: \`${user.id}\`
-💎 Сумма: *${amount} USDT* (${amount * 100} ₽)
-🏦 Кошелек: \`${wallet}\`
-⏰ Дата: ${new Date().toLocaleString('ru-RU')}
-
-🆔 ID заявки: \`${depositId}\`
-            `;
-            
-            const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: adminId,
-                    text: message,
-                    parse_mode: 'Markdown',
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { 
-                                    text: '✅ Принять заявку', 
-                                    callback_data: `accept_${depositId}` 
-                                },
-                                { 
-                                    text: '❌ Отклонить', 
-                                    callback_data: `reject_${depositId}` 
-                                }
-                            ]
-                        ]
-                    }
-                })
-            });
-            
-            const result = await response.json();
-            console.log('📨 Уведомление админу отправлено:', result.ok);
-            
-        } catch (error) {
-            console.error('Ошибка отправки уведомления:', error);
-        }
     },
     
     // Закрыть модальное окно
