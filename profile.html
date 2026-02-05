@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Профиль | ORANGEWIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --orange-main: #FF6B35;
+            --orange-dark: #FF4D00;
+            --accent-gold: #FFB347;
+            --accent-green: #00FF88;
+            --accent-red: #FF5E62;
+            --dark-bg: #0F0A07;
+            --card-bg: #1A130F;
+            --text-light: #FFFFFF;
+            --text-dim: #CCB7A6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: var(--text-light);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 12px;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Хедер */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--card-bg);
+            border-radius: 14px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .back-button {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        .balance-card {
+            background: rgba(255, 107, 53, 0.1);
+            padding: 8px 12px;
+            border-radius: 10px;
+            text-align: right;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .balance-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-bottom: 2px;
+        }
+
+        .balance-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        /* Профиль пользователя */
+        .profile-section {
+            margin-bottom: 25px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            border: 2px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: white;
+            border: 3px solid var(--accent-gold);
+        }
+
+        .username {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--text-light);
+        }
+
+        .user-id {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 3px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Настройки */
+        .settings-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .settings-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .settings-item:hover {
+            border-color: rgba(255, 107, 53, 0.4);
+            transform: translateX(3px);
+        }
+
+        .settings-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 107, 53, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            flex-shrink: 0;
+        }
+
+        .settings-info {
+            flex-grow: 1;
+        }
+
+        .settings-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 3px;
+        }
+
+        .settings-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .settings-arrow {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Кнопка выхода */
+        .logout-button {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 94, 98, 0.1);
+            border: 2px solid rgba(255, 94, 98, 0.2);
+            border-radius: 12px;
+            color: var(--accent-red);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .logout-button:hover {
+            background: rgba(255, 94, 98, 0.2);
+        }
+
+        /* Навигация */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 19, 15, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(255, 107, 53, 0.2);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-dim);
+            padding: 5px;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--orange-main);
+        }
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-item.active .nav-icon {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            color: white;
+        }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 360px) {
+            .avatar {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                gap: 10px;
+            }
+            
+            .settings-item {
+                padding: 12px;
+            }
+            
+            .settings-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="game-header">
+            <div class="back-button" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="game-title">ПРОФИЛЬ</div>
+            <div class="balance-card">
+                <div class="balance-label">БАЛАНС</div>
+                <div class="balance-amount">2 480 ₽</div>
+            </div>
+        </div>
+
+        <!-- Профиль пользователя -->
+        <div class="profile-section">
+            <div class="profile-card">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="username" id="username">Игрок</div>
+                <div class="user-id" id="userId">ID: 12345678</div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">48</div>
+                        <div class="stat-label">ИГР СЫГРАНО</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">64%</div>
+                        <div class="stat-label">ВЫИГРЫШЕЙ</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">2</div>
+                        <div class="stat-label">ДНЯ В ИГРЕ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройки -->
+        <div class="settings-section">
+            <div class="section-title">
+                <i class="fas fa-cog"></i> НАСТРОЙКИ
+            </div>
+            <div class="settings-list">
+                <div class="settings-item" onclick="openSettings('deposit')">
+                    <div class="settings-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">Пополнение баланса</div>
+                        <div class="settings-desc">Банковская карта, криптовалюта, Telegram Stars</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-item" onclick="openSettings('withdraw')">
+                    <div class="settings-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">Вывод средств</div>
+                        <div class="settings-desc">Минимальная сумма: 100 ₽</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-item" onclick="openSettings('notifications')">
+                    <div class="settings-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">Уведомления</div>
+                        <div class="settings-desc">Бонусы, акции, результаты игр</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-item" onclick="openSettings('support')">
+                    <div class="settings-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">Поддержка</div>
+                        <div class="settings-desc">Помощь и ответы на вопросы</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="settings-item" onclick="openSettings('about')">
+                    <div class="settings-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">О приложении</div>
+                        <div class="settings-desc">Версия 1.0.0 • ORANGEWIN</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Кнопка выхода -->
+        <button class="logout-button" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> ВЫЙТИ
+        </button>
+    </div>
+
+    <!-- Навигация -->
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="window.location.href='index.html'">
+            <div class="nav-icon">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="nav-label">Игры</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='bonuses.html'">
+            <div class="nav-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="nav-label">Бонусы</div>
+        </div>
+        
+        <div class="nav-item" onclick="window.location.href='history.html'">
+            <div class="nav-icon">
+                <i class="fas fa-history"></i>
+            </div>
+            <div class="nav-label">История</div>
+        </div>
+        
+        <div class="nav-item active">
+            <div class="nav-icon">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-label">Профиль</div>
+        </div>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        
+        const usernameEl = document.getElementById('username');
+        const userIdEl = document.getElementById('userId');
+        
+        function goBack() {
+            window.history.back();
+        }
+        
+        function openSettings(setting) {
+            tg.HapticFeedback.impactOccurred('light');
+            
+            const messages = {
+                'deposit': 'Открываем пополнение баланса...',
+                'withdraw': 'Открываем вывод средств...',
+                'notifications': 'Открываем настройки уведомлений...',
+                'support': 'Открываем поддержку...',
+                'about': 'Открываем информацию о приложении...'
+            };
+            
+            tg.showAlert(messages[setting] || 'Настройка');
+        }
+        
+        function logout() {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            if (confirm('Вы действительно хотите выйти?')) {
+                tg.showAlert('Выход из аккаунта...');
+                // Здесь будет логика выхода
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        }
+        
+        // Инициализация профиля
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                
+                // Устанавливаем имя пользователя
+                if (user.first_name) {
+                    usernameEl.textContent = user.first_name;
+                    if (user.last_name) {
+                        usernameEl.textContent += ' ' + user.last_name;
+                    }
+                }
+                
+                // Устанавливаем ID
+                if (user.id) {
+                    userIdEl.textContent = `ID: ${user.id}`;
+                }
+                
+                // Устанавливаем аватар
+                if (user.photo_url) {
+                    const avatar = document.querySelector('.avatar i');
+                    avatar.style.display = 'none';
+                    document.querySelector('.avatar').style.backgroundImage = `url(${user.photo_url})`;
+                    document.querySelector('.avatar').style.backgroundSize = 'cover';
+                    document.querySelector('.avatar').style.backgroundPosition = 'center';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
