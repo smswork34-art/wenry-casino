@@ -3,45 +3,978 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎰 Казино | Telegram Mini App</title>
+    <title>Monkey Casino</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: #2c3e50;
+            background-color: #0f172a;
             color: white;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
+            overflow: hidden;
         }
 
+        /* Фон с галактикой */
+        .galaxy-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(105, 148, 196, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(105, 148, 196, 0.08) 0%, transparent 50%),
+                linear-gradient(to bottom, 
+                    rgba(15, 23, 42, 0) 0%,
+                    rgba(30, 41, 59, 0.3) 30%,
+                    rgba(15, 23, 42, 0.9) 100%);
+            z-index: -2;
+            transition: transform 0.1s linear;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300%;
+            background: 
+                radial-gradient(1px 1px at 20% 30%, white 0%, transparent 100%),
+                radial-gradient(1px 1px at 40% 70%, white 0%, transparent 100%),
+                radial-gradient(1px 1px at 60% 20%, white 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 50%, white 0%, transparent 100%);
+            background-size: 300px 300px;
+            opacity: 0.3;
+            z-index: -1;
+            transition: transform 0.1s linear;
+        }
+
+        .content-container {
+            position: relative;
+            z-index: 2;
+            padding: 16px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Шапка */
         .header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 15px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background-color: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .logo {
-            width: 40px;
-            height: 40px;
-            margin-right: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: #6994c4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 18px;
+            color: white;
         }
 
-        .logo-text {
-            font-size: 20px;
+        .balance-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .balance {
+            background-color: rgba(51, 65, 85, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            color: #6994c4;
+            font-weight: 700;
+        }
+
+        .deposit-btn {
+            background-color: #6994c4;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Игровое поле */
+        .game-field {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+            background-color: rgba(15, 23, 42, 0.5);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Платформа */
+        .platform {
+            position: absolute;
+            bottom: 0;
+            left: 40%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 60px;
+            z-index: 3;
+            transition: bottom 0.1s linear;
+        }
+
+        .platform-base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 40px;
+            background-color: #475569;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .platform-pillar {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 20px;
+            background-color: #64748b;
+        }
+
+        .platform-holder {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 10px;
+            background-color: #94a3b8;
+        }
+
+        /* Ракета */
+        .rocket-container {
+            position: absolute;
+            bottom: 70px;
+            left: 35%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 160px;
+            z-index: 4;
+        }
+
+        .rocket {
+            width: 100%;
+            height: 100%;
+            background-image: url('rocket.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Пламя ракеты */
+        .rocket-flame {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            z-index: 3;
+            display: none;
+        }
+
+        .flame-path {
+            stroke-dasharray: 100;
+            stroke-dashoffset: 100;
+            animation: flameDash 0.5s linear infinite;
+        }
+
+        /* Взрыв */
+        .explosion {
+            position: absolute;
+            left: 35%;
+            bottom: 150px;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 120px;
+            z-index: 5;
+            display: none;
+        }
+
+        .explosion.active {
+            display: block;
+            animation: explodeScale 0.8s ease-out forwards;
+        }
+
+        .explosion-circle {
+            fill: none;
+            stroke-width: 3;
+        }
+
+        /* Таймер */
+        .lucky-timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            background-color: rgba(15, 23, 42, 0.95);
+            border-radius: 12px;
+            padding: 20px 40px;
+            border: 2px solid #6994c4;
+            min-width: 180px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+        }
+
+        .timer-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .timer-display {
+            font-size: 48px;
             font-weight: 900;
             color: #6994c4;
+            font-feature-settings: "tnum";
+        }
+
+        .timer-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Множитель */
+        .flight-multiplier {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: center;
+            z-index: 2;
+            background-color: rgba(15, 23, 42, 0.8);
+            padding: 12px 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .current-multiplier {
+            font-size: 36px;
+            font-weight: 900;
+            color: #6994c4;
+            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .multiplier-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Панель управления */
+        .control-panel {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Блок ставки */
+        .bet-section {
+            margin-bottom: 20px;
+        }
+
+        .bet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .bet-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: #e2e8f0;
+        }
+
+        .bet-range {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .bet-input-container {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .bet-input {
+            width: 100%;
+            background-color: rgba(51, 65, 85, 0.8);
+            border: 2px solid #475569;
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+        }
+
+        .currency {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* Быстрые ставки */
+        .quick-bet {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .quick-bet-btn {
+            background-color: rgba(51, 65, 85, 0.8);
+            border: 1px solid #475569;
+            border-radius: 10px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .quick-bet-btn.active {
+            background-color: #6994c4;
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Автовывод */
+        .auto-withdraw-section {
+            background-color: rgba(51, 65, 85, 0.8);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .auto-withdraw-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .auto-withdraw-title {
+            font-weight: 700;
+            font-size: 16px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle-checkbox {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #64748b;
+            border-radius: 34px;
+            transition: .4s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        .toggle-checkbox:checked + .toggle-slider {
+            background-color: #6994c4;
+        }
+
+        .toggle-checkbox:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .multiplier-selector {
+            background-color: #6994c4;
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 20px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            min-width: 70px;
+        }
+
+        /* Состояние ожидания */
+        .waiting-state {
+            text-align: center;
+            padding: 16px;
+            background-color: rgba(51, 65, 85, 0.8);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .waiting-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .waiting-value {
+            font-size: 18px;
+            font-weight: 900;
+            color: #6994c4;
+        }
+
+        .waiting-hint {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        /* Кнопки действий */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .place-bet-btn {
+            background-color: #6994c4;
+            color: white;
+        }
+
+        .cash-out-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        /* Анимации */
+        @keyframes flameDash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes explodeScale {
+            0% {
+                transform: translateX(-50%) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(-50%) scale(1.2);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translateX(-50%) scale(1.5);
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="logo.png" alt="Логотип Казино" class="logo">
-        <div class="logo-text">Monkey Casino</div>
+    <!-- Фон галактики -->
+    <div class="galaxy-background" id="galaxyBackground"></div>
+    <div class="stars" id="stars"></div>
+
+    <div class="content-container">
+        <!-- Шапка -->
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo">M</div>
+            </div>
+            <div class="balance-section">
+                <div class="balance">
+                    Баланс: <span class="balance-amount" id="balance">1 234.56 ₽</span>
+                </div>
+                <button class="deposit-btn" id="depositBtn">Пополнить</button>
+            </div>
+        </div>
+
+        <!-- Игровое поле -->
+        <div class="game-field" id="gameField">
+            <!-- Платформа -->
+            <div class="platform" id="platform">
+                <div class="platform-base"></div>
+                <div class="platform-pillar"></div>
+                <div class="platform-holder"></div>
+            </div>
+            
+            <!-- Ракета -->
+            <div class="rocket-container" id="rocketContainer">
+                <div class="rocket"></div>
+            </div>
+            
+            <!-- Пламя ракеты -->
+            <svg class="rocket-flame" id="rocketFlame" viewBox="0 0 40 60">
+                <path class="flame-path" d="M20,0 C10,15 5,40 20,60 C35,40 30,15 20,0 Z" 
+                      fill="url(#flameGradient)" stroke="#ff6b00" stroke-width="1"/>
+                <defs>
+                    <radialGradient id="flameGradient" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#ff6b00" stop-opacity="0.9"/>
+                        <stop offset="70%" stop-color="#ffa500" stop-opacity="0.6"/>
+                        <stop offset="100%" stop-color="#ffd700" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+            </svg>
+            
+            <!-- Взрыв -->
+            <svg class="explosion" id="explosion" viewBox="0 0 120 120">
+                <circle class="explosion-circle" cx="60" cy="60" r="50" stroke="#ff6b00" stroke-width="4"/>
+                <circle class="explosion-circle" cx="60" cy="60" r="35" stroke="#ffa500" stroke-width="3"/>
+                <circle class="explosion-circle" cx="60" cy="60" r="20" stroke="#ffd700" stroke-width="2"/>
+            </svg>
+            
+            <!-- Таймер -->
+            <div class="lucky-timer" id="luckyTimer">
+                <div class="timer-title">До старта</div>
+                <div class="timer-display" id="timerDisplay">10</div>
+                <div class="timer-label">секунд</div>
+            </div>
+            
+            <!-- Множитель -->
+            <div class="flight-multiplier" id="flightMultiplier">
+                <div class="current-multiplier" id="currentMultiplier">1.00×</div>
+                <div class="multiplier-label">Множитель</div>
+            </div>
+        </div>
+
+        <!-- Панель управления -->
+        <div class="control-panel">
+            <!-- Секция ставки -->
+            <div class="bet-section">
+                <div class="bet-header">
+                    <div class="bet-title">Ставка</div>
+                    <div class="bet-range">От 10 до 25 000 ₽</div>
+                </div>
+                <div class="bet-input-container">
+                    <input type="number" class="bet-input" id="betInput" value="10.00" min="10" max="25000" step="0.01">
+                    <div class="currency">₽</div>
+                </div>
+                
+                <!-- Быстрые ставки -->
+                <div class="quick-bet">
+                    <button class="quick-bet-btn active" data-bet="10">10 ₽</button>
+                    <button class="quick-bet-btn" data-bet="50">50 ₽</button>
+                    <button class="quick-bet-btn" data-bet="100">100 ₽</button>
+                    <button class="quick-bet-btn" data-bet="500">500 ₽</button>
+                </div>
+            </div>
+
+            <!-- Автовывод -->
+            <div class="auto-withdraw-section">
+                <div class="auto-withdraw-header">
+                    <div class="auto-withdraw-title">
+                        АВТО-ВЫВОД
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-checkbox" id="autoWithdrawToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="multiplier-selector" id="autoWithdrawMultiplier">X 2</div>
+                </div>
+            </div>
+
+            <!-- Состояние ожидания -->
+            <div class="waiting-state" id="waitingState">
+                <div class="waiting-label" id="waitingLabel">ОЖИДАНИЕ</div>
+                <div class="waiting-value" id="waitingValue">СЛЕД. РАУНДА</div>
+                <div class="waiting-hint" id="waitingHint">Успейте поставить в течение 10 секунд</div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="action-btn place-bet-btn" id="placeBetBtn">
+                    СТАВКА
+                </button>
+                <button class="action-btn cash-out-btn" id="cashOutBtn" disabled>
+                    ВЫВОД
+                </button>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+        tg.setHeaderColor('#0f172a');
+        tg.setBackgroundColor('#0f172a');
+
+        // Игровые переменные
+        let gameState = 'WAITING'; // WAITING, BETTING, FLYING, CRASHED
+        let roundTimer = 10;
+        let flightTimer = 0;
+        let currentMultiplier = 1.00;
+        let maxMultiplier = 15.00;
+        let playerBet = 10.00;
+        let playerHasBet = false;
+        let autoWithdrawEnabled = true;
+        let autoWithdrawMultiplier = 2.00;
+        let gameInterval;
+        let roundInterval;
+        let backgroundOffset = 0;
+        let platformPosition = 0;
+
+        // Элементы
+        const galaxyBackground = document.getElementById('galaxyBackground');
+        const stars = document.getElementById('stars');
+        const luckyTimer = document.getElementById('luckyTimer');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const flightMultiplier = document.getElementById('flightMultiplier');
+        const rocketContainer = document.getElementById('rocketContainer');
+        const rocketFlame = document.getElementById('rocketFlame');
+        const explosion = document.getElementById('explosion');
+        const platform = document.getElementById('platform');
+        const currentMultiplierEl = document.getElementById('currentMultiplier');
+        const betInput = document.getElementById('betInput');
+        const placeBetBtn = document.getElementById('placeBetBtn');
+        const cashOutBtn = document.getElementById('cashOutBtn');
+        const waitingState = document.getElementById('waitingState');
+        const waitingLabel = document.getElementById('waitingLabel');
+        const waitingValue = document.getElementById('waitingValue');
+        const waitingHint = document.getElementById('waitingHint');
+        const quickBetButtons = document.querySelectorAll('.quick-bet-btn');
+        const autoWithdrawToggle = document.getElementById('autoWithdrawToggle');
+        const balanceEl = document.getElementById('balance');
+        const depositBtn = document.getElementById('depositBtn');
+
+        // Начало нового раунда
+        function startNewRound() {
+            gameState = 'BETTING';
+            roundTimer = 10;
+            currentMultiplier = 1.00;
+            playerHasBet = false;
+            backgroundOffset = 0;
+            platformPosition = 0;
+            
+            // Сбросить позиции
+            galaxyBackground.style.transform = `translateY(${backgroundOffset}px)`;
+            stars.style.transform = `translateY(${backgroundOffset}px)`;
+            platform.style.bottom = `${platformPosition}px`;
+            
+            // Показать таймер и скрыть множитель, пламя
+            luckyTimer.style.display = 'block';
+            flightMultiplier.style.display = 'none';
+            rocketFlame.style.display = 'none';
+            rocketContainer.style.opacity = '1';
+            
+            // Скрыть взрыв
+            explosion.classList.remove('active');
+            
+            // Активировать кнопки
+            placeBetBtn.disabled = false;
+            cashOutBtn.disabled = true;
+            
+            // Обновить состояние ожидания
+            waitingLabel.textContent = 'ОЖИДАНИЕ';
+            waitingValue.textContent = 'СЛЕД. РАУНДА';
+            waitingHint.textContent = 'Успейте поставить в течение 10 секунд';
+            waitingState.style.backgroundColor = 'rgba(51, 65, 85, 0.8)';
+            
+            // Запуск таймера ставок
+            roundInterval = setInterval(updateRoundTimer, 1000);
+        }
+
+        // Обновление таймера раунда
+        function updateRoundTimer() {
+            roundTimer--;
+            timerDisplay.textContent = roundTimer;
+            
+            // Пульсация при последних 3 секундах
+            if (roundTimer <= 3) {
+                luckyTimer.style.borderColor = '#ef4444';
+            }
+            
+            if (roundTimer <= 0) {
+                clearInterval(roundInterval);
+                luckyTimer.style.display = 'none';
+                startFlight();
+            }
+        }
+
+        // Начало полета
+        function startFlight() {
+            gameState = 'FLYING';
+            flightTimer = 0;
+            flightMultiplier.style.display = 'block';
+            rocketFlame.style.display = 'block';
+            
+            waitingLabel.textContent = 'ПОЛЕТ';
+            waitingValue.textContent = 'В ПОЛЕТЕ';
+            waitingHint.textContent = playerHasBet ? 'Нажмите ВЫВОД чтобы зафиксировать выигрыш' : 'Вы не успели поставить';
+            waitingState.style.backgroundColor = 'rgba(71, 85, 105, 0.8)';
+            
+            // Запуск анимации полета
+            gameInterval = setInterval(updateFlight, 50);
+        }
+
+        // Обновление полета
+        function updateFlight() {
+            flightTimer += 50;
+            
+            // Увеличение множителя
+            const progress = flightTimer / 10000;
+            currentMultiplier = 1.00 + Math.pow(progress, 1.5) * (maxMultiplier - 1);
+            
+            // Случайный краш (вероятность растет с множителем)
+            const crashChance = Math.min(0.001 + (currentMultiplier * 0.003), 0.1);
+            if (Math.random() < crashChance) {
+                crashGame();
+                return;
+            }
+            
+            // Автовывод
+            if (playerHasBet && autoWithdrawEnabled && currentMultiplier >= autoWithdrawMultiplier) {
+                cashOut();
+                return;
+            }
+            
+            // Обновление отображения множителя
+            currentMultiplierEl.textContent = currentMultiplier.toFixed(2) + '×';
+            
+            // Движение фона вверх (иллюзия полета ракеты)
+            backgroundOffset += 2;
+            galaxyBackground.style.transform = `translateY(${-backgroundOffset}px)`;
+            stars.style.transform = `translateY(${-backgroundOffset * 1.5}px)`;
+            
+            // Платформа движется вниз
+            platformPosition += 1;
+            platform.style.bottom = `${Math.min(platformPosition, 400)}px`;
+            
+            // Автоматический краш после 10 секунд полета
+            if (flightTimer >= 10000) {
+                crashGame();
+            }
+        }
+
+        // Крах игры
+        function crashGame() {
+            if (gameState !== 'FLYING') return;
+            
+            clearInterval(gameInterval);
+            gameState = 'CRASHED';
+            
+            // Скрыть ракету и пламя
+            rocketContainer.style.opacity = '0';
+            rocketFlame.style.display = 'none';
+            
+            // Показать взрыв
+            explosion.classList.add('active');
+            
+            waitingLabel.textContent = 'КРАШ';
+            waitingValue.textContent = `x${currentMultiplier.toFixed(2)}`;
+            waitingHint.textContent = 'Игра закончилась. Ожидайте новый раунд';
+            waitingState.style.backgroundColor = 'rgba(127, 29, 29, 0.8)';
+            
+            // Если игрок не успел вывести
+            if (playerHasBet) {
+                playerHasBet = false;
+                tg.showPopup({
+                    title: '💥 Крах!',
+                    message: `Вы проиграли ${playerBet} ₽`,
+                    buttons: [{type: 'ok'}]
+                });
+            }
+            
+            // Запуск нового раунда через 3 секунды
+            setTimeout(startNewRound, 3000);
+        }
+
+        // Размещение ставки
+        function placeBet() {
+            if (gameState !== 'BETTING') {
+                tg.showAlert('Ставки принимаются только в течение 10 секунд до старта!');
+                return;
+            }
+            
+            const betAmount = parseFloat(betInput.value);
+            if (betAmount < 10) {
+                tg.showAlert('Минимальная ставка - 10 ₽');
+                return;
+            }
+            
+            if (betAmount > 25000) {
+                tg.showAlert('Максимальная ставка - 25 000 ₽');
+                return;
+            }
+            
+            playerBet = betAmount;
+            playerHasBet = true;
+            placeBetBtn.disabled = true;
+            cashOutBtn.disabled = false;
+            
+            tg.showPopup({
+                title: '✅ Ставка принята!',
+                message: `Ставка: ${playerBet} ₽`,
+                buttons: [{type: 'ok'}]
+            });
+        }
+
+        // Вывод средств
+        function cashOut() {
+            if (!playerHasBet || gameState !== 'FLYING') return;
+            
+            clearInterval(gameInterval);
+            gameState = 'CRASHED';
+            
+            const winAmount = playerBet * currentMultiplier;
+            playerHasBet = false;
+            
+            // Обновление баланса
+            const currentBalance = parseFloat(balanceEl.textContent.replace(/[^\d.]/g, ''));
+            const newBalance = currentBalance + winAmount;
+            balanceEl.textContent = newBalance.toFixed(2) + ' ₽';
+            
+            // Анимация победы
+            waitingLabel.textContent = 'ВЫИГРЫШ';
+            waitingValue.textContent = `${winAmount.toFixed(2)} ₽`;
+            waitingHint.textContent = `Множитель: x${currentMultiplier.toFixed(2)}`;
+            waitingState.style.backgroundColor = 'rgba(20, 83, 45, 0.8)';
+            
+            tg.showPopup({
+                title: '🎉 Победа!',
+                message: `Вы выиграли ${winAmount.toFixed(2)} ₽ (x${currentMultiplier.toFixed(2)})`,
+                buttons: [{type: 'ok'}]
+            });
+            
+            // Запуск нового раунда через 3 секунды
+            setTimeout(startNewRound, 3000);
+        }
+
+        // Инициализация игры
+        function initGame() {
+            startNewRound();
+            
+            // Обработчики событий
+            placeBetBtn.addEventListener('click', placeBet);
+            cashOutBtn.addEventListener('click', cashOut);
+            
+            // Быстрые ставки
+            quickBetButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    quickBetButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    betInput.value = btn.getAttribute('data-bet');
+                });
+            });
+            
+            // Переключатель автовывода
+            autoWithdrawToggle.addEventListener('change', function() {
+                autoWithdrawEnabled = this.checked;
+            });
+            
+            // Валидация ввода ставки
+            betInput.addEventListener('input', function() {
+                let value = parseFloat(this.value);
+                if (value < 10) this.value = 10;
+                if (value > 25000) this.value = 25000;
+                
+                quickBetButtons.forEach(b => b.classList.remove('active'));
+            });
+            
+            // Кнопка пополнения
+            depositBtn.addEventListener('click', function() {
+                tg.showPopup({
+                    title: '💰 Пополнение баланса',
+                    message: 'Выберите способ пополнения:',
+                    buttons: [
+                        {id: 'card', type: 'default', text: '💳 Карта'},
+                        {id: 'qiwi', type: 'default', text: '🥝 QIWI'},
+                        {id: 'crypto', type: 'default', text: '₿ Crypto'},
+                        {type: 'cancel', text: 'Отмена'}
+                    ]
+                });
+            });
+        }
+
+        // Запуск игры при загрузке
+        tg.ready();
+        initGame();
+    </script>
 </body>
 </html>
