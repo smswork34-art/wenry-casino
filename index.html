@@ -19,16 +19,29 @@
             min-height: 100vh;
         }
 
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+        }
+
         .logo {
-            position: absolute;
-            top: 15px;
-            left: 15px;
             width: 40px;
             height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f1c40f;
         }
     </style>
 </head>
 <body>
-    <img src="logo.png" alt="Логотип Казино" class="logo">
+    <div class="header">
+        <img src="logo.png" alt="Логотип Казино" class="logo">
+        <div class="logo-text">Monkey Casino</div>
+    </div>
 </body>
 </html>
