@@ -1,126 +1,362 @@
-// database.js
+// database.js - ИСПРАВЛЕННАЯ ВЕРСИЯ
+
+// 1. ПОЛУЧАЕМ КОНФИГ ИЗ config.js (ИСПРАВЛЕНИЕ!)
+const SUPABASE_URL = window.SUPABASE_CONFIG?.url || 'https://okfakvtsevlyvbbfzyla.supabase.co';
+const SUPABASE_KEY = window.SUPABASE_CONFIG?.key || 'sb_publishable_FY7dJEwFGZxImSE_Qyad9Q_M0zQGOY0';
+
 let supabaseClient = null;
 let userData = null;
+let isInitializing = false;
 
 // Инициализация Supabase
 async function initSupabase() {
-    const { createClient } = supabase;
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (isInitializing) return;
+    isInitializing = true;
     
-    // Получаем данные пользователя из Telegram
-    const tg = window.Telegram.WebApp;
-    const userId = tg.initDataUnsafe.user?.id || tg.initDataUnsafe.user?.id;
-    
-    if (!userId) {
-        console.error('Не удалось получить ID пользователя');
-        return;
-    }
-    
-    // Регистрируем/получаем пользователя
-    const { data, error } = await supabaseClient
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single();
-    
-    if (error && error.code === 'PGRST116') {
-        // Пользователь не найден - создаем нового
-        const { data: newUser, error: createError } = await supabaseClient
-            .from('users')
-            .insert([
-                {
-                    id: userId,
-                    username: tg.initDataUnsafe.user?.username || `user_${userId}`,
-                    balance: 0,
-                    created_at: new Date().toISOString()
-                }
-            ])
-            .select()
-            .single();
-        
-        if (createError) {
-            console.error('Ошибка создания пользователя:', createError);
-            return;
+    try {
+        // 2. ПРАВИЛЬНОЕ ОБРАЩЕНИЕ К БИБЛИОТЕКЕ (ИСПРАВЛЕНИЕ!)
+        if (!window.supabase) {
+            console.error('❌ Библиотека Supabase не загружена! Проверь подключение в index.html');
+            throw new Error('Supabase library not loaded');
         }
         
-        userData = newUser;
-        console.log('Новый пользователь создан:', userData);
-    } else if (error) {
-        console.error('Ошибка получения пользователя:', error);
-    } else {
-        userData = data;
-        console.log('Пользователь найден:', userData);
+        const { createClient } = window.supabase;
+        supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        console.log('✅ Supabase клиент создан:', SUPABASE_URL);
+        
+        // Получаем данные пользователя из Telegram
+        const tg = window.Telegram?.WebApp;
+        
+        if (!tg) {
+            console.error('❌ Telegram WebApp не найден');
+            throw new Error('Telegram WebApp not found');
+        }
+        
+        // Ждем инициализацию Telegram
+        await tg.ready();
+        
+        const tgUser = tg.initDataUnsafe?.user;
+        const userId = tgUser?.id;
+        
+        if (!userId) {
+            console.error('❌ Не удалось получить ID пользователя из Telegram');
+            throw new Error('Telegram user ID not found');
+        }
+        
+        console.log('👤 Telegram пользователь:', tgUser.id, tgUser.username);
+        
+        // Регистрируем/получаем пользователя
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        
+        if (error && error.code === 'PGRST116') {
+            // Пользователь не найден - создаем нового
+            console.log('📝 Создаем нового пользователя...');
+            
+            const { data: newUser, error: createError } = await supabaseClient
+                .from('users')
+                .insert([
+                    {
+                        id: userId,
+                        username: tgUser.username || `user_${userId}`,
+                        balance: 0,
+                        created_at: new Date().toISOString(),
+                        last_seen: new Date().toISOString()
+                    }
+                ])
+                .select()
+                .single();
+            
+            if (createError) {
+                console.error('❌ Ошибка создания пользователя:', createError);
+                throw createError;
+            }
+            
+            userData = newUser;
+            console.log('✅ Новый пользователь создан:', newUser);
+            
+        } else if (error) {
+            console.error('❌ Ошибка получения пользователя:', error);
+            throw error;
+        } else {
+            userData = data;
+            console.log('✅ Пользователь загружен:', data);
+            
+            // Обновляем last_seen
+            await supabaseClient
+                .from('users')
+                .update({ last_seen: new Date().toISOString() })
+                .eq('id', userId);
+        }
+        
+        return userData;
+        
+    } catch (error) {
+        console.error('🔥 Критическая ошибка в initSupabase:', error);
+        throw error;
+    } finally {
+        isInitializing = false;
     }
 }
 
 // Получить баланс
 async function getBalance() {
-    if (!userData) await initSupabase();
-    return userData?.balance || 0;
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!userData) {
+            console.error('❌ Пользователь не инициализирован');
+            return 0;
+        }
+        
+        // Получаем актуальный баланс из БД
+        if (supabaseClient) {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('balance')
+                .eq('id', userData.id)
+                .single();
+            
+            if (!error && data) {
+                userData.balance = data.balance || 0;
+            }
+        }
+        
+        return userData?.balance || 0;
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения баланса:', error);
+        return 0;
+    }
 }
 
 // Обновить баланс (публичная функция для игр)
 async function updateBalance(amount) {
-    if (!supabaseClient || !userData) {
-        await initSupabase();
-    }
-    
-    const newBalance = (userData.balance || 0) + amount;
-    
-    const { data, error } = await supabaseClient
-        .from('users')
-        .update({ 
-            balance: newBalance,
-            last_seen: new Date().toISOString()
-        })
-        .eq('id', userData.id)
-        .select()
-        .single();
-    
-    if (error) {
-        console.error('Ошибка обновления баланса:', error);
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!supabaseClient || !userData) {
+            console.error('❌ База данных или пользователь не инициализированы');
+            return false;
+        }
+        
+        const newBalance = (userData.balance || 0) + amount;
+        
+        // Обновляем в БД
+        const { data, error } = await supabaseClient
+            .from('users')
+            .update({ 
+                balance: newBalance,
+                last_seen: new Date().toISOString()
+            })
+            .eq('id', userData.id)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Ошибка обновления баланса:', error);
+            return false;
+        }
+        
+        userData = data;
+        console.log(`💰 Баланс обновлен: ${amount > 0 ? '+' : ''}${amount} = ${newBalance}`);
+        
+        // Записываем транзакцию
+        if (amount !== 0) {
+            const transactionType = amount > 0 ? 'win' : 'bet';
+            const transactionDesc = amount > 0 ? 'Выигрыш' : 'Ставка';
+            
+            await supabaseClient
+                .from('transactions')
+                .insert([
+                    {
+                        user_id: userData.id,
+                        type: transactionType,
+                        amount: Math.abs(amount),
+                        status: 'completed',
+                        description: transactionDesc,
+                        created_at: new Date().toISOString()
+                    }
+                ]);
+            
+            console.log('📝 Транзакция записана');
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('🔥 Ошибка в updateBalance:', error);
         return false;
     }
-    
-    userData = data;
-    
-    // Обновляем транзакции
-    await supabaseClient
-        .from('transactions')
-        .insert([
-            {
-                user_id: userData.id,
-                type: amount > 0 ? 'win' : 'bet',
-                amount: Math.abs(amount),
-                status: 'completed',
-                description: amount > 0 ? 'Выигрыш' : 'Ставка'
-            }
-        ]);
-    
-    return true;
+}
+
+// Принудительное обновление баланса из БД
+async function refreshBalance() {
+    try {
+        if (!userData || !supabaseClient) return 0;
+        
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('balance')
+            .eq('id', userData.id)
+            .single();
+        
+        if (error) {
+            console.error('❌ Ошибка обновления баланса:', error);
+            return userData?.balance || 0;
+        }
+        
+        if (data) {
+            userData.balance = data.balance || 0;
+            console.log('🔄 Баланс обновлен из БД:', userData.balance);
+        }
+        
+        return userData.balance;
+        
+    } catch (error) {
+        console.error('❌ Ошибка refreshBalance:', error);
+        return userData?.balance || 0;
+    }
 }
 
 // Сброс баланса до 0 (для тестов)
 async function resetBalance() {
-    if (!supabaseClient || !userData) {
-        await initSupabase();
-    }
-    
-    const { error } = await supabaseClient
-        .from('users')
-        .update({ 
-            balance: 0,
-            last_seen: new Date().toISOString()
-        })
-        .eq('id', userData.id);
-    
-    if (error) {
-        console.error('Ошибка сброса баланса:', error);
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!supabaseClient || !userData) {
+            console.error('❌ База данных или пользователь не инициализированы');
+            return false;
+        }
+        
+        const { error } = await supabaseClient
+            .from('users')
+            .update({ 
+                balance: 0,
+                last_seen: new Date().toISOString()
+            })
+            .eq('id', userData.id);
+        
+        if (error) {
+            console.error('❌ Ошибка сброса баланса:', error);
+            return false;
+        }
+        
+        userData.balance = 0;
+        console.log('🔄 Баланс сброшен до 0');
+        
+        return true;
+        
+    } catch (error) {
+        console.error('🔥 Ошибка в resetBalance:', error);
         return false;
     }
-    
-    userData.balance = 0;
-    return true;
+}
+
+// Получить историю транзакций
+async function getTransactionHistory(limit = 20) {
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!supabaseClient || !userData) {
+            console.error('❌ База данных или пользователь не инициализированы');
+            return [];
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('transactions')
+            .select('*')
+            .eq('user_id', userData.id)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        
+        if (error) {
+            console.error('❌ Ошибка получения истории:', error);
+            return [];
+        }
+        
+        return data || [];
+        
+    } catch (error) {
+        console.error('🔥 Ошибка в getTransactionHistory:', error);
+        return [];
+    }
+}
+
+// Получить историю депозитов
+async function getDepositHistory(limit = 10) {
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!supabaseClient || !userData) {
+            console.error('❌ База данных или пользователь не инициализированы');
+            return [];
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('deposit_requests')
+            .select('*')
+            .eq('user_id', userData.id)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        
+        if (error) {
+            console.error('❌ Ошибка получения истории депозитов:', error);
+            return [];
+        }
+        
+        return data || [];
+        
+    } catch (error) {
+        console.error('🔥 Ошибка в getDepositHistory:', error);
+        return [];
+    }
+}
+
+// Проверить ожидающие депозиты
+async function checkPendingDeposits() {
+    try {
+        if (!userData) {
+            await initSupabase();
+        }
+        
+        if (!supabaseClient || !userData) {
+            console.error('❌ База данных или пользователь не инициализированы');
+            return [];
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('deposit_requests')
+            .select('*')
+            .eq('user_id', userData.id)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Ошибка проверки депозитов:', error);
+            return [];
+        }
+        
+        return data || [];
+        
+    } catch (error) {
+        console.error('🔥 Ошибка в checkPendingDeposits:', error);
+        return [];
+    }
 }
 
 // Экспортируем функции
@@ -128,6 +364,13 @@ window.Database = {
     initSupabase,
     getBalance,
     updateBalance,
+    refreshBalance,
     resetBalance,
-    getUserData: () => userData
+    getTransactionHistory,
+    getDepositHistory,
+    checkPendingDeposits,
+    getUserData: () => userData,
+    getSupabaseClient: () => supabaseClient
 };
+
+console.log('✅ database.js загружен');
