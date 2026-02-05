@@ -2,542 +2,531 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Профиль | ORANGEWIN</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | Казино</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --orange-main: #FF6B35;
-            --orange-dark: #FF4D00;
-            --accent-gold: #FFB347;
-            --accent-green: #00FF88;
-            --accent-red: #FF5E62;
-            --dark-bg: #0F0A07;
-            --card-bg: #1A130F;
-            --text-light: #FFFFFF;
-            --text-dim: #CCB7A6;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            background: var(--dark-bg);
-            color: var(--text-light);
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            padding: 12px;
-            padding-bottom: 80px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* Хедер */
-        .game-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 15px;
-            background: var(--card-bg);
-            border-radius: 14px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 107, 53, 0.2);
-        }
-
-        .back-button {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .game-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-align: center;
-            flex-grow: 1;
-            margin: 0 10px;
-        }
-
-        .balance-card {
-            background: rgba(255, 107, 53, 0.1);
-            padding: 8px 12px;
-            border-radius: 10px;
-            text-align: right;
-            min-width: 100px;
-            flex-shrink: 0;
-        }
-
-        .balance-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-bottom: 2px;
-        }
-
-        .balance-amount {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-        }
-
-        /* Профиль пользователя */
-        .profile-section {
-            margin-bottom: 25px;
-        }
-
-        .profile-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 25px 20px;
-            text-align: center;
-            border: 2px solid rgba(255, 107, 53, 0.2);
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            border: 3px solid var(--accent-gold);
-        }
-
-        .username {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-            color: var(--text-light);
-        }
-
-        .user-id {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-            margin-bottom: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-            margin-bottom: 3px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        /* Настройки */
-        .settings-section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--accent-gold);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .settings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .settings-item {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid rgba(255, 107, 53, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .settings-item:hover {
-            border-color: rgba(255, 107, 53, 0.4);
-            transform: translateX(3px);
-        }
-
-        .settings-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 107, 53, 0.15);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--accent-gold);
-            flex-shrink: 0;
-        }
-
-        .settings-info {
-            flex-grow: 1;
-        }
-
-        .settings-name {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-bottom: 3px;
-        }
-
-        .settings-desc {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-        }
-
-        .settings-arrow {
-            color: var(--text-dim);
-            font-size: 0.9rem;
-        }
-
-        /* Кнопка выхода */
-        .logout-button {
-            width: 100%;
-            padding: 15px;
-            background: rgba(255, 94, 98, 0.1);
-            border: 2px solid rgba(255, 94, 98, 0.2);
-            border-radius: 12px;
-            color: var(--accent-red);
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.2s;
-        }
-
-        .logout-button:hover {
-            background: rgba(255, 94, 98, 0.2);
-        }
-
-        /* Навигация */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(26, 19, 15, 0.98);
-            backdrop-filter: blur(10px);
-            border-top: 2px solid rgba(255, 107, 53, 0.2);
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-            z-index: 100;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-dim);
-            padding: 5px;
-            min-width: 60px;
-        }
-
-        .nav-item.active {
-            color: var(--orange-main);
-        }
-
-        .nav-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--card-bg);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s;
-        }
-
-        .nav-item.active .nav-icon {
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            color: white;
-        }
-
-        .nav-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-
-        @media (max-width: 360px) {
-            .avatar {
-                width: 70px;
-                height: 70px;
-                font-size: 2rem;
-            }
-            
-            .stats-grid {
-                gap: 10px;
-            }
-            
-            .settings-item {
-                padding: 12px;
-            }
-            
-            .settings-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1.1rem;
-            }
-        }
-    </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="database.js"></script>
+    <script src="payment.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Шапка -->
-        <div class="game-header">
-            <div class="back-button" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i>
-            </div>
-            <div class="game-title">ПРОФИЛЬ</div>
-            <div class="balance-card">
-                <div class="balance-label">БАЛАНС</div>
-                <div class="balance-amount">2 480 ₽</div>
-            </div>
-        </div>
-
-        <!-- Профиль пользователя -->
-        <div class="profile-section">
-            <div class="profile-card">
-                <div class="avatar">
-                    <i class="fas fa-user"></i>
+        <header>
+            <a href="index.html" class="back-btn">← Назад</a>
+            <h1>👤 Мой профиль</h1>
+        </header>
+        
+        <div class="profile-card">
+            <div class="avatar">
+                <div id="userAvatar" style="
+                    width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                    font-size: 36px; color: white; font-weight: bold;
+                ">
+                    U
                 </div>
-                <div class="username" id="username">Игрок</div>
-                <div class="user-id" id="userId">ID: 12345678</div>
-                
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-value">48</div>
-                        <div class="stat-label">ИГР СЫГРАНО</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">64%</div>
-                        <div class="stat-label">ВЫИГРЫШЕЙ</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">2</div>
-                        <div class="stat-label">ДНЯ В ИГРЕ</div>
-                    </div>
+            </div>
+            
+            <div class="user-info">
+                <h2 id="userName">Загрузка...</h2>
+                <div class="balance-section">
+                    <div class="balance-label">Баланс</div>
+                    <div class="balance-amount" id="balanceAmount">0 ₽</div>
+                    <div class="balance-crypto" id="balanceCrypto">0 USDT</div>
                 </div>
             </div>
         </div>
-
-        <!-- Настройки -->
-        <div class="settings-section">
-            <div class="section-title">
-                <i class="fas fa-cog"></i> НАСТРОЙКИ
+        
+        <div class="deposit-section">
+            <h3>💎 Пополнить баланс</h3>
+            <div class="amount-buttons">
+                <button onclick="selectAmount(500)" class="amount-btn">500 ₽</button>
+                <button onclick="selectAmount(1000)" class="amount-btn">1,000 ₽</button>
+                <button onclick="selectAmount(5000)" class="amount-btn">5,000 ₽</button>
+                <button onclick="selectAmount(10000)" class="amount-btn">10,000 ₽</button>
             </div>
-            <div class="settings-list">
-                <div class="settings-item" onclick="openSettings('deposit')">
-                    <div class="settings-icon">
-                        <i class="fas fa-wallet"></i>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Пополнение баланса</div>
-                        <div class="settings-desc">Банковская карта, криптовалюта, Telegram Stars</div>
-                    </div>
-                    <div class="settings-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
+            
+            <div class="custom-amount">
+                <input type="number" id="customAmount" placeholder="Другая сумма" min="100" max="100000">
+                <button onclick="depositCustom()" class="btn-primary">Пополнить</button>
+            </div>
+            
+            <div class="payment-methods">
+                <div class="method active" onclick="selectMethod('usdt')">
+                    <span>💎 USDT (TRC20)</span>
+                    <span>Комиссия: 0%</span>
                 </div>
-
-                <div class="settings-item" onclick="openSettings('withdraw')">
-                    <div class="settings-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Вывод средств</div>
-                        <div class="settings-desc">Минимальная сумма: 100 ₽</div>
-                    </div>
-                    <div class="settings-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-
-                <div class="settings-item" onclick="openSettings('notifications')">
-                    <div class="settings-icon">
-                        <i class="fas fa-bell"></i>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Уведомления</div>
-                        <div class="settings-desc">Бонусы, акции, результаты игр</div>
-                    </div>
-                    <div class="settings-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-
-                <div class="settings-item" onclick="openSettings('support')">
-                    <div class="settings-icon">
-                        <i class="fas fa-headset"></i>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Поддержка</div>
-                        <div class="settings-desc">Помощь и ответы на вопросы</div>
-                    </div>
-                    <div class="settings-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
-
-                <div class="settings-item" onclick="openSettings('about')">
-                    <div class="settings-icon">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">О приложении</div>
-                        <div class="settings-desc">Версия 1.0.0 • ORANGEWIN</div>
-                    </div>
-                    <div class="settings-arrow">
-                        <i class="fas fa-chevron-right"></i>
-                    </div>
-                </div>
+                <!-- Можно добавить другие методы -->
+            </div>
+            
+            <button onclick="processDeposit()" class="btn-deposit">
+                💳 Пополнить USDT
+            </button>
+        </div>
+        
+        <div class="history-section">
+            <h3>📊 История операций</h3>
+            <div id="transactionsList">
+                <div class="loading">Загрузка истории...</div>
             </div>
         </div>
-
-        <!-- Кнопка выхода -->
-        <button class="logout-button" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> ВЫЙТИ
+        
+        <button onclick="resetBalance()" class="btn-reset">
+            🔄 Сбросить баланс (тест)
         </button>
     </div>
-
-    <!-- Навигация -->
-    <nav class="bottom-nav">
-        <div class="nav-item" onclick="window.location.href='index.html'">
-            <div class="nav-icon">
-                <i class="fas fa-gamepad"></i>
-            </div>
-            <div class="nav-label">Игры</div>
-        </div>
-        
-        <div class="nav-item" onclick="window.location.href='bonuses.html'">
-            <div class="nav-icon">
-                <i class="fas fa-gift"></i>
-            </div>
-            <div class="nav-label">Бонусы</div>
-        </div>
-        
-        <div class="nav-item" onclick="window.location.href='history.html'">
-            <div class="nav-icon">
-                <i class="fas fa-history"></i>
-            </div>
-            <div class="nav-label">История</div>
-        </div>
-        
-        <div class="nav-item active">
-            <div class="nav-icon">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="nav-label">Профиль</div>
-        </div>
-    </nav>
-
+    
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        let selectedAmount = 1000;
+        let selectedMethod = 'usdt';
         
-        const usernameEl = document.getElementById('username');
-        const userIdEl = document.getElementById('userId');
-        
-        function goBack() {
-            window.history.back();
-        }
-        
-        function openSettings(setting) {
-            tg.HapticFeedback.impactOccurred('light');
-            
-            const messages = {
-                'deposit': 'Открываем пополнение баланса...',
-                'withdraw': 'Открываем вывод средств...',
-                'notifications': 'Открываем настройки уведомлений...',
-                'support': 'Открываем поддержку...',
-                'about': 'Открываем информацию о приложении...'
-            };
-            
-            tg.showAlert(messages[setting] || 'Настройка');
-        }
-        
-        function logout() {
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            if (confirm('Вы действительно хотите выйти?')) {
-                tg.showAlert('Выход из аккаунта...');
-                // Здесь будет логика выхода
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            }
-        }
-        
-        // Инициализация профиля
-        document.addEventListener('DOMContentLoaded', () => {
-            if (tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                
-                // Устанавливаем имя пользователя
-                if (user.first_name) {
-                    usernameEl.textContent = user.first_name;
-                    if (user.last_name) {
-                        usernameEl.textContent += ' ' + user.last_name;
-                    }
-                }
-                
-                // Устанавливаем ID
-                if (user.id) {
-                    userIdEl.textContent = `ID: ${user.id}`;
-                }
-                
-                // Устанавливаем аватар
-                if (user.photo_url) {
-                    const avatar = document.querySelector('.avatar i');
-                    avatar.style.display = 'none';
-                    document.querySelector('.avatar').style.backgroundImage = `url(${user.photo_url})`;
-                    document.querySelector('.avatar').style.backgroundSize = 'cover';
-                    document.querySelector('.avatar').style.backgroundPosition = 'center';
-                }
-            }
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.Database.initSupabase();
+            loadProfile();
+            loadTransactionHistory();
+            setInterval(checkDeposits, 30000); // Проверять каждые 30 сек
         });
+        
+        // Загрузить профиль
+        async function loadProfile() {
+            const user = window.Database.getUserData();
+            if (!user) return;
+            
+            // Данные из Telegram
+            const tg = window.Telegram.WebApp;
+            const tgUser = tg.initDataUnsafe.user;
+            
+            if (tgUser) {
+                document.getElementById('userName').textContent = 
+                    tgUser.username ? `@${tgUser.username}` : `User ${tgUser.id}`;
+                
+                if (tgUser.photo_url) {
+                    document.getElementById('userAvatar').style.backgroundImage = 
+                        `url(${tgUser.photo_url})`;
+                    document.getElementById('userAvatar').textContent = '';
+                }
+            }
+            
+            // Баланс
+            const balance = await window.Database.getBalance();
+            document.getElementById('balanceAmount').textContent = 
+                `${balance.toFixed(2)} ₽`;
+            document.getElementById('balanceCrypto').textContent = 
+                `${(balance / 100).toFixed(2)} USDT`;
+        }
+        
+        // Выбрать сумму
+        function selectAmount(amount) {
+            selectedAmount = amount;
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.textContent.replace(/[^\d]/g, '')) === amount) {
+                    btn.classList.add('active');
+                }
+            });
+            document.getElementById('customAmount').value = amount;
+        }
+        
+        // Пополнение кастомной суммы
+        function depositCustom() {
+            const custom = document.getElementById('customAmount');
+            const amount = parseInt(custom.value);
+            if (amount >= 100 && amount <= 100000) {
+                selectedAmount = amount;
+                processDeposit();
+            } else {
+                window.Payment.showAlert('Сумма должна быть от 100 до 100,000 ₽', 'error');
+            }
+        }
+        
+        // Выбрать метод оплаты
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.querySelectorAll('.method').forEach(m => {
+                m.classList.remove('active');
+            });
+            event.target.closest('.method').classList.add('active');
+        }
+        
+        // Обработка депозита
+        async function processDeposit() {
+            if (selectedAmount < 100) {
+                window.Payment.showAlert('Минимальная сумма 100 ₽', 'error');
+                return;
+            }
+            
+            // Конвертируем в USDT (примерный курс 1 USDT = 100 ₽)
+            const amountUSDT = selectedAmount / 100;
+            
+            const result = await window.Payment.createDepositRequest(amountUSDT);
+            if (result) {
+                window.Payment.showAlert('Инструкции для оплаты открыты', 'success');
+            }
+        }
+        
+        // Загрузить историю транзакций
+        async function loadTransactionHistory() {
+            const user = window.Database.getUserData();
+            if (!user || !supabaseClient) return;
+            
+            const list = document.getElementById('transactionsList');
+            
+            // Получаем транзакции
+            const { data: transactions, error } = await supabaseClient
+                .from('transactions')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(20);
+            
+            if (error || !transactions) {
+                list.innerHTML = '<div class="empty">История пуста</div>';
+                return;
+            }
+            
+            // Получаем депозиты
+            const { data: deposits } = await supabaseClient
+                .from('deposit_requests')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+            
+            // Объединяем и сортируем
+            let allItems = [
+                ...transactions.map(t => ({ ...t, type: 'transaction' })),
+                ...(deposits || []).map(d => ({ ...d, type: 'deposit' }))
+            ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            if (allItems.length === 0) {
+                list.innerHTML = '<div class="empty">История пуста</div>';
+                return;
+            }
+            
+            list.innerHTML = allItems.map(item => {
+                if (item.type === 'deposit') {
+                    return `
+                        <div class="transaction-item ${item.status}">
+                            <div class="transaction-icon">💎</div>
+                            <div class="transaction-details">
+                                <div class="transaction-title">
+                                    Пополнение USDT
+                                    <span class="transaction-status ${item.status}">
+                                        ${getStatusText(item.status)}
+                                    </span>
+                                </div>
+                                <div class="transaction-date">
+                                    ${new Date(item.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                            <div class="transaction-amount ${item.status === 'completed' ? 'positive' : 'pending'}">
+                                +${item.amount} USDT
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const isPositive = item.type === 'win' || item.type === 'deposit';
+                    return `
+                        <div class="transaction-item ${item.status}">
+                            <div class="transaction-icon">${getTransactionIcon(item.type)}</div>
+                            <div class="transaction-details">
+                                <div class="transaction-title">
+                                    ${getTransactionTitle(item.type)}
+                                    <span class="transaction-status ${item.status}">
+                                        ${item.status === 'completed' ? '✓' : '⏳'}
+                                    </span>
+                                </div>
+                                <div class="transaction-date">
+                                    ${new Date(item.created_at).toLocaleDateString('ru-RU')}
+                                </div>
+                            </div>
+                            <div class="transaction-amount ${isPositive ? 'positive' : 'negative'}">
+                                ${isPositive ? '+' : '-'}${item.amount} ₽
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+        
+        // Проверить статусы депозитов
+        async function checkDeposits() {
+            await window.Payment.checkDepositStatus();
+            await loadProfile(); // Обновить баланс
+        }
+        
+        // Сброс баланса (для тестов)
+        async function resetBalance() {
+            if (confirm('Сбросить баланс до 0? (Только для тестов)')) {
+                await window.Database.resetBalance();
+                await loadProfile();
+                window.Payment.showAlert('Баланс сброшен', 'success');
+            }
+        }
+        
+        // Вспомогательные функции
+        function getStatusText(status) {
+            const statuses = {
+                'pending': '⏳ Ожидание',
+                'completed': '✅ Завершено',
+                'rejected': '❌ Отклонено'
+            };
+            return statuses[status] || status;
+        }
+        
+        function getTransactionIcon(type) {
+            const icons = {
+                'win': '💰',
+                'bet': '🎰',
+                'deposit': '💎',
+                'withdraw': '📤'
+            };
+            return icons[type] || '📝';
+        }
+        
+        function getTransactionTitle(type) {
+            const titles = {
+                'win': 'Выигрыш',
+                'bet': 'Ставка',
+                'deposit': 'Пополнение',
+                'withdraw': 'Вывод'
+            };
+            return titles[type] || 'Операция';
+        }
     </script>
+    
+    <style>
+        .container {
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+        
+        .profile-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .balance-section {
+            margin-top: 15px;
+        }
+        
+        .balance-label {
+            color: #aaa;
+            font-size: 14px;
+        }
+        
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #0088ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 5px 0;
+        }
+        
+        .deposit-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .amount-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .amount-btn.active {
+            background: linear-gradient(90deg, #00d4ff, #0088ff);
+            border-color: #00d4ff;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+        }
+        
+        .custom-amount {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        #customAmount {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #0088ff);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .payment-methods {
+            margin: 20px 0;
+        }
+        
+        .method {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        
+        .method.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+        
+        .btn-deposit {
+            width: 100%;
+            background: linear-gradient(90deg, #00b09b, #96c93d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .history-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .transaction-icon {
+            font-size: 24px;
+            margin-right: 15px;
+        }
+        
+        .transaction-details {
+            flex: 1;
+        }
+        
+        .transaction-title {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+        
+        .transaction-status {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .transaction-status.pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .transaction-status.completed {
+            background: rgba(0, 200, 83, 0.2);
+            color: #00c853;
+        }
+        
+        .transaction-status.rejected {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        
+        .transaction-date {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .transaction-amount.positive {
+            color: #00ff88;
+        }
+        
+        .transaction-amount.negative {
+            color: #ff5555;
+        }
+        
+        .transaction-amount.pending {
+            color: #ffcc00;
+        }
+        
+        .btn-reset {
+            width: 100%;
+            background: rgba(255, 85, 85, 0.2);
+            color: #ff5555;
+            border: 2px solid #ff5555;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .empty, .loading {
+            text-align: center;
+            color: #aaa;
+            padding: 40px;
+        }
+    </style>
 </body>
 </html>
