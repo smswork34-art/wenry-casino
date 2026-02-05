@@ -3,16 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎰 Казино | Telegram Mini App</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-    <!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ORANGEWIN | Быстрые игры</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -856,7 +846,27 @@
             </div>
         </div>
 
-        <!-- Игра 3: Слот -->
+        <!-- Игра 3: Минёр -->
+        <div class="game-card" onclick="openGame('mines')">
+            <div class="game-badge">ХИТ</div>
+            <div class="game-icon">
+                <i class="fas fa-bomb"></i>
+            </div>
+            <div class="game-name">МИНЁР</div>
+            <div class="game-desc">Найди сокровища, избегая мин. Множитель до 50x</div>
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    5.3K онлайн
+                </div>
+                <div class="stat highlight">
+                    <i class="fas fa-chart-line"></i>
+                    97.3%
+                </div>
+            </div>
+        </div>
+
+        <!-- Игра 4: Слот -->
         <div class="game-card" onclick="openGame('slot')">
             <div class="game-icon">
                 <i class="fas fa-sliders-h"></i>
@@ -871,26 +881,6 @@
                 <div class="stat highlight">
                     <i class="fas fa-chart-line"></i>
                     96.8%
-                </div>
-            </div>
-        </div>
-
-        <!-- Игра 4: Сапёр -->
-        <div class="game-card" onclick="openGame('mines')">
-            <div class="game-badge">ХИТ</div>
-            <div class="game-icon">
-                <i class="fas fa-bomb"></i>
-            </div>
-            <div class="game-name">САПЁР</div>
-            <div class="game-desc">Найди сокровища, избегая мин</div>
-            <div class="game-stats">
-                <div class="stat">
-                    <i class="fas fa-users"></i>
-                    5.3K онлайн
-                </div>
-                <div class="stat highlight">
-                    <i class="fas fa-chart-line"></i>
-                    97.3%
                 </div>
             </div>
         </div>
@@ -1101,32 +1091,42 @@
             }, 500);
         }
 
-       function openGame(gameId) {
-    tg.HapticFeedback.impactOccurred('medium');
-    
-    // Эффект нажатия на карточку
-    const card = event.currentTarget;
-    card.style.transform = 'scale(0.95)';
-    setTimeout(() => card.style.transform = '', 200);
-    
-    if (gameId === 'dice') {
-        // Переход на игру в кости
-        setTimeout(() => {
-            window.location.href = 'dice.html';
-        }, 300);
-    } else if (gameId === 'coin') {
-        // Переход на игру Орёл и Решка
-        setTimeout(() => {
-            window.location.href = 'coin.html';
-        }, 300);
-    } else {
-        tg.showPopup({
-            title: '🎮 СКОРО!',
-            message: `Игра "${gameId}" находится в разработке`,
-            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
-        });
-    }
-}
+        function openGame(gameId) {
+            tg.HapticFeedback.impactOccurred('medium');
+            
+            // Эффект нажатия на карточку
+            const card = event.currentTarget;
+            card.style.transform = 'scale(0.95)';
+            setTimeout(() => card.style.transform = '', 200);
+            
+            // Переход на соответствующую игру
+            setTimeout(() => {
+                switch(gameId) {
+                    case 'dice':
+                        window.location.href = 'dice.html';
+                        break;
+                    case 'coin':
+                        window.location.href = 'coin.html';
+                        break;
+                    case 'mines':
+                        window.location.href = 'mines.html';
+                        break;
+                    case 'slot':
+                        tg.showPopup({
+                            title: '🎰 СКОРО!',
+                            message: 'Мгновенный слот находится в разработке',
+                            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
+                        });
+                        break;
+                    default:
+                        tg.showPopup({
+                            title: '🎮 СКОРО!',
+                            message: `Игра "${gameId}" находится в разработке`,
+                            buttons: [{type: 'ok', text: 'ЖДАТЬ'}]
+                        });
+                }
+            }, 300);
+        }
 
         function openBanner(bannerId) {
             tg.HapticFeedback.impactOccurred('light');
@@ -1240,28 +1240,5 @@
             }, 2000);
         });
     </script>
-</body>
-</html>        padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #2c3e50;
-            color: white;
-            font-family: Arial, sans-serif;
-            min-height: 100vh;
-        }
-
-        .logo {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            width: 40px;
-            height: 40px;
-        }
-    </style>
-</head>
-<body>
-    <img src="logo.png" alt="Логотип Казино" class="logo">
 </body>
 </html>
