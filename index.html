@@ -1771,98 +1771,222 @@
         }
         
         // Обработка пополнения USDT
-        async function processUsdtDeposit() {
-            const customAmount = document.getElementById('usdtCustomAmount').value;
-            
-            // Проверяем сумму
-            let amountRub;
-            if (customAmount && customAmount >= 100) {
-                amountRub = parseInt(customAmount);
-            } else {
-                amountRub = selectedUsdtAmount;
-            }
-            
-            if (amountRub < 100) {
-                showAlert('Минимальная сумма 100 ₽', 'error');
-                return;
-            }
-            
-            if (amountRub > 100000) {
-                showAlert('Максимальная сумма 100,000 ₽', 'error');
-                return;
-            }
-            
-            let userId;
-            if (window.AppState && window.AppState.isAuthenticated()) {
-                userId = window.AppState.getUser().id;
-            } else if (currentUser) {
-                userId = currentUser.id;
-            } else {
-                showAlert('Пользователь не найден', 'error');
-                return;
-            }
-            
-            try {
-                // Получаем активный кошелек
-                const { data: wallets, error: walletError } = await supabaseClient
-                    .from('payment_wallets')
-                    .select('wallet_address')
-                    .eq('is_active', true)
-                    .limit(1);
-                
-                if (walletError || !wallets || wallets.length === 0) {
-                    showAlert('Ошибка получения кошелька для оплаты', 'error');
-                    return;
-                }
-                
-                const walletAddress = wallets[0].wallet_address;
-                const amountUsdt = (amountRub / 100).toFixed(2);
-                
-                // Создаем заявку на пополнение с помощью функции из payment.js
-                if (typeof window.Payment !== 'undefined' && typeof window.Payment.createDepositRequest === 'function') {
-                    const result = await window.Payment.createDepositRequest(
-                        userId,
-                        amountUsdt,
-                        amountRub,
-                        walletAddress
-                    );
-                    
-                    if (result.success) {
-                        closeUsdtModal();
-                        showAlert(`✅ Заявка на ${amountRub} ₽ создана! Кошелек: ${walletAddress.substring(0, 10)}...`, 'success');
-                    } else {
-                        showAlert('❌ ' + (result.message || 'Ошибка создания заявки'), 'error');
-                    }
-                } else {
-                    // Если payment.js не загружен, создаем запись напрямую
-                    const { data: deposit, error: depositError } = await supabaseClient
-                        .from('deposit_requests')
-                        .insert([{
-                            user_id: userId,
-                            amount: amountUsdt,
-                            amount_rub: amountRub,
-                            wallet_address: walletAddress,
-                            status: 'pending',
-                            created_at: new Date().toISOString()
-                        }])
-                        .select()
-                        .single();
-                    
-                    if (depositError) {
-                        console.error('Ошибка создания депозита:', depositError);
-                        showAlert('Ошибка создания заявки: ' + depositError.message, 'error');
-                        return;
-                    }
-                    
-                    closeUsdtModal();
-                    showAlert(`✅ Заявка на ${amountRub} ₽ создана! Кошелек: ${walletAddress.substring(0, 10)}...`, 'success');
-                }
-                
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showAlert('Ошибка обработки запроса: ' + error.message, 'error');
-            }
+async function processUsdtDeposit() {
+    const customAmount = document.getElementById('usdtCustomAmount').value;
+    
+    // Проверяем сумму
+    let amountRub;
+    if (customAmount && customAmount >= 100) {
+        amountRub = parseInt(customAmount);
+    } else {
+        amountRub = selectedUsdtAmount;
+    }
+    
+    if (amountRub < 100) {
+        showAlert('Минимальная сумма 100 ₽', 'error');
+        return;
+    }
+    
+    if (amountRub > 100000) {
+        showAlert('Максимальная сумма 100,000 ₽', 'error');
+        return;
+    }
+    
+    let userId;
+    if (window.AppState && window.AppState.isAuthenticated()) {
+        userId = window.AppState.getUser().id;
+    } else if (currentUser) {
+        userId = currentUser.id;
+    } else {
+        showAlert('Пользователь не найден', 'error');
+        return;
+    }
+    
+    try {
+        showAlert('🔄 Создание заявки...', 'warning');
+        
+        // Получаем активный кошелек
+        const walletAddress = await window.Payment.getActiveWallet();
+        if (!walletAddress) {
+            showAlert('Ошибка получения кошелька', 'error');
+            return;
         }
+        
+        const amountUsdt = (amountRub / 100).toFixed(2);
+        
+        // Создаем заявку
+        const result = await window.Payment.createDepositRequest(
+            userId,
+            amountUsdt,
+            amountRub,
+            walletAddress
+        );
+        
+        if (result.success) {
+            closeUsdtModal();
+            
+            // Показываем информацию о кошельке
+            const walletInfo = `
+                ✅ Заявка на ${amountRub} ₽ создана!
+                
+                💎 Кошелек для оплаты:
+                ${walletAddress}
+                
+                💵 Сумма: ${amountUsdt} USDT
+                📝 При переводе укажите ID: ${result.depositId?.substring(0, 8) || 'N/A'}
+            `;
+            
+            // Создаем красивое окно с информацией
+            showWalletModal(walletAddress, amountUsdt, amountRub, result.depositId);
+            
+        } else {
+            showAlert('❌ ' + (result.message || 'Ошибка создания заявки'), 'error');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showAlert('Ошибка обработки запроса: ' + error.message, 'error');
+    }
+}
+
+// Функция для показа модального окна с кошельком
+function showWalletModal(walletAddress, amountUsdt, amountRub, depositId) {
+    // Создаем модальное окно
+    const modal = document.createElement('div');
+    modal.id = 'walletModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 10, 7, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1002;
+        padding: 20px;
+        backdrop-filter: blur(10px);
+    `;
+    
+    modal.innerHTML = `
+        <div style="
+            background: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+            border: 3px solid var(--orange-main);
+            box-shadow: 0 0 50px rgba(255, 107, 53, 0.6);
+        ">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 2rem; color: var(--orange-main); margin-bottom: 10px;">💎</div>
+                <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent-gold); font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">
+                    ОПЛАТА USDT
+                </div>
+                <div style="font-size: 0.9rem; color: var(--text-dim);">
+                    TRC20 (Tron Network)
+                </div>
+            </div>
+            
+            <div style="background: rgba(0, 255, 136, 0.1); border: 2px solid var(--accent-green); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <div style="color: var(--accent-green); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
+                    📝 ИНФОРМАЦИЯ О ПЕРЕВОДЕ:
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-light); line-height: 1.5;">
+                    • Сумма: <span style="color: var(--accent-green); font-weight: 700;">${amountUsdt} USDT</span><br>
+                    • Рубли: <span style="color: var(--accent-green); font-weight: 700;">${amountRub} ₽</span><br>
+                    • Сеть: <span style="color: var(--accent-green); font-weight: 700;">TRC20 (Tron)</span><br>
+                    • Токен: <span style="color: var(--accent-green); font-weight: 700;">USDT</span><br>
+                    • ID заявки: <span style="color: var(--accent-green); font-weight: 700;">${depositId?.substring(0, 8) || 'N/A'}</span>
+                </div>
+            </div>
+            
+            <div style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <div style="color: var(--orange-main); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
+                    💰 КОШЕЛЕК ДЛЯ ОПЛАТЫ:
+                </div>
+                <div style="
+                    background: rgba(0, 0, 0, 0.3);
+                    padding: 15px;
+                    border-radius: 10px;
+                    font-family: monospace;
+                    font-size: 1.1rem;
+                    color: var(--accent-gold);
+                    word-break: break-all;
+                    text-align: center;
+                    margin-bottom: 15px;
+                    border: 2px dashed rgba(255, 107, 53, 0.5);
+                ">
+                    ${walletAddress}
+                </div>
+                <button onclick="copyWalletAddress('${walletAddress}')" style="
+                    width: 100%;
+                    background: var(--gradient-orange);
+                    border: none;
+                    border-radius: 12px;
+                    padding: 12px;
+                    color: white;
+                    font-weight: 900;
+                    cursor: pointer;
+                    font-family: 'Orbitron', sans-serif;
+                    margin-bottom: 10px;
+                ">
+                    📋 КОПИРОВАТЬ АДРЕС
+                </button>
+            </div>
+            
+            <div style="background: rgba(255, 179, 71, 0.1); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                <div style="color: var(--accent-gold); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
+                    ⚠️ ВАЖНО:
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-light); line-height: 1.5;">
+                    1. Отправляйте <span style="color: var(--accent-gold); font-weight: 700;">ТОЛЬКО USDT</span><br>
+                    2. Используйте <span style="color: var(--accent-gold); font-weight: 700;">TRC20 сеть</span><br>
+                    3. Проверьте адрес перед отправкой<br>
+                    4. Баланс обновится после 1 подтверждения
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeWalletModal()" style="
+                    flex: 1;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 12px;
+                    padding: 14px;
+                    color: var(--text-light);
+                    font-weight: 700;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                ">
+                    ЗАКРЫТЬ
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Функция копирования адреса
+function copyWalletAddress(address) {
+    navigator.clipboard.writeText(address).then(() => {
+        showAlert('✅ Адрес скопирован в буфер обмена', 'success');
+        tg.HapticFeedback.impactOccurred('light');
+    }).catch(err => {
+        showAlert('❌ Не удалось скопировать', 'error');
+    });
+}
+
+// Закрытие модалки кошелька
+function closeWalletModal() {
+    const modal = document.getElementById('walletModal');
+    if (modal) {
+        modal.remove();
+    }
+    tg.HapticFeedback.impactOccurred('light');
+}
         
         function openBanner(bannerId) {
             tg.HapticFeedback.impactOccurred('light');
