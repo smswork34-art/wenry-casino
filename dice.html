@@ -725,6 +725,21 @@
         // Бросок кубика
         async function rollDice() {
             if (isRolling) return;
+
+            // 1. Получаем ставку
+const betAmount = parseFloat(document.getElementById('betAmount').value);
+if (!betAmount || betAmount <= 0) {
+    alert('Введите корректную ставку');
+    return;
+}
+
+// 2. Сразу списываем ставку
+try {
+    window.casinoState.placeBet(betAmount);
+} catch (error) {
+    alert(error.message);
+    return;
+}
             
             // Проверки
             const balance = window.AppState?.getBalance() || currentUser.balance || 0;
@@ -791,6 +806,27 @@
                 showAlert(`Выпало ${result}. Попробуйте еще!`, 'warning');
                 tg.HapticFeedback.impactOccurred('medium');
             }
+
+            if (выиграл) {
+    const winAmount = betAmount * множитель;
+    window.casinoState.addWinnings(winAmount);
+    
+    window.casinoState.addToHistory(
+        'dice', 
+        `Dice: ${betAmount} ₽ × ${множитель}x`, 
+        winAmount, 
+        'win'
+    );
+} else {
+    window.casinoState.processLoss();
+    
+    window.casinoState.addToHistory(
+        'dice', 
+        `Dice: ставка ${betAmount} ₽`, 
+        -betAmount, 
+        'loss'
+    );
+}
             
             // Завершаем
             isRolling = false;
