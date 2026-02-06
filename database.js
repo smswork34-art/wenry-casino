@@ -1,171 +1,225 @@
-// database.js - обновленная версия
-const database = {
-    users: JSON.parse(localStorage.getItem('casinoUsers')) || {},
-    payments: JSON.parse(localStorage.getItem('casinoPayments')) || [],
-    gamesHistory: JSON.parse(localStorage.getItem('casinoGamesHistory')) || [],
-    bonuses: JSON.parse(localStorage.getItem('casinoBonuses')) || {},
-    adminPassword: "admin123",
+// Инициализация базы данных
+let users = JSON.parse(localStorage.getItem('casinoUsers')) || [];
+let paymentRequests = JSON.parse(localStorage.getItem('paymentRequests')) || [];
+let gameHistory = JSON.parse(localStorage.getItem('gameHistory')) || [];
+let bonuses = JSON.parse(localStorage.getItem('bonuses')) || [];
+let bonusClaims = JSON.parse(localStorage.getItem('bonusClaims')) || {};
 
-    saveUsers() {
-        localStorage.setItem('casinoUsers', JSON.stringify(this.users));
-    },
+// Инициализация администратора
+if (!users.find(u => u.username === 'admin')) {
+    users.push({
+        username: 'admin',
+        password: 'admin123',
+        balance: 0,
+        totalGames: 0,
+        totalWins: 0,
+        totalDeposits: 0,
+        totalWithdrawals: 0,
+        registrationDate: new Date().toISOString()
+    });
+    localStorage.setItem('casinoUsers', JSON.stringify(users));
+}
 
-    savePayments() {
-        localStorage.setItem('casinoPayments', JSON.stringify(this.payments));
-    },
-
-    saveGamesHistory() {
-        localStorage.setItem('casinoGamesHistory', JSON.stringify(this.gamesHistory));
-    },
-
-    saveBonuses() {
-        localStorage.setItem('casinoBonuses', JSON.stringify(this.bonuses));
-    },
-
-    getUser(username) {
-        return this.users[username];
-    },
-
-    createUser(username, password) {
-        if (this.users[username]) {
-            return false;
+// Инициализация бонусов
+if (bonuses.length === 0) {
+    bonuses = [
+        {
+            id: 1,
+            name: "Добро пожаловать",
+            amount: 50,
+            type: "one-time",
+            minDeposit: 0,
+            description: "Бонус за регистрацию"
+        },
+        {
+            id: 2,
+            name: "Ежедневный бонус",
+            amount: 10,
+            type: "daily",
+            minDeposit: 0,
+            description: "Ежедневный бонус"
+        },
+        {
+            id: 3,
+            name: "Бонус на депозит",
+            amount: 100,
+            type: "deposit",
+            minDeposit: 500,
+            description: "+100% к первому депозиту от 500₽"
         }
-        
-        this.users[username] = {
-            username: username,
-            password: password,
-            balance: 100, // начальный баланс
-            totalGames: 0,
-            totalWins: 0,
-            totalDeposited: 0,
-            totalWithdrawn: 0,
-            lastBonusDate: null,
-            registrationDate: new Date().toISOString()
-        };
-        this.saveUsers();
+    ];
+    localStorage.setItem('bonuses', JSON.stringify(bonuses));
+}
+
+// Функции для работы с пользователями
+function getUser(username) {
+    return users.find(u => u.username === username);
+}
+
+function updateUser(username, data) {
+    const userIndex = users.findIndex(u => u.username === username);
+    if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...data };
+        localStorage.setItem('casinoUsers', JSON.stringify(users));
         return true;
-    },
-
-    updateBalance(username, amount) {
-        if (!this.users[username]) return false;
-        
-        this.users[username].balance += amount;
-        this.saveUsers();
-        return true;
-    },
-
-    setBalance(username, amount) {
-        if (!this.users[username]) return false;
-        
-        this.users[username].balance = amount;
-        this.saveUsers();
-        return true;
-    },
-
-    addGameHistory(username, gameType, bet, win, result) {
-        const gameRecord = {
-            id: Date.now(),
-            username: username,
-            gameType: gameType,
-            bet: bet,
-            win: win,
-            result: result,
-            timestamp: new Date().toISOString(),
-            balanceAfter: this.users[username]?.balance || 0
-        };
-        
-        this.gamesHistory.push(gameRecord);
-        
-        // Обновляем статистику пользователя
-        if (this.users[username]) {
-            this.users[username].totalGames += 1;
-            if (win > 0) {
-                this.users[username].totalWins += 1;
-            }
-            this.saveUsers();
-        }
-        
-        this.saveGamesHistory();
-        return gameRecord;
-    },
-
-    getUserGames(username) {
-        return this.gamesHistory
-            .filter(game => game.username === username)
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    },
-
-    addPaymentRequest(username, amount, wallet) {
-        const payment = {
-            id: Date.now(),
-            username: username,
-            amount: amount,
-            wallet: wallet,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            type: 'deposit'
-        };
-        
-        this.payments.push(payment);
-        this.savePayments();
-        return payment;
-    },
-
-    updatePaymentStatus(paymentId, status) {
-        const payment = this.payments.find(p => p.id === paymentId);
-        if (payment) {
-            payment.status = status;
-            if (status === 'approved' && payment.type === 'deposit') {
-                this.updateBalance(payment.username, payment.amount);
-            }
-            this.savePayments();
-            return true;
-        }
-        return false;
-    },
-
-    getPendingPayments() {
-        return this.payments.filter(p => p.status === 'pending');
-    },
-
-    canClaimBonus(username) {
-        const user = this.users[username];
-        if (!user || !user.lastBonusDate) return true;
-        
-        const lastDate = new Date(user.lastBonusDate);
-        const now = new Date();
-        const diffHours = (now - lastDate) / (1000 * 60 * 60);
-        
-        return diffHours >= 24; // Бонус раз в 24 часа
-    },
-
-    claimBonus(username) {
-        const user = this.users[username];
-        if (!user || !this.canClaimBonus(username)) return false;
-        
-        const bonusAmount = 10; // Фиксированный бонус
-        user.balance += bonusAmount;
-        user.lastBonusDate = new Date().toISOString();
-        
-        // Добавляем запись в историю бонусов
-        if (!this.bonuses[username]) {
-            this.bonuses[username] = [];
-        }
-        this.bonuses[username].push({
-            amount: bonusAmount,
-            date: new Date().toISOString()
-        });
-        
-        this.saveUsers();
-        this.saveBonuses();
-        
-        // Добавляем в историю игр как бонус
-        this.addGameHistory(username, 'bonus', 0, bonusAmount, 'bonus_claimed');
-        
-        return true;
-    },
-
-    getBonusHistory(username) {
-        return this.bonuses[username] || [];
     }
+    return false;
+}
+
+// Функции для платежей
+function createPaymentRequest(username, amount, wallet) {
+    const request = {
+        id: Date.now(),
+        username,
+        amount,
+        wallet,
+        status: 'pending',
+        date: new Date().toISOString()
+    };
+    
+    paymentRequests.push(request);
+    localStorage.setItem('paymentRequests', JSON.stringify(paymentRequests));
+    return request;
+}
+
+function getPaymentRequests(status = null) {
+    if (status) {
+        return paymentRequests.filter(req => req.status === status);
+    }
+    return paymentRequests;
+}
+
+function updatePaymentRequest(id, updates) {
+    const requestIndex = paymentRequests.findIndex(req => req.id === id);
+    if (requestIndex !== -1) {
+        paymentRequests[requestIndex] = { ...paymentRequests[requestIndex], ...updates };
+        localStorage.setItem('paymentRequests', JSON.stringify(paymentRequests));
+        return true;
+    }
+    return false;
+}
+
+// Функции для истории игр
+function addGameHistory(username, game, bet, win, result) {
+    const historyEntry = {
+        id: Date.now(),
+        username,
+        game,
+        bet,
+        win,
+        result,
+        timestamp: new Date().toISOString(),
+        balanceBefore: getUser(username)?.balance || 0
+    };
+    
+    gameHistory.push(historyEntry);
+    localStorage.setItem('gameHistory', JSON.stringify(gameHistory));
+    
+    // Обновляем статистику пользователя
+    const user = getUser(username);
+    if (user) {
+        user.totalGames = (user.totalGames || 0) + 1;
+        if (win > 0) {
+            user.totalWins = (user.totalWins || 0) + 1;
+        }
+        updateUser(username, {
+            totalGames: user.totalGames,
+            totalWins: user.totalWins,
+            balance: (user.balance || 0) - bet + win
+        });
+    }
+    
+    return historyEntry;
+}
+
+function getUserGameHistory(username) {
+    return gameHistory.filter(entry => entry.username === username)
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+}
+
+// Функции для бонусов
+function getAvailableBonuses(username) {
+    const user = getUser(username);
+    const userClaims = bonusClaims[username] || {};
+    const now = new Date();
+    
+    return bonuses.filter(bonus => {
+        if (bonus.type === 'one-time') {
+            return !userClaims[bonus.id];
+        }
+        if (bonus.type === 'daily') {
+            const lastClaim = userClaims[bonus.id];
+            if (!lastClaim) return true;
+            const lastClaimDate = new Date(lastClaim);
+            return now.toDateString() !== lastClaimDate.toDateString();
+        }
+        if (bonus.type === 'deposit') {
+            return !userClaims[bonus.id] && (user?.totalDeposits || 0) >= bonus.minDeposit;
+        }
+        return true;
+    });
+}
+
+function claimBonus(username, bonusId) {
+    const user = getUser(username);
+    const bonus = bonuses.find(b => b.id === bonusId);
+    
+    if (!user || !bonus) return false;
+    
+    // Проверяем доступность бонуса
+    const availableBonuses = getAvailableBonuses(username);
+    if (!availableBonuses.find(b => b.id === bonusId)) return false;
+    
+    // Обновляем баланс
+    user.balance = (user.balance || 0) + bonus.amount;
+    updateUser(username, { balance: user.balance });
+    
+    // Отмечаем получение бонуса
+    if (!bonusClaims[username]) bonusClaims[username] = {};
+    bonusClaims[username][bonusId] = new Date().toISOString();
+    localStorage.setItem('bonusClaims', JSON.stringify(bonusClaims));
+    
+    // Добавляем в историю
+    addGameHistory(username, 'bonus', 0, bonus.amount, 'Бонус получен');
+    
+    return true;
+}
+
+// Функция для обновления баланса после игры
+function updateBalanceAfterGame(username, betAmount, winAmount) {
+    const user = getUser(username);
+    if (!user) return false;
+    
+    const newBalance = (user.balance || 0) - betAmount + winAmount;
+    if (newBalance < 0) return false;
+    
+    return updateUser(username, { balance: newBalance });
+}
+
+// Экспорт функций
+window.database = {
+    // Пользователи
+    users,
+    getUser,
+    updateUser,
+    
+    // Платежи
+    paymentRequests,
+    createPaymentRequest,
+    getPaymentRequests,
+    updatePaymentRequest,
+    
+    // История игр
+    gameHistory,
+    addGameHistory,
+    getUserGameHistory,
+    
+    // Бонусы
+    bonuses,
+    bonusClaims,
+    getAvailableBonuses,
+    claimBonus,
+    
+    // Общие функции
+    updateBalanceAfterGame
 };
