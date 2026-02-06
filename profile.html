@@ -538,6 +538,38 @@
                 }
             }
         });
+
+        // Загружаем статистику при открытии страницы
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.casinoState) {
+        const stats = window.casinoState.getStats();
+        
+        // Обновляем все элементы со статистикой
+        const elements = {
+            'profileBalance': 'balance',
+            'totalGames': 'totalGames',
+            'totalWins': 'totalWins', 
+            'totalLosses': 'totalLosses',
+            'winRate': 'winRate',
+            'totalWagered': 'totalWagered',
+            'totalProfit': 'totalProfit',
+            'averageBet': 'averageBet'
+        };
+        
+        for (const [elementId, statKey] of Object.entries(elements)) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (statKey === 'balance' || statKey.includes('Wagered') || statKey.includes('Profit') || statKey === 'averageBet') {
+                    element.textContent = `${stats[statKey].toFixed(2)} ₽`;
+                } else if (statKey === 'winRate') {
+                    element.textContent = `${stats[statKey]}%`;
+                } else {
+                    element.textContent = stats[statKey];
+                }
+            }
+        }
+    }
+});
     </script>
 </body>
 </html>
