@@ -1,128 +1,171 @@
-// Инициализация состояния
-let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+// ==================== state.js ====================
+// Глобальное состояние приложения
 
-// Функции для работы с состоянием
-function setCurrentUser(user) {
-    currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
-}
-
-function getCurrentUser() {
-    return currentUser;
-}
-
-function clearCurrentUser() {
-    currentUser = null;
-    localStorage.removeItem('currentUser');
-}
-
-// Функция для обновления данных пользователя из localStorage
-function refreshUserData() {
-    if (currentUser) {
-        const users = JSON.parse(localStorage.getItem('casinoUsers')) || [];
-        const updatedUser = users.find(u => u.username === currentUser.username);
-        if (updatedUser) {
-            setCurrentUser(updatedUser);
-        }
-    }
-}
-
-// Функция для проверки авторизации
-function isAuthenticated() {
-    return currentUser !== null;
-}
-
-// Функция для получения баланса
-function getCurrentBalance() {
-    if (!currentUser) return 0;
-    refreshUserData();
-    return currentUser.balance || 0;
-}
-
-// Функция для обновления баланса в UI
-function updateBalanceDisplay() {
-    const balanceElements = document.querySelectorAll('.balance-amount, #userBalance, .balance');
-    const balance = getCurrentBalance();
-    
-    balanceElements.forEach(element => {
-        if (element) {
-            element.textContent = `${balance}₽`;
-        }
-    });
-    
-    // Обновляем статистику в профиле
-    updateProfileStats();
-}
-
-// Функция для обновления статистики в профиле
-function updateProfileStats() {
-    if (!currentUser) return;
-    
-    const user = database.getUser(currentUser.username);
-    if (!user) return;
-    
-    // Обновляем элементы на странице профиля
-    const totalGamesEl = document.getElementById('totalGames');
-    const totalWinsEl = document.getElementById('totalWins');
-    const winRateEl = document.getElementById('winRate');
-    const totalDepositsEl = document.getElementById('totalDeposits');
-    const totalWithdrawalsEl = document.getElementById('totalWithdrawals');
-    
-    if (totalGamesEl) totalGamesEl.textContent = user.totalGames || 0;
-    if (totalWinsEl) totalWinsEl.textContent = user.totalWins || 0;
-    
-    if (winRateEl && user.totalGames > 0) {
-        const winRate = ((user.totalWins || 0) / user.totalGames * 100).toFixed(1);
-        winRateEl.textContent = `${winRate}%`;
-    }
-    
-    if (totalDepositsEl) totalDepositsEl.textContent = `${user.totalDeposits || 0}₽`;
-    if (totalWithdrawalsEl) totalWithdrawalsEl.textContent = `${user.totalWithdrawals || 0}₽`;
-}
-
-// Функция для обновления истории игр
-function updateGameHistory() {
-    if (!currentUser) return;
-    
-    const history = database.getUserGameHistory(currentUser.username);
-    const historyContainer = document.getElementById('gameHistory');
-    
-    if (historyContainer) {
-        historyContainer.innerHTML = history.map(entry => `
-            <div class="history-item">
-                <div class="game-info">
-                    <span class="game-name">${entry.game}</span>
-                    <span class="game-date">${new Date(entry.timestamp).toLocaleString()}</span>
-                </div>
-                <div class="game-result">
-                    <span class="bet-amount">Ставка: ${entry.bet}₽</span>
-                    <span class="win-amount ${entry.win > 0 ? 'win' : 'lose'}">
-                        ${entry.win > 0 ? '+' : ''}${entry.win}₽
-                    </span>
-                </div>
-            </div>
-        `).join('');
-    }
-}
-
-// Экспорт функций
-window.state = {
-    setCurrentUser,
-    getCurrentUser,
-    clearCurrentUser,
-    isAuthenticated,
-    getCurrentBalance,
-    updateBalanceDisplay,
-    updateProfileStats,
-    updateGameHistory,
-    refreshUserData
+window.user = {
+  id: null,
+  username: '',
+  balance: 0,
+  totalWagered: 0,
+  totalWon: 0,
+  gamesPlayed: 0,
+  lastBonusDate: null,
+  gameHistory: []
 };
 
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    if (isAuthenticated()) {
-        refreshUserData();
-        updateBalanceDisplay();
-        updateGameHistory();
+window.database = window.database || {};
+
+// Функция для обновления баланса с автоматической синхронизацией
+window.updateBalance = function(amount, reason = '') {
+  if (!window.user || !window.user.id) {
+    console.error('Пользователь не авторизован');
+    return false;
+  }
+
+  const newBalance = window.user.balance + amount;
+  if (newBalance < 0) {
+    console.error('Недостаточно средств');
+    return false;
+  }
+
+  // 1. Обновляем в state.js
+  window.user.balance = newBalance;
+  
+  // 2. Синхронизируем с базой данных
+  if (window.database[window.user.id]) {
+    window.database[window.user.id].balance = newBalance;
+    saveDatabase();
+  }
+  
+  // 3. Обновляем отображение на всех страницах
+  updateBalanceDisplay();
+  
+  // 4. Логируем операцию
+  if (reason) {
+    console.log(`Баланс изменен: ${amount > 0 ? '+' : ''}${amount}р. Причина: ${reason}. Новый баланс: ${newBalance}р`);
+  }
+  
+  return true;
+};
+
+// Функция для обновления отображения баланса во всех вкладках
+window.updateBalanceDisplay = function() {
+  const balanceElements = document.querySelectorAll('.balance-amount, #userBalance, .balance-text, [data-balance]');
+  balanceElements.forEach(el => {
+    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+      el.value = window.user ? window.user.balance : 0;
+    } else {
+      el.textContent = window.user ? window.user.balance : 0;
     }
+  });
+  
+  // Также обновляем в играх
+  const betInputs = document.querySelectorAll('input[type="number"]');
+  betInputs.forEach(input => {
+    const max = parseFloat(input.max) || 0;
+    const currentBalance = window.user ? window.user.balance : 0;
+    if (max > currentBalance) {
+      input.max = currentBalance;
+    }
+  });
+};
+
+// Функция для добавления записи в историю игр
+window.addGameHistory = function(game, bet, win, result) {
+  if (!window.user || !window.user.id) return;
+  
+  const historyEntry = {
+    id: Date.now(),
+    game: game,
+    bet: bet,
+    win: win,
+    result: result,
+    date: new Date().toLocaleString('ru-RU')
+  };
+  
+  // Добавляем в state
+  window.user.gameHistory.unshift(historyEntry);
+  
+  // Синхронизируем с базой
+  if (window.database[window.user.id]) {
+    if (!window.database[window.user.id].gameHistory) {
+      window.database[window.user.id].gameHistory = [];
+    }
+    window.database[window.user.id].gameHistory.unshift(historyEntry);
+    
+    // Обновляем статистику
+    window.database[window.user.id].gamesPlayed = (window.database[window.user.id].gamesPlayed || 0) + 1;
+    window.database[window.user.id].totalWagered = (window.database[window.user.id].totalWagered || 0) + bet;
+    if (win > 0) {
+      window.database[window.user.id].totalWon = (window.database[window.user.id].totalWon || 0) + win;
+    }
+    
+    // Обновляем в state.js
+    window.user.gamesPlayed = window.database[window.user.id].gamesPlayed;
+    window.user.totalWagered = window.database[window.user.id].totalWagered;
+    window.user.totalWon = window.database[window.user.id].totalWon;
+    
+    saveDatabase();
+  }
+  
+  // Обновляем отображение истории, если страница открыта
+  if (typeof updateHistoryDisplay === 'function') {
+    updateHistoryDisplay();
+  }
+  
+  // Обновляем статистику в профиле, если страница открыта
+  if (typeof updateProfileStats === 'function') {
+    updateProfileStats();
+  }
+};
+
+// Функция для проверки и выдачи бонуса
+window.claimBonusIfAvailable = function() {
+  if (!window.user || !window.user.id) return false;
+  
+  const now = new Date();
+  const lastBonus = window.user.lastBonusDate ? new Date(window.user.lastBonusDate) : null;
+  
+  // Проверяем, прошло ли 24 часа
+  if (lastBonus && (now - lastBonus) < 24 * 60 * 60 * 1000) {
+    const hoursLeft = Math.ceil((24 * 60 * 60 * 1000 - (now - lastBonus)) / (60 * 60 * 1000));
+    return { available: false, hoursLeft: hoursLeft };
+  }
+  
+  // Выдаем бонус
+  const bonusAmount = 50; // Сумма бонуса
+  window.updateBalance(bonusAmount, 'Ежедневный бонус');
+  
+  // Обновляем дату последнего бонуса
+  window.user.lastBonusDate = now.toISOString();
+  if (window.database[window.user.id]) {
+    window.database[window.user.id].lastBonusDate = window.user.lastBonusDate;
+    saveDatabase();
+  }
+  
+  return { available: true, amount: bonusAmount };
+};
+
+// Инициализация пользователя
+window.initUser = function() {
+  const userId = localStorage.getItem('userId');
+  if (!userId) return false;
+  
+  if (window.database[userId]) {
+    // Восстанавливаем данные из базы
+    window.user = { ...window.database[userId] };
+    window.user.id = userId;
+    
+    // Обновляем отображение баланса
+    updateBalanceDisplay();
+    
+    return true;
+  }
+  
+  return false;
+};
+
+// Запускаем инициализацию при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+  initUser();
+  updateBalanceDisplay();
 });
