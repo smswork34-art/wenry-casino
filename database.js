@@ -1,169 +1,171 @@
-// database.js
-window.Database = {
-    // Получение баланса пользователя
-    async getUserBalance(userId) {
-        try {
-            const { createClient } = window.supabase;
-            const supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.key
-            );
-            
-            const { data: user, error } = await supabase
-                .from('users')
-                .select('balance')
-                .eq('id', userId)
-                .single();
-            
-            if (error) {
-                console.error('Error getting user balance:', error);
-                return 0;
-            }
-            
-            return user.balance || 0;
-            
-        } catch (error) {
-            console.error('Database error:', error);
-            return 0;
-        }
+// database.js - обновленная версия
+const database = {
+    users: JSON.parse(localStorage.getItem('casinoUsers')) || {},
+    payments: JSON.parse(localStorage.getItem('casinoPayments')) || [],
+    gamesHistory: JSON.parse(localStorage.getItem('casinoGamesHistory')) || [],
+    bonuses: JSON.parse(localStorage.getItem('casinoBonuses')) || {},
+    adminPassword: "admin123",
+
+    saveUsers() {
+        localStorage.setItem('casinoUsers', JSON.stringify(this.users));
     },
-    
-    // Обновление баланса
-    async updateBalance(userId, amount, type) {
-        try {
-            const { createClient } = window.supabase;
-            const supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.key
-            );
-            
-            let newBalance;
-            const { data: user, error: fetchError } = await supabase
-                .from('users')
-                .select('balance')
-                .eq('id', userId)
-                .single();
-            
-            if (fetchError) {
-                console.error('Error fetching user:', fetchError);
-                return false;
-            }
-            
-            const currentBalance = user.balance || 0;
-            
-            if (type === 'deposit' || type === 'win') {
-                newBalance = currentBalance + amount;
-            } else if (type === 'withdraw' || type === 'bet') {
-                newBalance = currentBalance - amount;
-            } else {
-                return false;
-            }
-            
-            const { error: updateError } = await supabase
-                .from('users')
-                .update({ 
-                    balance: newBalance,
-                    last_seen: new Date().toISOString()
-                })
-                .eq('id', userId);
-            
-            if (updateError) {
-                console.error('Error updating balance:', updateError);
-                return false;
-            }
-            
-            // Создаем транзакцию
-            const { error: transError } = await supabase
-                .from('transactions')
-                .insert([{
-                    user_id: userId,
-                    type: type,
-                    amount: amount,
-                    status: 'completed',
-                    description: this.getTransactionDescription(type, amount),
-                    created_at: new Date().toISOString()
-                }]);
-            
-            if (transError) {
-                console.error('Error creating transaction:', transError);
-            }
-            
-            return true;
-            
-        } catch (error) {
-            console.error('Database error:', error);
+
+    savePayments() {
+        localStorage.setItem('casinoPayments', JSON.stringify(this.payments));
+    },
+
+    saveGamesHistory() {
+        localStorage.setItem('casinoGamesHistory', JSON.stringify(this.gamesHistory));
+    },
+
+    saveBonuses() {
+        localStorage.setItem('casinoBonuses', JSON.stringify(this.bonuses));
+    },
+
+    getUser(username) {
+        return this.users[username];
+    },
+
+    createUser(username, password) {
+        if (this.users[username]) {
             return false;
         }
+        
+        this.users[username] = {
+            username: username,
+            password: password,
+            balance: 100, // начальный баланс
+            totalGames: 0,
+            totalWins: 0,
+            totalDeposited: 0,
+            totalWithdrawn: 0,
+            lastBonusDate: null,
+            registrationDate: new Date().toISOString()
+        };
+        this.saveUsers();
+        return true;
     },
-    
-    // Получение истории транзакций
-    async getTransactionHistory(userId, limit = 50) {
-        try {
-            const { createClient } = window.supabase;
-            const supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.key
-            );
-            
-            const { data: transactions, error } = await supabase
-                .from('transactions')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false })
-                .limit(limit);
-            
-            if (error) {
-                console.error('Error getting transactions:', error);
-                return [];
-            }
-            
-            return transactions || [];
-            
-        } catch (error) {
-            console.error('Database error:', error);
-            return [];
-        }
+
+    updateBalance(username, amount) {
+        if (!this.users[username]) return false;
+        
+        this.users[username].balance += amount;
+        this.saveUsers();
+        return true;
     },
-    
-    // Получение активных депозитов
-    async getActiveDeposits(userId) {
-        try {
-            const { createClient } = window.supabase;
-            const supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.key
-            );
-            
-            const { data: deposits, error } = await supabase
-                .from('deposit_requests')
-                .select('*')
-                .eq('user_id', userId)
-                .in('status', ['pending', 'processing'])
-                .order('created_at', { ascending: false });
-            
-            if (error) {
-                console.error('Error getting deposits:', error);
-                return [];
-            }
-            
-            return deposits || [];
-            
-        } catch (error) {
-            console.error('Database error:', error);
-            return [];
-        }
+
+    setBalance(username, amount) {
+        if (!this.users[username]) return false;
+        
+        this.users[username].balance = amount;
+        this.saveUsers();
+        return true;
     },
-    
-    // Вспомогательная функция для описания транзакции
-    getTransactionDescription(type, amount) {
-        const descriptions = {
-            'deposit': `Пополнение ${(amount/100).toFixed(2)} ₽`,
-            'withdraw': `Вывод ${(amount/100).toFixed(2)} ₽`,
-            'bet': `Ставка в игре ${(amount/100).toFixed(2)} ₽`,
-            'win': `Выигрыш ${(amount/100).toFixed(2)} ₽`,
-            'bonus': `Бонус ${(amount/100).toFixed(2)} ₽`
+
+    addGameHistory(username, gameType, bet, win, result) {
+        const gameRecord = {
+            id: Date.now(),
+            username: username,
+            gameType: gameType,
+            bet: bet,
+            win: win,
+            result: result,
+            timestamp: new Date().toISOString(),
+            balanceAfter: this.users[username]?.balance || 0
         };
         
-        return descriptions[type] || `Транзакция ${(amount/100).toFixed(2)} ₽`;
+        this.gamesHistory.push(gameRecord);
+        
+        // Обновляем статистику пользователя
+        if (this.users[username]) {
+            this.users[username].totalGames += 1;
+            if (win > 0) {
+                this.users[username].totalWins += 1;
+            }
+            this.saveUsers();
+        }
+        
+        this.saveGamesHistory();
+        return gameRecord;
+    },
+
+    getUserGames(username) {
+        return this.gamesHistory
+            .filter(game => game.username === username)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    },
+
+    addPaymentRequest(username, amount, wallet) {
+        const payment = {
+            id: Date.now(),
+            username: username,
+            amount: amount,
+            wallet: wallet,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            type: 'deposit'
+        };
+        
+        this.payments.push(payment);
+        this.savePayments();
+        return payment;
+    },
+
+    updatePaymentStatus(paymentId, status) {
+        const payment = this.payments.find(p => p.id === paymentId);
+        if (payment) {
+            payment.status = status;
+            if (status === 'approved' && payment.type === 'deposit') {
+                this.updateBalance(payment.username, payment.amount);
+            }
+            this.savePayments();
+            return true;
+        }
+        return false;
+    },
+
+    getPendingPayments() {
+        return this.payments.filter(p => p.status === 'pending');
+    },
+
+    canClaimBonus(username) {
+        const user = this.users[username];
+        if (!user || !user.lastBonusDate) return true;
+        
+        const lastDate = new Date(user.lastBonusDate);
+        const now = new Date();
+        const diffHours = (now - lastDate) / (1000 * 60 * 60);
+        
+        return diffHours >= 24; // Бонус раз в 24 часа
+    },
+
+    claimBonus(username) {
+        const user = this.users[username];
+        if (!user || !this.canClaimBonus(username)) return false;
+        
+        const bonusAmount = 10; // Фиксированный бонус
+        user.balance += bonusAmount;
+        user.lastBonusDate = new Date().toISOString();
+        
+        // Добавляем запись в историю бонусов
+        if (!this.bonuses[username]) {
+            this.bonuses[username] = [];
+        }
+        this.bonuses[username].push({
+            amount: bonusAmount,
+            date: new Date().toISOString()
+        });
+        
+        this.saveUsers();
+        this.saveBonuses();
+        
+        // Добавляем в историю игр как бонус
+        this.addGameHistory(username, 'bonus', 0, bonusAmount, 'bonus_claimed');
+        
+        return true;
+    },
+
+    getBonusHistory(username) {
+        return this.bonuses[username] || [];
     }
 };
