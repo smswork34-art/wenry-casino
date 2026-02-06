@@ -1,231 +1,153 @@
-// Функция для создания заявки на пополнение
-function createDepositRequest(amount, wallet) {
-    if (!state.isAuthenticated()) {
-        alert('Пожалуйста, войдите в систему');
-        return false;
-    }
-    
-    if (amount < 10) {
-        alert('Минимальная сумма пополнения: 10₽');
-        return false;
-    }
-    
-    if (amount > 100000) {
-        alert('Максимальная сумма пополнения: 100,000₽');
-        return false;
-    }
-    
-    // Создаем заявку
-    const request = database.createPaymentRequest(
-        state.getCurrentUser().username,
-        amount,
-        wallet
-    );
-    
-    alert(`Заявка на пополнение ${amount}₽ создана! Номер заявки: ${request.id}`);
-    return true;
-}
+// ==================== payment.js ====================
+// Логика пополнения и вывода средств
 
-// Функция для создания заявки на вывод
-function createWithdrawRequest(amount, wallet) {
-    if (!state.isAuthenticated()) {
-        alert('Пожалуйста, войдите в систему');
-        return false;
-    }
-    
-    const user = state.getCurrentUser();
-    if (amount < 100) {
-        alert('Минимальная сумма вывода: 100₽');
-        return false;
-    }
-    
-    if (amount > 50000) {
-        alert('Максимальная сумма вывода: 50,000₽');
-        return false;
-    }
-    
-    if (amount > user.balance) {
-        alert('Недостаточно средств на балансе');
-        return false;
-    }
-    
-    // Создаем заявку
-    const request = database.createPaymentRequest(
-        user.username,
-        amount,
-        wallet
-    );
-    
-    // Резервируем средства
-    database.updateUser(user.username, {
-        balance: user.balance - amount,
-        totalWithdrawals: (user.totalWithdrawals || 0) + amount
-    });
-    
-    state.refreshUserData();
-    state.updateBalanceDisplay();
-    
-    alert(`Заявка на вывод ${amount}₽ создана! Номер заявки: ${request.id}`);
-    return true;
-}
-
-// Функция для обработки заявки администратором
-function processPaymentRequest(requestId, action) {
-    const request = database.paymentRequests.find(req => req.id === requestId);
-    if (!request) {
-        alert('Заявка не найдена');
-        return false;
-    }
-    
-    const user = database.getUser(request.username);
-    if (!user) {
-        alert('Пользователь не найден');
-        return false;
-    }
-    
-    if (action === 'approve') {
-        if (request.status !== 'pending') {
-            alert('Заявка уже обработана');
-            return false;
-        }
-        
-        // Для пополнения добавляем средства
-        database.updateUser(request.username, {
-            balance: (user.balance || 0) + request.amount,
-            totalDeposits: (user.totalDeposits || 0) + request.amount
-        });
-        
-        database.updatePaymentRequest(requestId, {
-            status: 'approved',
-            processedAt: new Date().toISOString()
-        });
-        
-        alert(`Заявка ${requestId} одобрена. Баланс пользователя обновлен.`);
-        
-    } else if (action === 'reject') {
-        if (request.status !== 'pending') {
-            alert('Заявка уже обработана');
-            return false;
-        }
-        
-        // Для вывода возвращаем средства
-        if (request.amount > 0) {
-            database.updateUser(request.username, {
-                balance: (user.balance || 0) + request.amount,
-                totalWithdrawals: (user.totalWithdrawals || 0) - request.amount
-            });
-        }
-        
-        database.updatePaymentRequest(requestId, {
-            status: 'rejected',
-            processedAt: new Date().toISOString()
-        });
-        
-        alert(`Заявка ${requestId} отклонена.`);
-    }
-    
-    return true;
-}
-
-// Функция для отображения заявок в админке
-function loadPaymentRequests() {
-    const pendingRequests = database.getPaymentRequests('pending');
-    const allRequests = database.getPaymentRequests();
-    
-    // Обновляем счетчик
-    const pendingCount = document.getElementById('pendingCount');
-    if (pendingCount) {
-        pendingCount.textContent = pendingRequests.length;
-    }
-    
-    // Загружаем таблицу заявок
-    const requestsTable = document.getElementById('requestsTable');
-    if (requestsTable) {
-        requestsTable.innerHTML = pendingRequests.map(request => `
-            <tr>
-                <td>${request.id}</td>
-                <td>${request.username}</td>
-                <td>${request.amount}₽</td>
-                <td>${request.wallet}</td>
-                <td>${new Date(request.date).toLocaleString()}</td>
-                <td>
-                    <button onclick="processPayment(${request.id}, 'approve')" class="btn-success">Одобрить</button>
-                    <button onclick="processPayment(${request.id}, 'reject')" class="btn-danger">Отклонить</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-    
-    // Загружаем историю заявок
-    const historyTable = document.getElementById('historyTable');
-    if (historyTable) {
-        historyTable.innerHTML = allRequests.map(request => `
-            <tr class="${request.status}">
-                <td>${request.id}</td>
-                <td>${request.username}</td>
-                <td>${request.amount}₽</td>
-                <td>${request.wallet}</td>
-                <td>${new Date(request.date).toLocaleString()}</td>
-                <td>
-                    <span class="status-badge ${request.status}">
-                        ${request.status === 'pending' ? 'В ожидании' : 
-                          request.status === 'approved' ? 'Одобрено' : 'Отклонено'}
-                    </span>
-                </td>
-                <td>${request.processedAt ? new Date(request.processedAt).toLocaleString() : '-'}</td>
-            </tr>
-        `).join('');
-    }
-}
-
-// Глобальные функции для использования в HTML
-window.processPayment = function(requestId, action) {
-    if (processPaymentRequest(requestId, action)) {
-        loadPaymentRequests();
-    }
-};
-
-window.createDeposit = function() {
-    const amount = parseFloat(document.getElementById('depositAmount').value);
-    const wallet = document.getElementById('depositWallet').value.trim();
-    
-    if (!amount || amount <= 0) {
-        alert('Введите корректную сумму');
-        return;
-    }
-    
-    if (!wallet) {
-        alert('Введите номер кошелька');
-        return;
-    }
-    
-    if (createDepositRequest(amount, wallet)) {
-        document.getElementById('depositAmount').value = '';
-        document.getElementById('depositWallet').value = '';
-    }
-};
-
-window.createWithdraw = function() {
-    const amount = parseFloat(document.getElementById('withdrawAmount').value);
-    const wallet = document.getElementById('withdrawWallet').value.trim();
-    
-    if (!amount || amount <= 0) {
-        alert('Введите корректную сумму');
-        return;
-    }
-    
-    if (!wallet) {
-        alert('Введите номер кошелька');
-        return;
-    }
-    
-    if (createWithdrawRequest(amount, wallet)) {
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawWallet').value = '';
-    }
-};
-
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', function() {
-    loadPaymentRequests();
+  // Инициализация пользователя
+  if (window.initUser) window.initUser();
+  
+  // Элементы для пополнения
+  const depositAmountInput = document.getElementById('depositAmount');
+  const depositBtn = document.getElementById('depositBtn');
+  const walletInfo = document.getElementById('walletInfo');
+  const confirmDepositBtn = document.getElementById('confirmDeposit');
+  const depositStatus = document.getElementById('depositStatus');
+  
+  // Элементы для вывода
+  const withdrawAmountInput = document.getElementById('withdrawAmount');
+  const withdrawWalletInput = document.getElementById('withdrawWallet');
+  const withdrawBtn = document.getElementById('withdrawBtn');
+  const withdrawStatus = document.getElementById('withdrawStatus');
+  
+  // Кошелек для пополнения
+  const walletAddress = "4100117495602932"; // ЮMoney кошелек
+  if (walletInfo) {
+    walletInfo.textContent = walletAddress;
+  }
+  
+  // Кнопка "Скопировать"
+  const copyBtn = document.getElementById('copyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      navigator.clipboard.writeText(walletAddress).then(() => {
+        copyBtn.textContent = 'Скопировано!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Скопировать';
+        }, 2000);
+      });
+    });
+  }
+  
+  // Пополнение баланса
+  if (depositBtn) {
+    depositBtn.addEventListener('click', function() {
+      if (!window.user || !window.user.id) {
+        alert('Пожалуйста, войдите в систему');
+        return;
+      }
+      
+      const amount = parseFloat(depositAmountInput.value);
+      if (isNaN(amount) || amount < 10 || amount > 50000) {
+        alert('Введите сумму от 10 до 50 000 рублей');
+        return;
+      }
+      
+      // Показываем инструкцию
+      depositStatus.innerHTML = `
+        <div class="alert alert-info">
+          <p><strong>Инструкция по пополнению:</strong></p>
+          <p>1. Переведите <strong>${amount} рублей</strong> на кошелек: <strong>${walletAddress}</strong></p>
+          <p>2. В комментарии к переводу укажите: <strong>${window.user.id}</strong></p>
+          <p>3. После перевода нажмите кнопку "Я отправил"</p>
+        </div>
+      `;
+      
+      // Показываем кнопку подтверждения
+      confirmDepositBtn.style.display = 'block';
+      
+      // Сохраняем сумму для подтверждения
+      confirmDepositBtn.dataset.amount = amount;
+    });
+  }
+  
+  // Кнопка "Я отправил" (только теперь создает заявку)
+  if (confirmDepositBtn) {
+    confirmDepositBtn.addEventListener('click', function() {
+      if (!window.user || !window.user.id) return;
+      
+      const amount = parseFloat(this.dataset.amount);
+      
+      // Создаем заявку на пополнение
+      const request = window.createDepositRequest(window.user.id, amount);
+      
+      if (request) {
+        depositStatus.innerHTML = `
+          <div class="alert alert-success">
+            <p><strong>Заявка создана!</strong></p>
+            <p>ID заявки: <strong>${request.id}</strong></p>
+            <p>Сумма: <strong>${amount} рублей</strong></p>
+            <p>Статус: <strong>В обработке</strong></p>
+            <p>Администратор проверит платеж в течение 15 минут.</p>
+          </div>
+        `;
+        confirmDepositBtn.style.display = 'none';
+      }
+    });
+  }
+  
+  // Вывод средств
+  if (withdrawBtn) {
+    withdrawBtn.addEventListener('click', function() {
+      if (!window.user || !window.user.id) {
+        alert('Пожалуйста, войдите в систему');
+        return;
+      }
+      
+      const amount = parseFloat(withdrawAmountInput.value);
+      const wallet = withdrawWalletInput.value.trim();
+      
+      if (isNaN(amount) || amount < 100 || amount > 50000) {
+        alert('Сумма вывода от 100 до 50 000 рублей');
+        return;
+      }
+      
+      if (wallet.length < 5) {
+        alert('Введите корректный номер кошелька');
+        return;
+      }
+      
+      if (amount > window.user.balance) {
+        alert('Недостаточно средств на балансе');
+        return;
+      }
+      
+      // Создаем заявку на вывод
+      const request = window.createWithdrawalRequest(window.user.id, amount, wallet);
+      
+      if (request) {
+        // Сразу списываем средства (резервируем)
+        window.updateBalance(-amount, 'Заявка на вывод');
+        
+        withdrawStatus.innerHTML = `
+          <div class="alert alert-success">
+            <p><strong>Заявка создана!</strong></p>
+            <p>ID заявки: <strong>${request.id}</strong></p>
+            <p>Сумма: <strong>${amount} рублей</strong></p>
+            <p>Кошелек: <strong>${wallet}</strong></p>
+            <p>Статус: <strong>В обработке</strong></p>
+            <p>Вывод происходит в течение 24 часов.</p>
+          </div>
+        `;
+        
+        // Очищаем поля
+        withdrawAmountInput.value = '';
+        withdrawWalletInput.value = '';
+      }
+    });
+  }
+  
+  // Обновляем максимальную сумму вывода
+  if (withdrawAmountInput) {
+    withdrawAmountInput.max = window.user ? window.user.balance : 0;
+    withdrawAmountInput.placeholder = `Макс: ${window.user ? window.user.balance : 0}₽`;
+  }
 });
