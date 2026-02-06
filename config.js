@@ -1,6 +1,6 @@
-// config.js - Конфигурация проекта
+// config.js
 window.SUPABASE_CONFIG = {
     url: 'https://okfakvtsevlyvbbfzyla.supabase.co',
-    key: 'sb_publishable_FY7dJEwFGZxImSE_Qyad9Q_M0zQGOY0',
-    adminId: '8155919358'
+    key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rZmFrdnRzZXZseXZiYmZ6eWxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTcyNDYsImV4cCI6MjA4NTg5MzI0Nn0.xGB6HQjSv_VsU8jqFLIpU9m24NYim6HkuXwcRDZ4SqU',
+    adminId: 8155919358
 };
