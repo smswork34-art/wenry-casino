@@ -750,6 +750,14 @@
                 showAlert('Недостаточно средств', 'error');
                 return;
             }
+
+            const betAmount = получить_ставку;
+try {
+    window.casinoState.placeBet(betAmount);
+} catch (error) {
+    alert(error.message);
+    return;
+}
             
             if (!selectedChoice) {
                 showAlert('Выберите сторону', 'warning');
@@ -788,6 +796,27 @@
                 } else {
                     currentUser.balance += winAmount;
                 }
+
+                if (выиграл) {
+    const winAmount = betAmount * 1.95; // Пример множителя
+    window.casinoState.addWinnings(winAmount);
+    
+    window.casinoState.addToHistory(
+        'coin',
+        `Монетка: ${betAmount} ₽ × 1.95x`,
+        winAmount,
+        'win'
+    );
+} else {
+    window.casinoState.processLoss();
+    
+    window.casinoState.addToHistory(
+        'coin',
+        `Монетка: ставка ${betAmount} ₽`,
+        -betAmount,
+        'loss'
+    );
+}
                 
                 // Показываем результат
                 gameStatusEl.textContent = `🎉 ${resultText}! ВЫ ВЫИГРАЛИ ${(winAmount / 100).toLocaleString()} ₽!`;
