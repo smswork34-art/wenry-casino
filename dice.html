@@ -3,20 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Быстрые кости | ORANGEWIN</title>
+    <title>ORANGEWIN | Быстрые кости</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="state.js"></script>
+    <script src="payment.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --orange-main: #FF6B35;
             --orange-dark: #FF4D00;
-            --accent-gold: #FFB347;
-            --accent-green: #00FF88;
-            --accent-red: #FF5E62;
+            --orange-light: #FF8E53;
+            --orange-glow: #FF9E6D;
             --dark-bg: #0F0A07;
             --card-bg: #1A130F;
+            --card-dark: #15100C;
+            --accent-gold: #FFB347;
+            --accent-red: #FF5E62;
+            --accent-blue: #4ECDC4;
+            --accent-green: #00FF88;
             --text-light: #FFFFFF;
             --text-dim: #CCB7A6;
+            --gradient-orange: linear-gradient(135deg, var(--orange-main) 0%, var(--orange-dark) 100%);
+            --gradient-card: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
+            --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
+            --shadow-strong: 0 8px 25px rgba(255, 77, 0, 0.2);
+            --border-glow: 1px solid rgba(255, 107, 53, 0.2);
         }
 
         * {
@@ -29,234 +44,301 @@
         body {
             background: var(--dark-bg);
             color: var(--text-light);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 12px;
-            padding-bottom: 80px;
+            font-family: 'Rajdhani', sans-serif;
             min-height: 100vh;
+            padding-bottom: 80px;
         }
 
         .container {
-            max-width: 500px;
+            max-width: 800px;
             margin: 0 auto;
+            padding: 15px;
         }
 
-        /* Компактный хедер */
+        /* Шапка */
         .game-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 15px;
-            background: var(--card-bg);
-            border-radius: 14px;
+            background: var(--gradient-card);
+            padding: 15px;
+            border-radius: 16px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 107, 53, 0.2);
+            border: var(--border-glow);
+            box-shadow: var(--shadow-strong);
         }
 
-        .back-button {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            border-radius: 10px;
+        .back-btn {
+            background: rgba(255, 107, 53, 0.1);
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            color: var(--text-light);
+            padding: 10px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            flex-shrink: 0;
+            gap: 8px;
         }
 
         .game-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-align: center;
-            flex-grow: 1;
-            margin: 0 10px;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            font-family: 'Orbitron', sans-serif;
         }
 
-        .balance-card {
+        .game-balance {
             background: rgba(255, 107, 53, 0.1);
-            padding: 8px 12px;
-            border-radius: 10px;
-            text-align: right;
-            min-width: 100px;
-            flex-shrink: 0;
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: var(--border-glow);
         }
 
         .balance-label {
             font-size: 0.7rem;
             color: var(--text-dim);
-            margin-bottom: 2px;
         }
 
         .balance-amount {
             font-size: 1.2rem;
-            font-weight: 700;
+            font-weight: 900;
             color: var(--accent-gold);
+            font-family: 'Orbitron', sans-serif;
         }
 
-        /* Игровая зона */
-        .dice-area {
-            background: rgba(26, 19, 15, 0.8);
-            border-radius: 16px;
-            padding: 20px;
+        /* Игровая область */
+        .game-area {
+            background: var(--gradient-card);
+            border-radius: 20px;
+            padding: 25px;
+            border: var(--border-glow);
             margin-bottom: 20px;
-            text-align: center;
-            border: 2px solid rgba(255, 107, 53, 0.2);
         }
 
+        /* Кубик */
         .dice-container {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 20px;
-            perspective: 600px;
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
         }
 
         .dice {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 1s;
-        }
-
-        .dice-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: white;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(145deg, #2A201A, #1A130F);
             border: 3px solid var(--orange-main);
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--orange-dark);
+            border-radius: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--orange-main);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Выбор ставки */
-        .bet-selection {
+        .dice::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,107,53,0.1) 0%, transparent 70%);
+        }
+
+        .dice-number {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 20px rgba(255,107,53,0.5);
+        }
+
+        /* Статус */
+        .game-status {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+
+        .win { color: var(--accent-green); }
+        .lose { color: var(--accent-red); }
+
+        /* Контроль ставок */
+        .bet-controls {
+            background: rgba(26, 19, 15, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: var(--border-glow);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+        }
+
+        /* Кнопки ставок */
+        .bet-buttons {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
 
-        .bet-option {
+        .bet-btn, .number-btn {
             background: rgba(255, 107, 53, 0.1);
-            border: 2px solid rgba(255, 107, 53, 0.2);
+            border: 2px solid rgba(255, 107, 53, 0.3);
             border-radius: 12px;
-            padding: 15px 10px;
-            text-align: center;
+            padding: 12px 5px;
+            color: var(--text-light);
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.9rem;
         }
 
-        .bet-option.active {
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 15px rgba(255, 107, 53, 0.3);
+        .bet-btn.active, .number-btn.active {
+            background: var(--gradient-orange);
+            border-color: var(--orange-main);
+            color: white;
+            box-shadow: var(--shadow-glow);
         }
 
-        .bet-amount {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-            margin-bottom: 3px;
+        .number-btn.win {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: var(--dark-bg);
+        }
+
+        .bet-display {
+            background: rgba(255, 107, 53, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            border: 2px solid rgba(255, 107, 53, 0.3);
+            text-align: center;
         }
 
         .bet-label {
-            font-size: 0.75rem;
             color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .bet-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            font-family: 'Orbitron', sans-serif;
         }
 
         /* Выбор числа */
-        .number-selection {
+        .number-buttons {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
 
         .number-btn {
-            aspect-ratio: 1;
-            background: rgba(255, 107, 53, 0.1);
-            border: 2px solid rgba(255, 107, 53, 0.2);
-            border-radius: 12px;
+            padding: 20px 10px;
             font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.2s;
+            font-weight: 900;
         }
 
-        .number-btn.active {
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
-            border-color: var(--accent-gold);
-            transform: scale(1.05);
+        /* Информация */
+        .info-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .info-text {
+            color: var(--accent-green);
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
         }
 
         /* Кнопка игры */
-        .play-button {
+        .play-btn {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            background: var(--gradient-orange);
             border: none;
-            border-radius: 14px;
-            font-size: 1.3rem;
-            font-weight: 700;
+            border-radius: 15px;
+            padding: 20px;
             color: white;
+            font-weight: 900;
+            font-size: 1.2rem;
             cursor: pointer;
-            margin-bottom: 20px;
-            transition: all 0.2s;
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 20px;
+            transition: all 0.3s;
         }
 
-        .play-button:disabled {
+        .play-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .play-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
         /* Статистика */
-        .stats-grid {
+        .stats {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 25px;
         }
 
         .stat-card {
-            background: rgba(255, 107, 53, 0.1);
+            background: var(--gradient-card);
+            padding: 15px;
             border-radius: 12px;
-            padding: 15px 10px;
+            border: var(--border-glow);
             text-align: center;
-            border: 1px solid rgba(255, 107, 53, 0.2);
-        }
-
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-            margin-bottom: 3px;
         }
 
         .stat-label {
-            font-size: 0.7rem;
             color: var(--text-dim);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
         }
 
-        /* Нижняя навигация */
+        .stat-value {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Навигация */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: rgba(26, 19, 15, 0.98);
-            backdrop-filter: blur(10px);
             border-top: 2px solid rgba(255, 107, 53, 0.2);
-            padding: 10px;
+            padding: 12px 15px;
             display: flex;
             justify-content: space-around;
-            z-index: 100;
+            backdrop-filter: blur(10px);
         }
 
         .nav-item {
@@ -265,8 +347,8 @@
             align-items: center;
             gap: 4px;
             color: var(--text-dim);
+            cursor: pointer;
             padding: 5px;
-            min-width: 60px;
         }
 
         .nav-item.active {
@@ -274,295 +356,500 @@
         }
 
         .nav-icon {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             background: var(--card-bg);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s;
+            font-size: 1.2rem;
+            border: 2px solid rgba(255, 107, 53, 0.1);
         }
 
         .nav-item.active .nav-icon {
-            background: linear-gradient(135deg, var(--orange-main), var(--orange-dark));
+            background: var(--gradient-orange);
             color: white;
+            transform: translateY(-3px);
         }
 
         .nav-label {
             font-size: 0.65rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
-        /* Для маленьких экранов */
-        @media (max-width: 360px) {
-            .dice-container {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .bet-selection {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px;
-            }
-            
-            .bet-option {
-                padding: 12px 8px;
-            }
-            
-            .number-btn {
-                font-size: 1.3rem;
-            }
+        /* Алерт */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-green);
+            color: var(--dark-bg);
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 900;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .alert.error { background: var(--accent-red); }
+        .alert.warning { background: var(--accent-gold); }
+
+        /* Адаптив */
+        @media (max-width: 480px) {
+            .container { padding: 10px; }
+            .dice { width: 120px; height: 120px; font-size: 3rem; }
+            .bet-buttons { grid-template-columns: repeat(2, 1fr); }
+            .number-buttons { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
 <body>
+    <div class="alert" id="alert"></div>
+    
     <div class="container">
         <!-- Шапка -->
-        <div class="game-header">
-            <div class="back-button" onclick="goBack()">
-                <i class="fas fa-arrow-left"></i>
+        <header class="game-header">
+            <button class="back-btn" id="backBtn">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+            <div class="game-title">🎲 БЫСТРЫЕ КОСТИ</div>
+            <div class="game-balance">
+                <div class="balance-label">Баланс</div>
+                <div class="balance-amount" id="balanceAmount">0 ₽</div>
             </div>
-            <div class="game-title">БЫСТРЫЕ КОСТИ</div>
-            <div class="balance-card">
-                <div class="balance-label">БАЛАНС</div>
-                <div class="balance-amount" id="balance">2 480 ₽</div>
-            </div>
-        </div>
+        </header>
 
-        <!-- Игровая зона -->
-        <div class="dice-area">
+        <!-- Игровая область -->
+        <div class="game-area">
+            <!-- Кубик -->
             <div class="dice-container">
                 <div class="dice" id="dice">
-                    <div class="dice-face" style="transform: rotateY(0deg) translateZ(60px);">1</div>
-                    <div class="dice-face" style="transform: rotateY(90deg) translateZ(60px);">2</div>
-                    <div class="dice-face" style="transform: rotateY(180deg) translateZ(60px);">3</div>
-                    <div class="dice-face" style="transform: rotateY(-90deg) translateZ(60px);">4</div>
-                    <div class="dice-face" style="transform: rotateX(90deg) translateZ(60px);">5</div>
-                    <div class="dice-face" style="transform: rotateX(-90deg) translateZ(60px);">6</div>
+                    <div class="dice-number" id="diceNumber">?</div>
                 </div>
             </div>
-            <div id="resultText" style="font-size: 1.1rem; color: var(--accent-gold); margin-top: 10px;">Выберите число и ставку</div>
-        </div>
 
-        <!-- Выбор ставки -->
-        <div class="bet-selection">
-            <div class="bet-option active" onclick="selectBet(10)">
-                <div class="bet-amount">10 ₽</div>
-                <div class="bet-label">МИНИМУМ</div>
+            <!-- Статус -->
+            <div class="game-status" id="gameStatus">
+                Выберите число и ставку
             </div>
-            <div class="bet-option" onclick="selectBet(50)">
-                <div class="bet-amount">50 ₽</div>
-                <div class="bet-label">СТАНДАРТ</div>
-            </div>
-            <div class="bet-option" onclick="selectBet(100)">
-                <div class="bet-amount">100 ₽</div>
-                <div class="bet-label">МАКСИМУМ</div>
-            </div>
-        </div>
 
-        <!-- Выбор числа -->
-        <div class="number-selection">
-            <button class="number-btn" onclick="selectNumber(1)">1</button>
-            <button class="number-btn" onclick="selectNumber(2)">2</button>
-            <button class="number-btn" onclick="selectNumber(3)">3</button>
-            <button class="number-btn" onclick="selectNumber(4)">4</button>
-            <button class="number-btn" onclick="selectNumber(5)">5</button>
-            <button class="number-btn" onclick="selectNumber(6)">6</button>
-        </div>
+            <!-- Управление ставками -->
+            <div class="bet-controls">
+                <div class="section-title">СТАВКА</div>
+                
+                <div class="bet-buttons" id="betButtons">
+                    <!-- Кнопки добавятся через JS -->
+                </div>
+                
+                <div class="bet-display">
+                    <div class="bet-label">Текущая ставка</div>
+                    <div class="bet-value" id="betAmount">1 ₽</div>
+                </div>
 
-        <!-- Кнопка игры -->
-        <button class="play-button" id="playButton" onclick="rollDice()" disabled>
-            КРУТИТЬ КОСТИ
-        </button>
+                <!-- Выбор числа -->
+                <div class="section-title">ВЫБЕРИТЕ ЧИСЛО</div>
+                <div class="number-buttons" id="numberButtons">
+                    <!-- Кнопки добавятся через JS -->
+                </div>
+                
+                <div class="info-box">
+                    <div class="info-text" id="multiplierText">Множитель: 6x</div>
+                </div>
+            </div>
 
-        <!-- Статистика -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">98.5%</div>
-                <div class="stat-label">ВЫИГРЫШЕЙ</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">10x</div>
-                <div class="stat-label">МНОЖИТЕЛЬ</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">3.2K</div>
-                <div class="stat-label">ОНЛАЙН</div>
+            <!-- Кнопка игры -->
+            <button class="play-btn" id="playBtn">
+                🎲 КРУТИТЬ КОСТИ
+            </button>
+
+            <!-- Статистика -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Шанс выигрыша</div>
+                    <div class="stat-value" id="winChance">16.67%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Возможный выигрыш</div>
+                    <div class="stat-value" id="possibleWin">6 ₽</div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Навигация -->
     <nav class="bottom-nav">
-        <div class="nav-item" onclick="goBack()">
-            <div class="nav-icon">
-                <i class="fas fa-gamepad"></i>
-            </div>
+        <div class="nav-item" id="navGames">
+            <div class="nav-icon"><i class="fas fa-gamepad"></i></div>
             <div class="nav-label">Игры</div>
         </div>
-        
-        <div class="nav-item" onclick="window.location.href='bonuses.html'">
-            <div class="nav-icon">
-                <i class="fas fa-gift"></i>
-            </div>
+        <div class="nav-item" id="navBonuses">
+            <div class="nav-icon"><i class="fas fa-gift"></i></div>
             <div class="nav-label">Бонусы</div>
         </div>
-        
-        <div class="nav-item" onclick="window.location.href='history.html'">
-            <div class="nav-icon">
-                <i class="fas fa-history"></i>
-            </div>
+        <div class="nav-item" id="navHistory">
+            <div class="nav-icon"><i class="fas fa-history"></i></div>
             <div class="nav-label">История</div>
         </div>
-        
-        <div class="nav-item" onclick="window.location.href='profile.html'">
-            <div class="nav-icon">
-                <i class="fas fa-user"></i>
-            </div>
+        <div class="nav-item" id="navProfile">
+            <div class="nav-icon"><i class="fas fa-user"></i></div>
             <div class="nav-label">Профиль</div>
         </div>
     </nav>
 
     <script>
+        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.setHeaderColor('#0F0A07');
+        tg.setBackgroundColor('#0F0A07');
         
-        let currentBalance = 2480;
-        let currentBet = 10;
-        let selectedNumber = null;
+        // Переменные игры
+        let currentUser = null;
+        let supabaseClient = null;
+        let selectedBet = 100;
+        let selectedNumber = 1;
         let isRolling = false;
         
-        const balanceEl = document.getElementById('balance');
-        const playButton = document.getElementById('playButton');
-        const resultText = document.getElementById('resultText');
-        const dice = document.getElementById('dice');
+        // Элементы
+        const balanceEl = document.getElementById('balanceAmount');
+        const diceEl = document.getElementById('dice');
+        const diceNumberEl = document.getElementById('diceNumber');
+        const gameStatusEl = document.getElementById('gameStatus');
+        const betAmountEl = document.getElementById('betAmount');
+        const multiplierTextEl = document.getElementById('multiplierText');
+        const winChanceEl = document.getElementById('winChance');
+        const possibleWinEl = document.getElementById('possibleWin');
+        const playBtn = document.getElementById('playBtn');
+        const backBtn = document.getElementById('backBtn');
+        const betButtonsContainer = document.getElementById('betButtons');
+        const numberButtonsContainer = document.getElementById('numberButtons');
         
-        function selectBet(amount) {
-            if (isRolling) return;
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🎲 Инициализация игры...');
             
-            document.querySelectorAll('.bet-option').forEach(opt => {
-                opt.classList.remove('active');
+            // Инициализация состояния
+            if (window.AppState) {
+                window.AppState.init();
+                window.AppState.on('balanceUpdated', updateBalanceDisplay);
+            }
+            
+            try {
+                const { createClient } = window.supabase;
+                supabaseClient = createClient(
+                    window.SUPABASE_CONFIG.url,
+                    window.SUPABASE_CONFIG.key
+                );
+            } catch (error) {
+                showAlert('Ошибка подключения', 'error');
+                return;
+            }
+            
+            initEventListeners();
+            await loadUserData();
+            initGameElements();
+            
+            console.log('✅ Игра запущена');
+        });
+        
+        // Обработчики событий
+        function initEventListeners() {
+            backBtn.addEventListener('click', () => {
+                tg.HapticFeedback.impactOccurred('light');
+                window.location.href = 'index.html';
             });
-            event.target.closest('.bet-option').classList.add('active');
             
-            currentBet = amount;
-            updatePlayButton();
-            tg.HapticFeedback.impactOccurred('light');
+            playBtn.addEventListener('click', rollDice);
+            
+            // Навигация
+            document.getElementById('navGames').addEventListener('click', () => switchTab('games'));
+            document.getElementById('navBonuses').addEventListener('click', () => switchTab('bonuses'));
+            document.getElementById('navHistory').addEventListener('click', () => switchTab('history'));
+            document.getElementById('navProfile').addEventListener('click', () => switchTab('profile'));
         }
         
-        function selectNumber(number) {
-            if (isRolling) return;
+        // Загрузка пользователя
+        async function loadUserData() {
+            try {
+                const tgUser = tg.initDataUnsafe?.user;
+                if (!tgUser?.id) {
+                    showAlert('Авторизуйтесь в Telegram', 'warning');
+                    return;
+                }
+                
+                const userId = parseInt(tgUser.id);
+                
+                // Проверяем состояние
+                if (window.AppState?.isAuthenticated()) {
+                    currentUser = window.AppState.getUser();
+                } else {
+                    // Загружаем из БД
+                    const { data: user, error } = await supabaseClient
+                        .from('users')
+                        .select('*')
+                        .eq('id', userId)
+                        .single();
+                    
+                    if (error) {
+                        console.error('Ошибка:', error);
+                        return;
+                    }
+                    
+                    currentUser = user;
+                    if (window.AppState) window.AppState.setUser(user);
+                }
+                
+                updateBalanceDisplay();
+                
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+        
+        // Инициализация игровых элементов
+        function initGameElements() {
+            // Кнопки ставок
+            const bets = [100, 500, 1000, 2000, 5000, 10000, 20000, 50000];
+            betButtonsContainer.innerHTML = bets.map(bet => `
+                <button class="bet-btn" data-bet="${bet}">
+                    ${(bet / 100).toLocaleString()} ₽
+                </button>
+            `).join('');
+            
+            // Кнопки чисел
+            const numbers = [1, 2, 3, 4, 5, 6];
+            numberButtonsContainer.innerHTML = numbers.map(num => `
+                <button class="number-btn" data-number="${num}">
+                    ${num}
+                </button>
+            `).join('');
+            
+            // Обработчики кнопок
+            document.querySelectorAll('.bet-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const bet = parseInt(btn.dataset.bet);
+                    selectBet(bet);
+                });
+            });
             
             document.querySelectorAll('.number-btn').forEach(btn => {
-                btn.classList.remove('active');
+                btn.addEventListener('click', () => {
+                    const number = parseInt(btn.dataset.number);
+                    selectNumber(number);
+                });
             });
-            event.target.classList.add('active');
             
-            selectedNumber = number;
+            // Выбираем значения по умолчанию
+            selectBet(bets[0]);
+            selectNumber(numbers[0]);
+        }
+        
+        // Выбор ставки
+        function selectBet(bet) {
+            selectedBet = bet;
+            
+            document.querySelectorAll('.bet-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.bet) === bet);
+            });
+            
+            betAmountEl.textContent = `${(bet / 100).toLocaleString('ru-RU')} ₽`;
+            updatePossibleWin();
             updatePlayButton();
+            
             tg.HapticFeedback.impactOccurred('light');
         }
         
-        function updatePlayButton() {
-            if (selectedNumber && currentBet <= currentBalance) {
-                playButton.disabled = false;
-                playButton.textContent = `СТАВКА: ${currentBet} ₽`;
-            } else {
-                playButton.disabled = true;
-                if (currentBet > currentBalance) {
-                    playButton.textContent = 'НЕДОСТАТОЧНО СРЕДСТВ';
-                } else {
-                    playButton.textContent = 'ВЫБЕРИТЕ ЧИСЛО';
+        // Выбор числа
+        function selectNumber(number) {
+            selectedNumber = number;
+            
+            document.querySelectorAll('.number-btn').forEach(btn => {
+                btn.classList.remove('active', 'win');
+                if (parseInt(btn.dataset.number) === number) {
+                    btn.classList.add('active');
                 }
+            });
+            
+            updatePossibleWin();
+            updatePlayButton();
+            
+            tg.HapticFeedback.impactOccurred('light');
+        }
+        
+        // Обновление возможного выигрыша
+        function updatePossibleWin() {
+            const multiplier = 6;
+            const possibleWin = selectedBet * multiplier;
+            possibleWinEl.textContent = `${(possibleWin / 100).toLocaleString('ru-RU')} ₽`;
+            multiplierTextEl.textContent = `Множитель: ${multiplier}x`;
+            winChanceEl.textContent = '16.67%';
+        }
+        
+        // Обновление кнопки игры
+        function updatePlayButton() {
+            if (!currentUser) {
+                playBtn.disabled = true;
+                playBtn.textContent = 'АВТОРИЗУЙТЕСЬ';
+                return;
+            }
+            
+            const balance = window.AppState?.getBalance() || currentUser.balance || 0;
+            
+            if (isRolling) {
+                playBtn.disabled = true;
+                playBtn.textContent = '🎲 КУБИК КРУТИТСЯ...';
+            } else if (balance < selectedBet) {
+                playBtn.disabled = true;
+                playBtn.textContent = 'НЕДОСТАТОЧНО СРЕДСТВ';
+            } else {
+                playBtn.disabled = false;
+                playBtn.textContent = '🎲 КРУТИТЬ КОСТИ';
             }
         }
         
-        function rollDice() {
-            if (isRolling || !selectedNumber || currentBet > currentBalance) return;
+        // Обновление баланса
+        function updateBalanceDisplay() {
+            const balance = window.AppState?.getBalance() || currentUser?.balance || 0;
+            if (balanceEl) {
+                balanceEl.textContent = `${(balance / 100).toLocaleString('ru-RU', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })} ₽`;
+            }
+            updatePlayButton();
+        }
+        
+        // Бросок кубика
+        async function rollDice() {
+            if (isRolling) return;
             
+            // Проверки
+            const balance = window.AppState?.getBalance() || currentUser.balance || 0;
+            if (balance < selectedBet) {
+                showAlert('Недостаточно средств', 'error');
+                return;
+            }
+            
+            if (!selectedNumber) {
+                showAlert('Выберите число', 'warning');
+                return;
+            }
+            
+            // Начинаем бросок
             isRolling = true;
-            tg.HapticFeedback.impactOccurred('medium');
+            updatePlayButton();
+            gameStatusEl.textContent = '🎲 Кубик крутится...';
+            gameStatusEl.className = 'game-status';
             
-            // Вычитаем ставку
-            currentBalance -= currentBet;
-            balanceEl.textContent = `${currentBalance} ₽`;
+            // Снимаем ставку
+            if (window.AppState) {
+                window.AppState.changeBalance(selectedBet, 'bet');
+            } else {
+                currentUser.balance -= selectedBet;
+            }
             
             // Анимация
-            resultText.textContent = 'Крутим...';
-            playButton.disabled = true;
-            playButton.textContent = 'КРУТИМ...';
+            await animateDice();
             
-            let spins = 0;
-            const spinInterval = setInterval(() => {
-                spins++;
-                const randomRotation = Math.floor(Math.random() * 360);
-                dice.style.transform = `rotateX(${randomRotation}deg) rotateY(${randomRotation}deg)`;
-                
-                if (spins >= 20) {
-                    clearInterval(spinInterval);
-                    finishRoll();
-                }
-            }, 50);
-        }
-        
-        function finishRoll() {
+            // Результат
             const result = Math.floor(Math.random() * 6) + 1;
+            diceNumberEl.textContent = result;
+            
+            // Проверка выигрыша
             const isWin = result === selectedNumber;
-            const winAmount = isWin ? currentBet * 10 : 0;
             
             if (isWin) {
-                currentBalance += winAmount;
-                balanceEl.textContent = `${currentBalance} ₽`;
-            }
-            
-            // Показываем результат
-            dice.style.transform = getDiceRotation(result);
-            
-            if (isWin) {
-                resultText.textContent = `🎉 ПОБЕДА! Выпало ${result}. Выигрыш: +${winAmount} ₽`;
-                resultText.style.color = '#00FF88';
+                const winAmount = selectedBet * 6;
+                
+                // Добавляем выигрыш
+                if (window.AppState) {
+                    window.AppState.changeBalance(winAmount, 'win');
+                } else {
+                    currentUser.balance += winAmount;
+                }
+                
+                // Показываем результат
+                gameStatusEl.textContent = `🎉 ВЫ ВЫИГРАЛИ ${(winAmount / 100).toLocaleString()} ₽!`;
+                gameStatusEl.className = 'game-status win';
+                
+                // Подсвечиваем число
+                document.querySelectorAll('.number-btn').forEach(btn => {
+                    if (parseInt(btn.dataset.number) === selectedNumber) {
+                        btn.classList.add('win');
+                    }
+                });
+                
+                showAlert(`🎉 Выигрыш ${(winAmount / 100).toLocaleString()} ₽!`, 'success');
                 tg.HapticFeedback.impactOccurred('heavy');
             } else {
-                resultText.textContent = `😔 Проигрыш. Выпало ${result}`;
-                resultText.style.color = '#FF5E62';
-                tg.HapticFeedback.impactOccurred('rigid');
+                gameStatusEl.textContent = `😔 Выпало ${result}. Вы проиграли ${(selectedBet / 100).toLocaleString()} ₽`;
+                gameStatusEl.className = 'game-status lose';
+                
+                showAlert(`Выпало ${result}. Попробуйте еще!`, 'warning');
+                tg.HapticFeedback.impactOccurred('medium');
             }
             
-            // Сбрасываем игру через 2 секунды
+            // Завершаем
+            isRolling = false;
+            updateBalanceDisplay();
+            updatePlayButton();
+        }
+        
+        // Анимация кубика
+        function animateDice() {
+            return new Promise(resolve => {
+                diceEl.style.transition = 'transform 1s ease-out';
+                diceEl.style.transform = 'rotateX(720deg) rotateY(720deg)';
+                
+                setTimeout(() => {
+                    diceEl.style.transition = 'transform 0.5s ease-out';
+                    diceEl.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                    setTimeout(resolve, 500);
+                }, 1000);
+            });
+        }
+        
+        // Создание транзакции
+        async function createTransaction(type, amount, description) {
+            if (!currentUser) return false;
+            
+            try {
+                await supabaseClient
+                    .from('transactions')
+                    .insert([{
+                        user_id: currentUser.id,
+                        type: type,
+                        amount: amount,
+                        description: description,
+                        created_at: new Date().toISOString()
+                    }]);
+                return true;
+            } catch (error) {
+                console.error('Ошибка транзакции:', error);
+                return false;
+            }
+        }
+        
+        // Переключение вкладок
+        function switchTab(tab) {
+            tg.HapticFeedback.impactOccurred('light');
+            window.location.href = `${tab}.html`;
+        }
+        
+        // Показать алерт
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            alert.style.display = 'block';
+            
             setTimeout(() => {
-                isRolling = false;
-                document.querySelectorAll('.number-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                selectedNumber = null;
-                updatePlayButton();
-                resultText.textContent = 'Выберите число и ставку';
-                resultText.style.color = '#FFB347';
-            }, 2000);
+                alert.style.display = 'none';
+            }, 3000);
         }
-        
-        function getDiceRotation(number) {
-            const rotations = {
-                1: 'rotateX(0deg) rotateY(0deg)',
-                2: 'rotateX(0deg) rotateY(-90deg)',
-                3: 'rotateX(0deg) rotateY(-180deg)',
-                4: 'rotateX(0deg) rotateY(90deg)',
-                5: 'rotateX(-90deg) rotateY(0deg)',
-                6: 'rotateX(90deg) rotateY(0deg)'
-            };
-            return rotations[number];
-        }
-        
-        function goBack() {
-            window.history.back();
-        }
-        
-        // Автовыбор при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('.bet-option.active').click();
-        });
     </script>
 </body>
 </html>
