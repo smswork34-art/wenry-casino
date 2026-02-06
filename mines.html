@@ -824,6 +824,15 @@
                 showAlert('Недостаточно средств', 'error');
                 return;
             }
+
+            // Списание ставки
+const betAmount = получить_ставку;
+try {
+    window.casinoState.placeBet(betAmount);
+} catch (error) {
+    alert(error.message);
+    return;
+}
             
             // Снимаем ставку
             if (window.AppState) {
@@ -890,6 +899,20 @@
             cell.element.style.cursor = 'default';
             
             tg.HapticFeedback.impactOccurred('light');
+
+            if (клетка - мина) {
+    // Проигрыш
+    window.casinoState.addToHistory(
+        'mines',
+        `Мины: ставка ${betAmount} ₽`,
+        -betAmount,
+        'loss'
+    );
+} else {
+    // Выигрыш за клетку
+    const winPerCell = betAmount * (множитель_за_клетку);
+    window.casinoState.addWinnings(winPerCell);
+}
             
             // Проверяем, мина ли это
             if (cell.isMine) {
@@ -958,6 +981,15 @@
                     gameField[pos].element.querySelector('.content').textContent = '💣';
                 }
             });
+
+            const totalWin = общий_выигрыш;
+window.casinoState.addWinnings(totalWin);
+window.casinoState.addToHistory(
+    'mines',
+    `Мины: ${betAmount} ₽ → ${totalWin} ₽`,
+    totalWin,
+    'win'
+);
             
             gameStatusEl.textContent = `🎉 ВЫ ВЫИГРАЛИ ${(winAmount / 100).toLocaleString()} ₽!`;
             gameStatusEl.className = 'game-status win';
