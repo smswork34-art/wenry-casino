@@ -9,12 +9,15 @@ window.Payment = {
                 window.SUPABASE_CONFIG.key
             );
             
+            console.log('Создание депозита:', { userId, amountUsdt, amountRub, walletAddress });
+            
+            // Используем правильные названия колонок из твоей таблицы
             const { data: deposit, error } = await supabase
                 .from('deposit_requests')
                 .insert([{
                     user_id: userId,
-                    amount: parseFloat(amountUsdt),
-                    amount_rub: parseInt(amountRub),
+                    amount: parseFloat(amountUsdt), // amount в USDT
+                    amount_rub: parseInt(amountRub), // amount_rub в рублях
                     wallet_address: walletAddress,
                     status: 'pending',
                     created_at: new Date().toISOString(),
@@ -39,32 +42,6 @@ window.Payment = {
         } catch (error) {
             console.error('Payment error:', error);
             return { success: false, message: 'Системная ошибка' };
-        }
-    },
-    
-    // Проверка статуса депозита
-    async checkDepositStatus(depositId) {
-        try {
-            const { createClient } = window.supabase;
-            const supabase = createClient(
-                window.SUPABASE_CONFIG.url,
-                window.SUPABASE_CONFIG.key
-            );
-            
-            const { data: deposit, error } = await supabase
-                .from('deposit_requests')
-                .select('*')
-                .eq('id', depositId)
-                .single();
-            
-            if (error) {
-                return { success: false, error: error.message };
-            }
-            
-            return { success: true, deposit: deposit };
-            
-        } catch (error) {
-            return { success: false, error: error.message };
         }
     }
 };
