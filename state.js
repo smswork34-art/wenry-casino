@@ -1,152 +1,111 @@
-// state.js - Глобальное состояние приложения
-window.AppState = {
-    currentUser: null,
-    balance: 0,
-    transactions: [],
-    isAdmin: false,
-    lastSync: null,
-    
-    // Инициализация
-    init() {
-        console.log('🚀 Инициализация глобального состояния ORANGEWIN...');
-        this.loadFromLocalStorage();
-        
-        if (this.currentUser) {
-            console.log('✅ Восстановлена сессия пользователя:', this.currentUser.username);
-        }
-    },
-    
-    // Установка пользователя
+// state.js - обновленная версия
+const state = {
+    currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+    currentGame: null,
+
     setUser(user) {
         this.currentUser = user;
-        this.balance = user?.balance || 0;
-        this.lastSync = new Date().toISOString();
-        this.saveToLocalStorage();
-        this.dispatchEvent('userChanged', user);
-        this.dispatchEvent('balanceUpdated', this.balance);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.updateUI();
     },
-    
-    // Обновление баланса
-    updateBalance(newBalance) {
-        if (this.currentUser) {
-            const oldBalance = this.balance;
-            this.balance = newBalance;
-            this.currentUser.balance = newBalance;
-            this.lastSync = new Date().toISOString();
-            this.saveToLocalStorage();
-            this.dispatchEvent('balanceUpdated', this.balance);
-            
-            if (oldBalance !== newBalance) {
-                this.dispatchEvent('balanceChanged', { 
-                    oldBalance, 
-                    newBalance, 
-                    difference: newBalance - oldBalance 
-                });
+
+    logout() {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    },
+
+    updateUserData() {
+        if (this.currentUser && this.currentUser.username) {
+            const userData = database.getUser(this.currentUser.username);
+            if (userData) {
+                this.currentUser = { ...this.currentUser, ...userData };
+                localStorage.setItem('currentUser', JSON.stringify(this.currentUser));
+                this.updateUI();
             }
         }
     },
-    
-    // Изменение баланса
-    changeBalance(amount, type) {
-        const oldBalance = this.balance;
-        
-        if (type === 'deposit' || type === 'win' || type === 'bonus') {
-            this.balance += amount;
-        } else if (type === 'withdraw' || type === 'bet') {
-            this.balance -= amount;
-        }
-        
-        if (this.currentUser) {
-            this.currentUser.balance = this.balance;
-        }
-        
-        this.lastSync = new Date().toISOString();
-        this.saveToLocalStorage();
-        
-        this.dispatchEvent('balanceChanged', { 
-            oldBalance, 
-            newBalance: this.balance, 
-            amount, 
-            type 
+
+    updateUI() {
+        // Обновляем баланс во всех местах
+        const balanceElements = document.querySelectorAll('.user-balance, #balance, [data-balance]');
+        balanceElements.forEach(el => {
+            if (this.currentUser) {
+                el.textContent = `${this.currentUser.balance}₽`;
+            }
         });
-        
-        return true;
-    },
-    
-    // Сохранение в LocalStorage
-    saveToLocalStorage() {
-        try {
-            const state = {
-                user: this.currentUser,
-                balance: this.balance,
-                transactions: this.transactions,
-                lastSync: this.lastSync,
-                saveTime: new Date().toISOString()
-            };
-            localStorage.setItem('orangewin_state', JSON.stringify(state));
-            localStorage.setItem('orangewin_balance', this.balance.toString());
-        } catch (error) {
-            console.error('❌ Ошибка сохранения:', error);
-        }
-    },
-    
-    // Загрузка из LocalStorage
-    loadFromLocalStorage() {
-        try {
-            const saved = localStorage.getItem('orangewin_state');
-            if (saved) {
-                const state = JSON.parse(saved);
-                this.currentUser = state.user;
-                this.balance = state.balance || 0;
-                this.transactions = state.transactions || [];
-                this.lastSync = state.lastSync;
+
+        // Обновляем имя пользователя
+        const usernameElements = document.querySelectorAll('.username-display');
+        usernameElements.forEach(el => {
+            if (this.currentUser) {
+                el.textContent = this.currentUser.username;
             }
-        } catch (error) {
-            console.error('❌ Ошибка загрузки:', error);
+        });
+
+        // Обновляем статистику
+        const totalGamesElements = document.querySelectorAll('[data-total-games]');
+        totalGamesElements.forEach(el => {
+            if (this.currentUser) {
+                el.textContent = this.currentUser.totalGames || 0;
+            }
+        });
+
+        const totalWinsElements = document.querySelectorAll('[data-total-wins]');
+        totalWinsElements.forEach(el => {
+            if (this.currentUser) {
+                el.textContent = this.currentUser.totalWins || 0;
+            }
+        });
+    },
+
+    updateBalance(amount) {
+        if (!this.currentUser) return false;
+        
+        const success = database.updateBalance(this.currentUser.username, amount);
+        if (success) {
+            this.updateUserData();
         }
+        return success;
     },
-    
-    // Проверка авторизации
-    isAuthenticated() {
-        return !!this.currentUser && !!this.currentUser.id;
-    },
-    
-    // Получение пользователя
-    getUser() {
-        return this.currentUser;
-    },
-    
-    // Получение баланса
-    getBalance() {
-        return this.balance;
-    },
-    
-    // Получение баланса в рублях
-    getBalanceRub() {
-        return (this.balance / 100).toFixed(2);
-    },
-    
-    // Система событий
-    listeners: {},
-    
-    // Подписка на события
-    on(event, callback) {
-        if (!this.listeners[event]) {
-            this.listeners[event] = [];
+
+    placeBet(gameType, betAmount, winAmount, result) {
+        if (!this.currentUser) return false;
+        
+        if (betAmount > this.currentUser.balance) {
+            alert('Недостаточно средств на балансе!');
+            return false;
         }
-        this.listeners[event].push(callback);
-    },
-    
-    // Отправка события
-    dispatchEvent(event, data = null) {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(callback => {
-                try {
-                    callback(data);
-                } catch (error) {
-                    console.error(`❌ Ошибка в обработчике ${event}:`, error);
-                }
-            });
+
+        // Сначала списываем ставку
+        const betSuccess = database.updateBalance(this.currentUser.username, -betAmount);
+        if (!betSuccess) return false;
+        
+        // Обновляем состояние
+        this.updateUserData();
+        
+        // Если есть выигрыш, добавляем его
+        if (winAmount > 0) {
+            const winSuccess = database.updateBalance(this.currentUser.username, winAmount);
+            if (!winSuccess) return false;
         }
+        
+        // Добавляем запись в историю
+        database.addGameHistory(
+            this.currentUser.username,
+            gameType,
+            betAmount,
+            winAmount,
+            result
+        );
+        
+        // Обновляем UI
+        this.updateUserData();
+        return true;
     }
 };
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    state.updateUI();
+});
