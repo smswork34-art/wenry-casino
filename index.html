@@ -107,6 +107,7 @@
             align-items: center;
             gap: 10px;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .logo-icon {
@@ -667,20 +668,16 @@
             width: 100%;
             height: 100%;
             background: rgba(15, 10, 7, 0.95);
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
             padding: 20px;
             backdrop-filter: blur(10px);
         }
 
         .deposit-popup.active {
-            opacity: 1;
-            visibility: visible;
+            display: flex;
         }
 
         .deposit-content {
@@ -902,11 +899,11 @@
     <div class="container">
         <!-- Шапка -->
         <header class="header">
-            <div class="logo" onclick="window.location.href='index.html'">
+            <div class="logo" id="logo">
                 <div class="logo-icon">O</div>
                 <div class="logo-text">ORANGEWIN</div>
             </div>
-            <div class="balance-card" onclick="showDepositPopup()">
+            <div class="balance-card" id="balanceCard">
                 <div class="balance-label">Ваш баланс</div>
                 <div class="balance-amount" id="balanceAmount">0 ₽</div>
             </div>
@@ -914,7 +911,7 @@
 
         <!-- Баннеры -->
         <div class="banners-container">
-            <div class="banner" onclick="openBanner('deposit')">
+            <div class="banner" id="bannerDeposit">
                 <img src="banner1.png" alt="Баннер 1" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">💎 ПОПОЛНИТЬ USDT</div>
@@ -922,7 +919,7 @@
                 </div>
             </div>
             
-            <div class="banner" onclick="openBanner('bonuses')">
+            <div class="banner" id="bannerBonuses">
                 <img src="banner2.png" alt="Баннер 2" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">🎁 +200% БОНУС</div>
@@ -930,7 +927,7 @@
                 </div>
             </div>
             
-            <div class="banner" onclick="openBanner('wheel')">
+            <div class="banner" id="bannerWheel">
                 <img src="banner3.png" alt="Баннер 3" class="banner-img">
                 <div class="banner-overlay">
                     <div class="banner-title">🎡 КОЛЕСО ФОРТУНЫ</div>
@@ -952,7 +949,7 @@
 
         <!-- Сетка игр -->
         <div class="games-grid">
-            <div class="game-card" onclick="openGame('dice')">
+            <div class="game-card" id="gameDice">
                 <div class="game-badge">ТОП</div>
                 <div class="game-icon">
                     <i class="fas fa-dice"></i>
@@ -971,7 +968,7 @@
                 </div>
             </div>
 
-            <div class="game-card" onclick="openGame('coin')">
+            <div class="game-card" id="gameCoin">
                 <div class="game-badge">НОВИНКА</div>
                 <div class="game-icon">
                     <i class="fas fa-coins"></i>
@@ -990,7 +987,7 @@
                 </div>
             </div>
 
-            <div class="game-card" onclick="openGame('mines')">
+            <div class="game-card" id="gameMines">
                 <div class="game-badge">ХИТ</div>
                 <div class="game-icon">
                     <i class="fas fa-bomb"></i>
@@ -1009,7 +1006,7 @@
                 </div>
             </div>
 
-            <div class="game-card" onclick="openGame('slot')">
+            <div class="game-card" id="gameSlot">
                 <div class="game-icon">
                     <i class="fas fa-sliders-h"></i>
                 </div>
@@ -1029,7 +1026,7 @@
         </div>
 
         <!-- Колесо фортуны -->
-        <div class="wheel-card" onclick="openWheel()">
+        <div class="wheel-card" id="wheelCard">
             <div class="wheel-header">
                 <div class="wheel-title">КРУТИ КАЖДЫЙ ДЕНЬ!</div>
                 <div class="wheel-timer" id="wheelTimer">23:59:45</div>
@@ -1046,28 +1043,28 @@
 
     <!-- Нижняя навигация -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('games')">
+        <div class="nav-item active" id="navGames">
             <div class="nav-icon">
                 <i class="fas fa-gamepad"></i>
             </div>
             <div class="nav-label">Игры</div>
         </div>
         
-        <div class="nav-item" onclick="switchTab('bonuses')">
+        <div class="nav-item" id="navBonuses">
             <div class="nav-icon">
                 <i class="fas fa-gift"></i>
             </div>
             <div class="nav-label">Бонусы</div>
         </div>
         
-        <div class="nav-item" onclick="switchTab('history')">
+        <div class="nav-item" id="navHistory">
             <div class="nav-icon">
                 <i class="fas fa-history"></i>
             </div>
             <div class="nav-label">История</div>
         </div>
         
-        <div class="nav-item" onclick="switchTab('profile')">
+        <div class="nav-item" id="navProfile">
             <div class="nav-icon">
                 <i class="fas fa-user"></i>
             </div>
@@ -1082,7 +1079,7 @@
                 💎 ПОПОЛНИТЬ БАЛАНС
             </div>
             <div style="display: grid; gap: 12px; margin-bottom: 20px;">
-                <div onclick="selectDeposit('usdt')" style="background: rgba(255, 107, 53, 0.15); border: 2px solid var(--orange-main); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                <div id="depositUsdt" style="background: rgba(255, 107, 53, 0.15); border: 2px solid var(--orange-main); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
                     <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         💎
                     </div>
@@ -1095,7 +1092,7 @@
                     </div>
                 </div>
                 
-                <div onclick="selectDeposit('card')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                <div id="depositCard" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
                     <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         <i class="fas fa-credit-card"></i>
                     </div>
@@ -1105,7 +1102,7 @@
                     </div>
                 </div>
                 
-                <div onclick="selectDeposit('crypto')" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                <div id="depositCrypto" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
                     <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
                         <i class="fas fa-bitcoin"></i>
                     </div>
@@ -1115,7 +1112,7 @@
                     </div>
                 </div>
             </div>
-            <button onclick="closeDepositPopup()" style="width: 100%; background: rgba(255, 107, 53, 0.2); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 12px; color: var(--text-light); font-weight: 900; cursor: pointer; font-size: 0.9rem; font-family: 'Orbitron', sans-serif;">
+            <button id="closeDepositBtn" style="width: 100%; background: rgba(255, 107, 53, 0.2); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 12px; color: var(--text-light); font-weight: 900; cursor: pointer; font-size: 0.9rem; font-family: 'Orbitron', sans-serif;">
                 ЗАКРЫТЬ
             </button>
         </div>
@@ -1173,10 +1170,10 @@
             </div>
             
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button onclick="processUsdtDeposit()" style="flex: 2; background: var(--gradient-orange); border: none; border-radius: 12px; padding: 14px; color: white; font-weight: 900; cursor: pointer; font-size: 1rem; font-family: 'Orbitron', sans-serif; box-shadow: var(--shadow-glow);">
+                <button id="processUsdtBtn" style="flex: 2; background: var(--gradient-orange); border: none; border-radius: 12px; padding: 14px; color: white; font-weight: 900; cursor: pointer; font-size: 1rem; font-family: 'Orbitron', sans-serif; box-shadow: var(--shadow-glow);">
                     💎 ПОПОЛНИТЬ USDT
                 </button>
-                <button onclick="closeUsdtModal()" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 12px; padding: 14px; color: var(--text-light); font-weight: 700; cursor: pointer; font-size: 0.9rem;">
+                <button id="closeUsdtBtn" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 12px; padding: 14px; color: var(--text-light); font-weight: 700; cursor: pointer; font-size: 0.9rem;">
                     ОТМЕНА
                 </button>
             </div>
@@ -1224,6 +1221,9 @@
                 return;
             }
             
+            // Инициализация обработчиков событий
+            initEventListeners();
+            
             await loadUserData();
             initAmountButtons();
             
@@ -1241,6 +1241,59 @@
             
             console.log('✅ ORANGEWIN запущен');
         });
+        
+        // Инициализация всех обработчиков событий
+        function initEventListeners() {
+            // Логотип
+            document.getElementById('logo').addEventListener('click', () => {
+                tg.HapticFeedback.impactOccurred('light');
+                window.location.href = 'index.html';
+            });
+            
+            // Карточка баланса
+            document.getElementById('balanceCard').addEventListener('click', showDepositPopup);
+            
+            // Баннеры
+            document.getElementById('bannerDeposit').addEventListener('click', () => openBanner('deposit'));
+            document.getElementById('bannerBonuses').addEventListener('click', () => openBanner('bonuses'));
+            document.getElementById('bannerWheel').addEventListener('click', () => openBanner('wheel'));
+            
+            // Игры
+            document.getElementById('gameDice').addEventListener('click', () => openGame('dice'));
+            document.getElementById('gameCoin').addEventListener('click', () => openGame('coin'));
+            document.getElementById('gameMines').addEventListener('click', () => openGame('mines'));
+            document.getElementById('gameSlot').addEventListener('click', () => openGame('slot'));
+            
+            // Колесо фортуны
+            document.getElementById('wheelCard').addEventListener('click', openWheel);
+            
+            // Навигация
+            document.getElementById('navGames').addEventListener('click', () => switchTab('games'));
+            document.getElementById('navBonuses').addEventListener('click', () => switchTab('bonuses'));
+            document.getElementById('navHistory').addEventListener('click', () => switchTab('history'));
+            document.getElementById('navProfile').addEventListener('click', () => switchTab('profile'));
+            
+            // Попап депозита
+            document.getElementById('depositUsdt').addEventListener('click', () => selectDeposit('usdt'));
+            document.getElementById('depositCard').addEventListener('click', () => selectDeposit('card'));
+            document.getElementById('depositCrypto').addEventListener('click', () => selectDeposit('crypto'));
+            document.getElementById('closeDepositBtn').addEventListener('click', closeDepositPopup);
+            
+            // Модалка USDT
+            document.getElementById('closeUsdtBtn').addEventListener('click', closeUsdtModal);
+            document.getElementById('processUsdtBtn').addEventListener('click', processUsdtDeposit);
+            
+            // Поле ввода суммы
+            const customAmountInput = document.getElementById('usdtCustomAmount');
+            if (customAmountInput) {
+                customAmountInput.addEventListener('input', (e) => {
+                    const value = parseInt(e.target.value) || 0;
+                    if (value >= 100) {
+                        selectUsdtAmount(value);
+                    }
+                });
+            }
+        }
         
         // Загрузка данных пользователя
         async function loadUserData() {
@@ -1299,9 +1352,9 @@
                 isAdmin = await checkIfAdmin(tgUser.id);
                 if (isAdmin) {
                     adminBtn.style.display = 'flex';
-                    adminBtn.onclick = () => {
+                    adminBtn.addEventListener('click', () => {
                         window.location.href = 'admin.html';
-                    };
+                    });
                 }
                 
                 await updateBalanceDisplay();
@@ -1391,10 +1444,18 @@
             if (!container) return;
             
             container.innerHTML = amounts.map(amount => `
-                <button class="usdt-amount-btn" onclick="selectUsdtAmount(${amount})">
+                <button class="usdt-amount-btn" data-amount="${amount}">
                     ${amount.toLocaleString()} ₽
                 </button>
             `).join('');
+            
+            // Добавляем обработчики на кнопки
+            document.querySelectorAll('.usdt-amount-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const amount = parseInt(btn.getAttribute('data-amount'));
+                    selectUsdtAmount(amount);
+                });
+            });
             
             // Выбираем первую сумму по умолчанию
             selectUsdtAmount(amounts[1]);
@@ -1411,7 +1472,7 @@
             
             // Добавляем активный класс выбранной кнопке
             document.querySelectorAll('.usdt-amount-btn').forEach(btn => {
-                if (btn.textContent.includes(amount.toLocaleString())) {
+                if (parseInt(btn.getAttribute('data-amount')) === amount) {
                     btn.classList.add('active');
                 }
             });
@@ -1469,12 +1530,15 @@
             });
             
             // Добавляем активный класс
-            event.currentTarget.classList.add('active');
+            const activeNav = document.getElementById(`nav${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
             
             // Перенаправляем на соответствующую страницу
             switch(tabId) {
                 case 'games':
-                    window.location.href = 'index.html';
+                    // Уже на главной
                     break;
                 case 'bonuses':
                     window.location.href = 'bonuses.html';
@@ -1526,7 +1590,7 @@
             switch(method) {
                 case 'usdt':
                     closeDepositPopup();
-                    setTimeout(() => showUsdtModal(), 300);
+                    setTimeout(() => showUsdtModal(), 100);
                     break;
                 case 'card':
                     showAlert('Пополнение картой скоро будет доступно', 'warning');
