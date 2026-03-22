@@ -50,6 +50,7 @@
             background: transparent;
             color: var(--tg-theme-hint-color, #8e8e93);
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .lang-btn.active {
@@ -124,10 +125,11 @@
             border-radius: 12px;
             background: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
+            outline: none;
+            transition: border-color 0.2s;
         }
 
         .input-wrapper input:focus {
-            outline: none;
             border-color: var(--tg-theme-button-color, #2c7be5);
         }
 
@@ -137,6 +139,12 @@
             padding: 20px;
             margin-bottom: 16px;
             text-align: center;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 8px;
         }
 
         .result-value {
@@ -164,6 +172,7 @@
             color: white;
             cursor: pointer;
             margin-bottom: 16px;
+            transition: opacity 0.2s;
         }
 
         .exchange-btn:disabled {
@@ -223,6 +232,20 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        button {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -256,7 +279,7 @@
                     <span data-i18n="min_amount">min 10 USDT</span>
                 </div>
                 <div class="input-wrapper">
-                    <input type="number" id="usdtAmount" placeholder="0.00" step="any">
+                    <input type="number" id="usdtAmount" placeholder="0.00" step="any" inputmode="decimal">
                 </div>
             </div>
         </div>
@@ -284,289 +307,337 @@
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        
-        // ⚠️ ЗАМЕНИ НА СВОИ ДАННЫЕ ⚠️
-        const SUPABASE_URL = 'https://mstekqneofdufkyqghqu.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdGVrcW5lb2ZkdWZreXFnaHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODQzMjksImV4cCI6MjA4OTc2MDMyOX0.N8E1vfkz8lv_eQPmsZGJ7UGxmO23_eQnsi0yciLBGY0';
-        
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        const RATE = 75.00;
-        const FEE_PERCENT = 0.5;
-        const MIN_AMOUNT = 10;
-        
-        const translations = {
-            ru: {
-                title: 'Обменник',
-                subtitle: 'USDT → RUB',
-                rate_label: 'Актуальный курс',
-                rate_per: 'за 1 USDT',
-                you_send: 'Вы отдаете',
-                min_amount: 'мин 10 USDT',
-                you_receive: 'Вы получаете',
-                service_fee: 'Комиссия сервиса',
-                sell_btn: 'Продать USDT',
-                info_instant: 'Мгновенный обмен через CryptoPay',
-                info_rate: 'Лучший курс на рынке',
-                alerts: {
-                    enter_amount: 'Введите сумму',
-                    min_amount: 'Минимальная сумма: {amount} USDT',
-                    creating: 'Создание инвойса...',
-                    error: 'Ошибка при создании инвойса'
+        (function() {
+            const tg = window.Telegram.WebApp;
+            tg.expand();
+            tg.enableClosingConfirmation();
+            
+            const SUPABASE_URL = 'https://mstekqneofdufkyqghqu.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdGVrcW5lb2ZkdWZreXFnaHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODQzMjksImV4cCI6MjA4OTc2MDMyOX0.N8E1vfkz8lv_eQPmsZGJ7UGxmO23_eQnsi0yciLBGY0';
+            
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            const RATE = 75.00;
+            const FEE_PERCENT = 0.5;
+            const MIN_AMOUNT = 10;
+            
+            const translations = {
+                ru: {
+                    title: 'Обменник',
+                    subtitle: 'USDT → RUB',
+                    rate_label: 'Актуальный курс',
+                    rate_per: 'за 1 USDT',
+                    you_send: 'Вы отдаете',
+                    min_amount: 'мин 10 USDT',
+                    you_receive: 'Вы получаете',
+                    service_fee: 'Комиссия сервиса',
+                    sell_btn: 'Продать USDT',
+                    info_instant: 'Мгновенный обмен через CryptoPay',
+                    info_rate: 'Лучший курс на рынке',
+                    alerts: {
+                        enter_amount: 'Введите сумму',
+                        min_amount: 'Минимальная сумма: 10 USDT',
+                        creating: 'Создание инвойса...',
+                        error: 'Ошибка при создании инвойса'
+                    },
+                    status: {
+                        pending: '⏳ Ожидание оплаты...',
+                        completed: '✅ Оплата получена! Обмен завершен'
+                    }
                 },
-                status: {
-                    pending: '⏳ Ожидание оплаты...',
-                    completed: '✅ Оплата получена! Обмен завершен'
+                en: {
+                    title: 'Exchange',
+                    subtitle: 'USDT → RUB',
+                    rate_label: 'Current rate',
+                    rate_per: 'per 1 USDT',
+                    you_send: 'You send',
+                    min_amount: 'min 10 USDT',
+                    you_receive: 'You receive',
+                    service_fee: 'Service fee',
+                    sell_btn: 'Sell USDT',
+                    info_instant: 'Instant exchange via CryptoPay',
+                    info_rate: 'Best rate on market',
+                    alerts: {
+                        enter_amount: 'Enter amount',
+                        min_amount: 'Minimum amount: 10 USDT',
+                        creating: 'Creating invoice...',
+                        error: 'Error creating invoice'
+                    },
+                    status: {
+                        pending: '⏳ Waiting for payment...',
+                        completed: '✅ Payment received! Exchange completed'
+                    }
                 }
-            },
-            en: {
-                title: 'Exchange',
-                subtitle: 'USDT → RUB',
-                rate_label: 'Current rate',
-                rate_per: 'per 1 USDT',
-                you_send: 'You send',
-                min_amount: 'min 10 USDT',
-                you_receive: 'You receive',
-                service_fee: 'Service fee',
-                sell_btn: 'Sell USDT',
-                info_instant: 'Instant exchange via CryptoPay',
-                info_rate: 'Best rate on market',
-                alerts: {
-                    enter_amount: 'Enter amount',
-                    min_amount: 'Minimum amount: {amount} USDT',
-                    creating: 'Creating invoice...',
-                    error: 'Error creating invoice'
-                },
-                status: {
-                    pending: '⏳ Waiting for payment...',
-                    completed: '✅ Payment received! Exchange completed'
+            };
+            
+            let currentLang = 'ru';
+            let currentTransactionId = null;
+            let checkInterval = null;
+            
+            const i18nElements = document.querySelectorAll('[data-i18n]');
+            const usdtInput = document.getElementById('usdtAmount');
+            const rubAmountEl = document.getElementById('rubAmount');
+            const feeValueEl = document.getElementById('feeValue');
+            const exchangeBtn = document.getElementById('exchangeBtn');
+            const statusContainer = document.getElementById('statusContainer');
+            
+            function updateLanguage(lang) {
+                currentLang = lang;
+                const t = translations[lang];
+                
+                i18nElements.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (t[key]) el.textContent = t[key];
+                });
+                
+                const btnSpan = exchangeBtn.querySelector('span');
+                if (btnSpan && btnSpan.innerHTML.indexOf('loader') === -1) {
+                    btnSpan.textContent = t.sell_btn;
                 }
             }
-        };
-        
-        let currentLang = 'ru';
-        let currentTransactionId = null;
-        let checkInterval = null;
-        
-        const i18nElements = document.querySelectorAll('[data-i18n]');
-        const usdtInput = document.getElementById('usdtAmount');
-        const rubAmount = document.getElementById('rubAmount');
-        const feeValue = document.getElementById('feeValue');
-        const exchangeBtn = document.getElementById('exchangeBtn');
-        const statusContainer = document.getElementById('statusContainer');
-        
-        function updateLanguage(lang) {
-            currentLang = lang;
-            const t = translations[lang];
             
-            i18nElements.forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (t[key]) el.textContent = t[key];
-            });
+            function formatNumber(num) {
+                return num.toLocaleString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
             
-            const btnSpan = exchangeBtn.querySelector('span');
-            if (btnSpan) btnSpan.textContent = t.sell_btn;
-        }
-        
-        function formatNumber(num) {
-            return num.toLocaleString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        
-        function calculate() {
-            let usdt = parseFloat(usdtInput.value);
-            if (isNaN(usdt)) usdt = 0;
+            function calculate() {
+                let usdt = parseFloat(usdtInput.value);
+                if (isNaN(usdt)) usdt = 0;
+                
+                let rubGross = usdt * RATE;
+                let fee = rubGross * (FEE_PERCENT / 100);
+                let rubNet = rubGross - fee;
+                
+                if (rubNet < 0) rubNet = 0;
+                if (fee < 0) fee = 0;
+                
+                rubAmountEl.textContent = formatNumber(rubNet) + ' RUB';
+                feeValueEl.textContent = formatNumber(fee) + ' RUB';
+                
+                return { usdt, rubNet, fee };
+            }
             
-            let rubGross = usdt * RATE;
-            let fee = rubGross * (FEE_PERCENT / 100);
-            let rubNet = rubGross - fee;
+            function showStatus(message, type = 'pending') {
+                statusContainer.classList.remove('hidden');
+                statusContainer.className = `status-badge status-${type}`;
+                statusContainer.textContent = message;
+            }
             
-            if (rubNet < 0) rubNet = 0;
+            function hideStatus() {
+                statusContainer.classList.add('hidden');
+            }
             
-            rubAmount.textContent = formatNumber(rubNet) + ' RUB';
-            feeValue.textContent = formatNumber(fee) + ' RUB';
+            function resetButton() {
+                exchangeBtn.disabled = false;
+                const btnSpan = exchangeBtn.querySelector('span');
+                btnSpan.textContent = translations[currentLang].sell_btn;
+            }
             
-            return { usdt, rubNet, fee };
-        }
-        
-        function showStatus(message, type = 'pending') {
-            statusContainer.classList.remove('hidden');
-            statusContainer.className = `status-badge status-${type}`;
-            statusContainer.textContent = message;
-        }
-        
-        function hideStatus() {
-            statusContainer.classList.add('hidden');
-        }
-        
-        async function checkTransactionStatus(transactionId) {
-            try {
-                const { data, error } = await supabase
+            async function checkTransactionStatus(transactionId) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('transactions')
+                        .select('status')
+                        .eq('id', transactionId)
+                        .single();
+                    
+                    if (error) {
+                        if (error.code === 'PGRST116') {
+                            return false;
+                        }
+                        throw error;
+                    }
+                    
+                    if (data && data.status === 'completed') {
+                        if (checkInterval) {
+                            clearInterval(checkInterval);
+                            checkInterval = null;
+                        }
+                        showStatus(translations[currentLang].status.completed, 'success');
+                        resetButton();
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                    return false;
+                }
+            }
+            
+            async function createInvoiceViaEdge(usdtAmount, userId) {
+                const edgeUrl = `${SUPABASE_URL}/functions/v1/create-crypto-pay-invoice`;
+                
+                const response = await fetch(edgeUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({
+                        amount: usdtAmount,
+                        userId: userId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                return await response.json();
+            }
+            
+            async function saveTransaction(userId, usdtAmount, rubAmountVal, feeAmount, invoiceId) {
+                const { data, error } = await supabaseClient
                     .from('transactions')
-                    .select('status')
-                    .eq('id', transactionId)
+                    .insert({
+                        user_id: userId,
+                        usdt_amount: usdtAmount,
+                        rub_amount: rubAmountVal,
+                        fee: feeAmount,
+                        rate: RATE,
+                        invoice_id: invoiceId,
+                        status: 'pending'
+                    })
+                    .select()
                     .single();
                 
                 if (error) throw error;
+                return data;
+            }
+            
+            async function handleExchange() {
+                if (exchangeBtn.disabled) return;
                 
-                if (data.status === 'completed') {
-                    if (checkInterval) clearInterval(checkInterval);
-                    showStatus(translations[currentLang].status.completed, 'success');
-                    exchangeBtn.disabled = false;
-                    exchangeBtn.querySelector('span').textContent = translations[currentLang].sell_btn;
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error('Error checking status:', error);
-                return false;
-            }
-        }
-        
-        async function createInvoiceViaEdge(usdtAmount, userId) {
-            const edgeUrl = `${SUPABASE_URL}/functions/v1/create-crypto-pay-invoice`;
-            
-            const response = await fetch(edgeUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify({
-                    amount: usdtAmount,
-                    userId: userId
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            return await response.json();
-        }
-        
-        async function saveTransaction(userId, usdtAmount, rubAmount, feeAmount, invoiceId) {
-            const { data, error } = await supabase
-                .from('transactions')
-                .insert({
-                    user_id: userId,
-                    usdt_amount: usdtAmount,
-                    rub_amount: rubAmount,
-                    fee: feeAmount,
-                    rate: RATE,
-                    invoice_id: invoiceId,
-                    status: 'pending'
-                })
-                .select()
-                .single();
-            
-            if (error) throw error;
-            return data;
-        }
-        
-        async function handleExchange() {
-            let usdt = parseFloat(usdtInput.value);
-            const t = translations[currentLang];
-            
-            if (isNaN(usdt) || usdt <= 0) {
-                tg.showAlert(t.alerts.enter_amount);
-                return;
-            }
-            
-            if (usdt < MIN_AMOUNT) {
-                tg.showAlert(t.alerts.min_amount.replace('{amount}', MIN_AMOUNT));
-                return;
-            }
-            
-            const { rubNet, fee } = calculate();
-            const userId = tg.initDataUnsafe?.user?.id || null;
-            
-            exchangeBtn.disabled = true;
-            const btnSpan = exchangeBtn.querySelector('span');
-            btnSpan.innerHTML = `<span class="loader"></span>${t.alerts.creating}`;
-            hideStatus();
-            
-            try {
-                // 1. Создаем инвойс через Edge Function
-                const invoice = await createInvoiceViaEdge(usdt, userId);
+                let usdt = parseFloat(usdtInput.value);
+                const t = translations[currentLang];
                 
-                if (!invoice.success) {
-                    throw new Error('Failed to create invoice');
+                if (isNaN(usdt) || usdt <= 0) {
+                    tg.showAlert(t.alerts.enter_amount);
+                    return;
                 }
                 
-                // 2. Сохраняем транзакцию в Supabase
-                const transaction = await saveTransaction(
-                    userId, usdt, rubNet, fee, invoice.invoice_id
-                );
+                if (usdt < MIN_AMOUNT) {
+                    tg.showAlert(t.alerts.min_amount);
+                    return;
+                }
                 
-                currentTransactionId = transaction.id;
+                const { rubNet, fee } = calculate();
+                const userId = tg.initDataUnsafe?.user?.id || null;
                 
-                // 3. Показываем статус
-                showStatus(t.status.pending, 'pending');
+                exchangeBtn.disabled = true;
+                const btnSpan = exchangeBtn.querySelector('span');
+                btnSpan.innerHTML = `<span class="loader"></span>${t.alerts.creating}`;
+                hideStatus();
                 
-                // 4. Открываем оплату через @send
-                tg.openTelegramLink(invoice.pay_url);
-                
-                // 5. Начинаем проверку статуса оплаты
-                if (checkInterval) clearInterval(checkInterval);
-                checkInterval = setInterval(async () => {
-                    const completed = await checkTransactionStatus(currentTransactionId);
-                    if (completed) {
-                        clearInterval(checkInterval);
-                        btnSpan.textContent = t.sell_btn;
+                try {
+                    const invoice = await createInvoiceViaEdge(usdt, userId);
+                    
+                    if (!invoice || !invoice.success) {
+                        throw new Error('Failed to create invoice');
                     }
-                }, 3000);
-                
-                // 6. Останавливаем проверку через 10 минут
-                setTimeout(() => {
+                    
+                    const transaction = await saveTransaction(
+                        userId, usdt, rubNet, fee, invoice.invoice_id
+                    );
+                    
+                    currentTransactionId = transaction.id;
+                    
+                    showStatus(t.status.pending, 'pending');
+                    
+                    if (invoice.pay_url) {
+                        tg.openTelegramLink(invoice.pay_url);
+                    } else {
+                        throw new Error('No payment URL');
+                    }
+                    
                     if (checkInterval) {
                         clearInterval(checkInterval);
-                        btnSpan.textContent = t.sell_btn;
-                        exchangeBtn.disabled = false;
+                        checkInterval = null;
                     }
-                }, 600000);
-                
-            } catch (error) {
-                console.error('Exchange error:', error);
-                tg.showAlert(t.alerts.error);
-                exchangeBtn.disabled = false;
-                btnSpan.textContent = t.sell_btn;
-                hideStatus();
+                    
+                    checkInterval = setInterval(async () => {
+                        const completed = await checkTransactionStatus(currentTransactionId);
+                        if (completed && checkInterval) {
+                            clearInterval(checkInterval);
+                            checkInterval = null;
+                        }
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        if (checkInterval) {
+                            clearInterval(checkInterval);
+                            checkInterval = null;
+                            if (exchangeBtn.disabled) {
+                                resetButton();
+                            }
+                        }
+                    }, 600000);
+                    
+                } catch (error) {
+                    console.error('Exchange error:', error);
+                    tg.showAlert(t.alerts.error);
+                    resetButton();
+                    hideStatus();
+                }
             }
-        }
-        
-        // Language buttons
-        document.querySelectorAll('.lang-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.getAttribute('data-lang');
-                currentLang = lang;
-                
-                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                updateLanguage(lang);
+            
+            const langBtns = document.querySelectorAll('.lang-btn');
+            for (let i = 0; i < langBtns.length; i++) {
+                langBtns[i].addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const lang = this.getAttribute('data-lang');
+                    if (lang === currentLang) return;
+                    currentLang = lang;
+                    
+                    for (let j = 0; j < langBtns.length; j++) {
+                        langBtns[j].classList.remove('active');
+                    }
+                    this.classList.add('active');
+                    
+                    updateLanguage(lang);
+                    calculate();
+                });
+            }
+            
+            usdtInput.addEventListener('input', function(e) {
+                let val = this.value;
+                if (val === '') {
+                    calculate();
+                    return;
+                }
+                let numVal = parseFloat(val);
+                if (!isNaN(numVal) && val.split('.')[1]?.length > 4) {
+                    this.value = numVal.toFixed(4);
+                }
                 calculate();
             });
-        });
-        
-        usdtInput.addEventListener('input', function() {
-            let val = this.value.replace(/,/g, '.');
-            if (val.split('.')[1]?.length > 4) {
-                val = parseFloat(val).toFixed(4);
-                this.value = val;
-            }
+            
+            usdtInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+            
+            exchangeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleExchange();
+            });
+            
+            document.body.addEventListener('click', function(e) {
+                if (e.target === exchangeBtn || exchangeBtn.contains(e.target)) {
+                    return;
+                }
+            });
+            
+            updateLanguage('ru');
             calculate();
-        });
-        
-        exchangeBtn.addEventListener('click', handleExchange);
-        
-        updateLanguage('ru');
-        calculate();
-        tg.ready();
+            tg.ready();
+            
+            console.log('App initialized');
+        })();
     </script>
 </body>
 </html>
