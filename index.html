@@ -79,11 +79,11 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 40px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             transition: all 0.25s ease;
             backdrop-filter: blur(10px);
         }
@@ -91,19 +91,35 @@
         .profile-btn:hover {
             background: rgba(212, 175, 55, 0.12);
             border-color: rgba(212, 175, 55, 0.3);
-            transform: translateY(-1px);
         }
 
-        .profile-btn svg {
-            width: 18px;
-            height: 18px;
-            stroke: #d4af37;
+        .profile-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .profile-btn span {
-            font-size: 0.85rem;
+        .profile-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d4af37, #f5e56b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #07070a;
+        }
+
+        .profile-user-name {
+            font-size: 0.8rem;
             font-weight: 500;
             color: #ffffff;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .lang-selector {
@@ -134,7 +150,7 @@
             box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
         }
 
-        /* Logo Section - elegant animation */
+        /* Logo Section */
         .logo-section {
             display: flex;
             flex-direction: column;
@@ -158,21 +174,10 @@
             opacity: 0.7;
         }
 
-        .tap-target.disabled:active {
-            transform: scale(1);
-        }
-
-        /* Soft glow animation for coin */
         @keyframes softGlow {
-            0% {
-                box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2), 0 0 0 4px rgba(212, 175, 55, 0.1);
-            }
-            50% {
-                box-shadow: 0 25px 50px rgba(212, 175, 55, 0.35), 0 0 0 6px rgba(212, 175, 55, 0.2);
-            }
-            100% {
-                box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2), 0 0 0 4px rgba(212, 175, 55, 0.1);
-            }
+            0% { box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2), 0 0 0 4px rgba(212, 175, 55, 0.1); }
+            50% { box-shadow: 0 25px 50px rgba(212, 175, 55, 0.35), 0 0 0 6px rgba(212, 175, 55, 0.2); }
+            100% { box-shadow: 0 20px 40px rgba(212, 175, 55, 0.2), 0 0 0 4px rgba(212, 175, 55, 0.1); }
         }
 
         .coin-logo {
@@ -183,7 +188,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
             animation: softGlow 3s ease-in-out infinite;
         }
 
@@ -193,7 +197,6 @@
             filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
         }
 
-        /* Elegant cooldown ring */
         @keyframes rotateSmooth {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -236,7 +239,6 @@
             color: #d4af37;
             font-weight: 600;
             font-family: monospace;
-            font-size: 0.8rem;
         }
 
         .token-name {
@@ -256,7 +258,7 @@
             border-radius: 40px;
         }
 
-        /* Balance Card - glass morphism */
+        /* Balance Card */
         .balance-card {
             background: rgba(20, 20, 28, 0.5);
             backdrop-filter: blur(20px);
@@ -265,7 +267,6 @@
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
             width: 100%;
-            transition: all 0.3s ease;
         }
 
         .balance-label {
@@ -288,7 +289,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            transition: all 0.2s ease;
         }
 
         .balance-value small {
@@ -311,12 +311,6 @@
             padding: 16px;
             text-align: center;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            background: rgba(30, 30, 38, 0.5);
         }
 
         .stat-label {
@@ -328,7 +322,6 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            letter-spacing: 0.5px;
         }
 
         .stat-value {
@@ -357,6 +350,7 @@
         .profile-page {
             background: #07070a;
             min-height: 100vh;
+            padding-bottom: 30px;
         }
 
         .profile-header {
@@ -382,7 +376,6 @@
 
         .back-btn:hover {
             background: rgba(212, 175, 55, 0.15);
-            border-color: rgba(212, 175, 55, 0.3);
         }
 
         .back-btn svg {
@@ -403,7 +396,7 @@
         .profile-avatar-section {
             display: flex;
             justify-content: center;
-            margin-bottom: 32px;
+            margin-bottom: 20px;
         }
 
         @keyframes avatarGlow {
@@ -487,6 +480,125 @@
             color: #d4af37;
         }
 
+        /* Bonus Sections */
+        .bonus-section {
+            margin: 0 20px 20px;
+        }
+
+        .bonus-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .daily-bonus-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .daily-item {
+            background: rgba(20, 20, 28, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 12px 6px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .daily-item.claimed {
+            opacity: 0.5;
+            background: rgba(30, 30, 38, 0.3);
+        }
+
+        .daily-item.available {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+            cursor: pointer;
+        }
+
+        .daily-item.available:hover {
+            transform: translateY(-2px);
+            background: rgba(212, 175, 55, 0.2);
+        }
+
+        .daily-day {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+        }
+
+        .daily-reward {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #d4af37;
+        }
+
+        .daily-check {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: #4cd964;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #d4af37, #f5e56b);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #07070a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .subscribe-btn.claimed {
+            background: rgba(30, 30, 38, 0.5);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .subscribe-btn.claimed:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .bonus-hint {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+        }
+
         .footer-note {
             text-align: center;
             font-size: 0.65rem;
@@ -495,16 +607,10 @@
             padding: 16px 20px;
         }
 
-        /* Elegant tap animations */
+        /* Animations */
         @keyframes elegantRipple {
-            0% {
-                transform: translate(-50%, -50%) scale(0.6);
-                opacity: 0.7;
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(2);
-                opacity: 0;
-            }
+            0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.7; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
         }
 
         .tap-ripple {
@@ -519,17 +625,9 @@
         }
 
         @keyframes elegantFloat {
-            0% {
-                transform: translate(-50%, 0) scale(0.8);
-                opacity: 1;
-            }
-            40% {
-                transform: translate(-50%, -25px) scale(1.1);
-            }
-            100% {
-                transform: translate(-50%, -65px) scale(0.9);
-                opacity: 0;
-            }
+            0% { transform: translate(-50%, 0) scale(0.8); opacity: 1; }
+            40% { transform: translate(-50%, -25px) scale(1.1); }
+            100% { transform: translate(-50%, -65px) scale(0.9); opacity: 0; }
         }
 
         .tap-number {
@@ -544,52 +642,35 @@
             animation: elegantFloat 0.7s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
             z-index: 1001;
             white-space: nowrap;
-            text-shadow: 0 0 4px rgba(0,0,0,0.2);
         }
 
         @keyframes coinPulse {
-            0% {
-                filter: brightness(1);
-                transform: scale(1);
-            }
-            50% {
-                filter: brightness(1.08);
-                transform: scale(1.02);
-            }
-            100% {
-                filter: brightness(1);
-                transform: scale(1);
-            }
+            0% { filter: brightness(1); transform: scale(1); }
+            50% { filter: brightness(1.08); transform: scale(1.02); }
+            100% { filter: brightness(1); transform: scale(1); }
         }
 
         .coin-flash {
             animation: coinPulse 0.25s ease-out;
         }
 
-        @keyframes balanceHighlight {
-            0% {
-                text-shadow: 0 0 0px rgba(212, 175, 55, 0);
-                opacity: 1;
-            }
-            50% {
-                text-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
-                opacity: 1;
-            }
-            100% {
-                text-shadow: 0 0 0px rgba(212, 175, 55, 0);
-                opacity: 1;
-            }
-        }
-
         .balance-pulse {
             animation: balanceHighlight 0.35s ease-out;
+        }
+
+        @keyframes balanceHighlight {
+            0% { text-shadow: 0 0 0px rgba(212, 175, 55, 0); }
+            50% { text-shadow: 0 0 12px rgba(212, 175, 55, 0.6); }
+            100% { text-shadow: 0 0 0px rgba(212, 175, 55, 0); }
         }
 
         @media (max-width: 480px) {
             .coin-logo { width: 150px; height: 150px; }
             .coin-logo svg { width: 80px; height: 80px; }
             .balance-value { font-size: 2.5rem; }
-            .stat-value { font-size: 1.3rem; }
+            .daily-bonus-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+            .daily-item { padding: 8px 4px; }
+            .daily-reward { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -599,11 +680,10 @@
         <div class="content">
             <div class="header-top">
                 <button class="profile-btn" id="openProfileBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                    <span id="profileBtnText">Profile</span>
+                    <div class="profile-user">
+                        <div class="profile-user-avatar" id="headerAvatar">U</div>
+                        <div class="profile-user-name" id="headerName">User</div>
+                    </div>
                 </button>
                 <div class="lang-selector">
                     <button class="lang-btn active" data-lang="ru">RU</button>
@@ -743,6 +823,37 @@
                 </div>
             </div>
 
+            <!-- Daily Bonus Section -->
+            <div class="bonus-section">
+                <div class="bonus-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span id="dailyBonusTitle">DAILY REWARD</span>
+                </div>
+                <div class="daily-bonus-grid" id="dailyBonusGrid"></div>
+            </div>
+
+            <!-- Subscribe Bonus -->
+            <div class="bonus-section">
+                <div class="bonus-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span id="subscribeBonusTitle">CHANNEL BONUS</span>
+                </div>
+                <button class="subscribe-btn" id="subscribeBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span id="subscribeBtnText">Join Channel & Get 5 W-T</span>
+                </button>
+                <div class="bonus-hint" id="subscribeHint">Telegram channel: @WavesTokenOfficial</div>
+            </div>
+
             <div class="footer-note">W-T · Premium Wallet</div>
         </div>
     </div>
@@ -758,6 +869,9 @@
             const TAP_REWARD = 0.02;
             const MAX_TAPS_PER_DAY = 121;
             const COOLDOWN_SECONDS = 3;
+            const CHANNEL_LINK = "https://t.me/+aNUeYrQ649w3YjUy";
+            const SUBSCRIBE_BONUS = 5;
+            const DAILY_BONUSES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             
             let currentLang = 'ru';
             let balance = 0;
@@ -765,13 +879,18 @@
             let totalTaps = 0;
             let lastTapDate = null;
             let lastTapTime = 0;
+            let dailyStreak = 0;
+            let lastDailyClaim = null;
+            let subscribeClaimed = false;
             
-            let user = { id: 'anonymous', firstName: 'User', lastName: '' };
+            // Telegram user data
+            let user = { id: 'anonymous', firstName: 'User', lastName: '', username: '', photoUrl: null };
             try {
                 if (tg.initDataUnsafe?.user) {
                     user.id = tg.initDataUnsafe.user.id || 'anonymous';
                     user.firstName = tg.initDataUnsafe.user.first_name || 'User';
                     user.lastName = tg.initDataUnsafe.user.last_name || '';
+                    user.username = tg.initDataUnsafe.user.username || '';
                 }
             } catch(e) {}
             
@@ -779,20 +898,30 @@
                 ru: {
                     tokenSymbol: 'WAVES TOKEN', balanceLabel: 'ОБЩИЙ БАЛАНС', tapHintText: 'Тапай чтобы заработать | +0.02 W-T',
                     todayLabel: 'ТАПОВ СЕГОДНЯ', totalTapsLabel: 'ВСЕГО ТАПОВ', footerNote: 'W-T · Тапай чтобы заработать | 0.02 W-T за тап · 3 сек · 121/день',
-                    profileBtn: 'Профиль', profileTitle: 'Профиль', profileBalanceLabel: 'Баланс', profileTodayLabel: 'Тапов сегодня',
+                    profileTitle: 'Профиль', profileBalanceLabel: 'Баланс', profileTodayLabel: 'Тапов сегодня',
                     profileTotalLabel: 'Всего тапов', profileEarnedLabel: 'Заработано',
-                    tapLimitReached: 'Дневной лимит', tapLimitReachedMsg: 'Вы использовали 121 тап сегодня. Возвращайтесь завтра!',
+                    dailyBonusTitle: 'ЕЖЕДНЕВНЫЙ БОНУС', subscribeBonusTitle: 'БОНУС ЗА ПОДПИСКУ',
+                    subscribeBtnText: 'Подписаться на канал + 5 W-T', subscribeHint: 'Telegram канал: @WavesTokenOfficial',
+                    subscribeClaimedText: 'Бонус получен ✓', tapLimitReached: 'Дневной лимит',
+                    tapLimitReachedMsg: 'Вы использовали 121 тап сегодня. Возвращайтесь завтра!',
                     tapCooldown: 'Подождите', tapCooldownMsg: 'Можно тапать раз в 3 секунды. Осталось {time} сек.',
-                    dayReset: 'Новый день! Лимит тапов обновлен.'
+                    dayReset: 'Новый день! Лимит тапов обновлен.', day: 'День', bonusClaimed: 'Бонус получен!',
+                    bonusAvailable: 'Забрать бонус', subscribeBonusClaimed: 'Вы уже получили бонус за подписку!',
+                    subscribeBonusSuccess: 'Бонус получен! +5 W-T'
                 },
                 en: {
                     tokenSymbol: 'WAVES TOKEN', balanceLabel: 'TOTAL BALANCE', tapHintText: 'Tap to earn | +0.02 W-T',
                     todayLabel: 'TODAY TAPS', totalTapsLabel: 'TOTAL TAPS', footerNote: 'W-T · Tap to earn | 0.02 W-T per tap · 3s · 121/day',
-                    profileBtn: 'Profile', profileTitle: 'Profile', profileBalanceLabel: 'Balance', profileTodayLabel: 'Today Taps',
+                    profileTitle: 'Profile', profileBalanceLabel: 'Balance', profileTodayLabel: 'Today Taps',
                     profileTotalLabel: 'Total Taps', profileEarnedLabel: 'Total Earned',
-                    tapLimitReached: 'Daily limit', tapLimitReachedMsg: 'You have reached 121 taps today. Come back tomorrow!',
+                    dailyBonusTitle: 'DAILY REWARD', subscribeBonusTitle: 'CHANNEL BONUS',
+                    subscribeBtnText: 'Join Channel + 5 W-T', subscribeHint: 'Telegram channel: @WavesTokenOfficial',
+                    subscribeClaimedText: 'Bonus claimed ✓', tapLimitReached: 'Daily limit',
+                    tapLimitReachedMsg: 'You have reached 121 taps today. Come back tomorrow!',
                     tapCooldown: 'Wait', tapCooldownMsg: 'You can tap every 3 seconds. Wait {time} sec.',
-                    dayReset: 'New day! Tap limit refreshed.'
+                    dayReset: 'New day! Tap limit refreshed.', day: 'Day', bonusClaimed: 'Bonus claimed!',
+                    bonusAvailable: 'Claim bonus', subscribeBonusClaimed: 'You already claimed the subscribe bonus!',
+                    subscribeBonusSuccess: 'Bonus claimed! +5 W-T'
                 }
             };
             
@@ -802,6 +931,7 @@
             }
             
             function isNewDay() { return lastTapDate !== getTodayStr(); }
+            function isNewDailyDay() { return lastDailyClaim !== getTodayStr(); }
             
             function checkReset() {
                 if (isNewDay()) { todayTaps = 0; lastTapDate = getTodayStr(); save(); return true; }
@@ -838,8 +968,44 @@
                 return true;
             }
             
+            function claimDailyBonus(dayIndex) {
+                const t = translations[currentLang];
+                const reward = DAILY_BONUSES[dayIndex];
+                if (isNewDailyDay()) {
+                    dailyStreak = 0;
+                }
+                if (dayIndex !== dailyStreak) {
+                    return false;
+                }
+                balance += reward;
+                dailyStreak = (dailyStreak + 1) % DAILY_BONUSES.length;
+                lastDailyClaim = getTodayStr();
+                save();
+                updateUI();
+                showAlert(t.bonusClaimed, `+${reward} W-T`);
+                return true;
+            }
+            
+            function claimSubscribeBonus() {
+                const t = translations[currentLang];
+                if (subscribeClaimed) {
+                    showAlert(t.subscribeBonusClaimed, '');
+                    return false;
+                }
+                window.open(CHANNEL_LINK, '_blank');
+                balance += SUBSCRIBE_BONUS;
+                subscribeClaimed = true;
+                save();
+                updateUI();
+                showAlert(t.subscribeBonusSuccess, `+${SUBSCRIBE_BONUS} W-T`);
+                return true;
+            }
+            
             function save() {
-                localStorage.setItem('wt_tap_data', JSON.stringify({ balance, todayTaps, totalTaps, lastTapDate, lastTapTime }));
+                localStorage.setItem('wt_tap_data', JSON.stringify({ 
+                    balance, todayTaps, totalTaps, lastTapDate, lastTapTime,
+                    dailyStreak, lastDailyClaim, subscribeClaimed
+                }));
             }
             
             function load() {
@@ -852,14 +1018,17 @@
                         totalTaps = d.totalTaps || 0;
                         lastTapDate = d.lastTapDate;
                         lastTapTime = d.lastTapTime || 0;
+                        dailyStreak = d.dailyStreak || 0;
+                        lastDailyClaim = d.lastDailyClaim;
+                        subscribeClaimed = d.subscribeClaimed || false;
                         if (isNewDay()) { todayTaps = 0; lastTapDate = getTodayStr(); save(); }
                     } catch(e) {}
                 }
             }
             
             function showAlert(title, msg) {
-                if (tg.showAlert) tg.showAlert(`${title}\n${msg}`);
-                else alert(`${title}\n${msg}`);
+                if (tg.showAlert && msg) tg.showAlert(`${title}\n${msg}`);
+                else if (msg) alert(`${title}\n${msg}`);
             }
             
             function showTapAnimation(x, y) {
@@ -915,6 +1084,51 @@
                 }
             }
             
+            function renderDailyBonus() {
+                const container = document.getElementById('dailyBonusGrid');
+                const t = translations[currentLang];
+                const today = getTodayStr();
+                const canClaimToday = isNewDailyDay();
+                const nextIndex = canClaimToday ? dailyStreak : -1;
+                
+                container.innerHTML = DAILY_BONUSES.map((reward, idx) => {
+                    let statusClass = '';
+                    let statusIcon = '';
+                    let clickable = false;
+                    
+                    if (idx < dailyStreak && lastDailyClaim === today) {
+                        statusClass = 'claimed';
+                        statusIcon = '<div class="daily-check">✓</div>';
+                    } else if (idx === dailyStreak && canClaimToday) {
+                        statusClass = 'available';
+                        clickable = true;
+                    } else if (idx > dailyStreak) {
+                        statusClass = '';
+                    } else if (idx === dailyStreak && !canClaimToday) {
+                        statusClass = 'claimed';
+                        statusIcon = '<div class="daily-check">✓</div>';
+                    }
+                    
+                    return `
+                        <div class="daily-item ${statusClass}" data-day="${idx}" ${clickable ? 'style="cursor:pointer"' : ''}>
+                            ${statusIcon}
+                            <div class="daily-day">${t.day} ${idx + 1}</div>
+                            <div class="daily-reward">${reward} W-T</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.querySelectorAll('.daily-item.available').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const day = parseInt(el.dataset.day);
+                        claimDailyBonus(day);
+                        renderDailyBonus();
+                        updateUI();
+                    });
+                });
+            }
+            
             function updateUI() {
                 const t = translations[currentLang];
                 document.getElementById('tokenSymbol').innerText = t.tokenSymbol;
@@ -923,12 +1137,25 @@
                 document.getElementById('todayLabel').innerText = t.todayLabel;
                 document.getElementById('totalTapsLabel').innerText = t.totalTapsLabel;
                 document.getElementById('footerNote').innerText = t.footerNote;
-                document.getElementById('profileBtnText').innerText = t.profileBtn;
                 document.getElementById('profileTitle').innerText = t.profileTitle;
                 document.getElementById('profileBalanceLabel').innerText = t.profileBalanceLabel;
                 document.getElementById('profileTodayLabel').innerText = t.profileTodayLabel;
                 document.getElementById('profileTotalLabel').innerText = t.profileTotalLabel;
                 document.getElementById('profileEarnedLabel').innerText = t.profileEarnedLabel;
+                document.getElementById('dailyBonusTitle').innerText = t.dailyBonusTitle;
+                document.getElementById('subscribeBonusTitle').innerText = t.subscribeBonusTitle;
+                document.getElementById('subscribeHint').innerText = t.subscribeHint;
+                
+                const subscribeBtn = document.getElementById('subscribeBtn');
+                if (subscribeClaimed) {
+                    subscribeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> <span>${t.subscribeClaimedText}</span>`;
+                    subscribeBtn.classList.add('claimed');
+                    subscribeBtn.disabled = true;
+                } else {
+                    subscribeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span>${t.subscribeBtnText}</span>`;
+                    subscribeBtn.classList.remove('claimed');
+                    subscribeBtn.disabled = false;
+                }
                 
                 document.getElementById('balanceDisplay').innerHTML = balance.toFixed(4) + ' <small>W-T</small>';
                 document.getElementById('todayTaps').innerText = todayTaps;
@@ -936,8 +1163,11 @@
                 document.getElementById('tapProgress').style.width = (todayTaps / MAX_TAPS_PER_DAY * 100) + '%';
                 
                 const avatarLetter = user.firstName ? user.firstName[0].toUpperCase() : 'W';
+                document.getElementById('headerAvatar').innerText = avatarLetter;
                 document.getElementById('profileAvatar').innerText = avatarLetter;
-                document.getElementById('profileName').innerText = user.firstName + (user.lastName ? ' ' + user.lastName : '');
+                const displayName = user.firstName + (user.lastName ? ' ' + user.lastName : '');
+                document.getElementById('headerName').innerText = displayName.length > 12 ? displayName.slice(0,10)+'..' : displayName;
+                document.getElementById('profileName').innerText = displayName || 'W-T User';
                 const shortId = user.id !== 'anonymous' ? user.id.toString().slice(-8) : 'guest_' + Math.random().toString(36).substr(2, 6);
                 document.getElementById('profileId').innerHTML = `ID: ${shortId}`;
                 document.getElementById('profileBalance').innerHTML = balance.toFixed(4) + ' W-T';
@@ -948,6 +1178,8 @@
                 document.querySelectorAll('.lang-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
                 });
+                
+                renderDailyBonus();
             }
             
             // Page transitions
@@ -970,6 +1202,9 @@
             const tapTarget = document.getElementById('tapTarget');
             tapTarget.addEventListener('click', handleTap);
             tapTarget.addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); });
+            
+            // Subscribe button
+            document.getElementById('subscribeBtn').addEventListener('click', () => claimSubscribeBonus());
             
             // Language
             document.querySelectorAll('.lang-btn').forEach(btn => {
