@@ -6,6 +6,8 @@
     <title>W-T · Tap Miner</title>
     <!-- Telegram Mini App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -480,7 +482,7 @@
             color: #d4af37;
         }
 
-        /* Bonus Sections */
+        /* Bonus Section - Channel Only */
         .bonus-section {
             margin: 0 20px 20px;
         }
@@ -497,67 +499,6 @@
             gap: 8px;
         }
 
-        .daily-bonus-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-
-        .daily-item {
-            background: rgba(20, 20, 28, 0.5);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 12px 6px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .daily-item.claimed {
-            opacity: 0.5;
-            background: rgba(30, 30, 38, 0.3);
-        }
-
-        .daily-item.available {
-            border-color: #d4af37;
-            background: rgba(212, 175, 55, 0.1);
-            cursor: pointer;
-        }
-
-        .daily-item.available:hover {
-            transform: translateY(-2px);
-            background: rgba(212, 175, 55, 0.2);
-        }
-
-        .daily-day {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 4px;
-        }
-
-        .daily-reward {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #d4af37;
-        }
-
-        .daily-check {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 16px;
-            height: 16px;
-            background: #4cd964;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: white;
-        }
-
         .subscribe-btn {
             width: 100%;
             background: linear-gradient(135deg, #d4af37, #f5e56b);
@@ -571,32 +512,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             transition: all 0.2s;
             margin-bottom: 12px;
         }
 
-        .subscribe-btn:hover {
+        .subscribe-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
         }
 
-        .subscribe-btn.claimed {
-            background: rgba(30, 30, 38, 0.5);
+        .subscribe-btn:disabled {
+            background: rgba(30, 30, 38, 0.6);
             color: rgba(255, 255, 255, 0.5);
             cursor: not-allowed;
             transform: none;
         }
 
-        .subscribe-btn.claimed:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        .bonus-hint {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.4);
-            text-align: center;
+        .subscribe-btn svg {
+            width: 22px;
+            height: 22px;
         }
 
         .footer-note {
@@ -668,9 +603,6 @@
             .coin-logo { width: 150px; height: 150px; }
             .coin-logo svg { width: 80px; height: 80px; }
             .balance-value { font-size: 2.5rem; }
-            .daily-bonus-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
-            .daily-item { padding: 8px 4px; }
-            .daily-reward { font-size: 0.75rem; }
         }
     </style>
 </head>
@@ -823,35 +755,24 @@
                 </div>
             </div>
 
-            <!-- Daily Bonus Section -->
-            <div class="bonus-section">
-                <div class="bonus-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    <span id="dailyBonusTitle">DAILY REWARD</span>
-                </div>
-                <div class="daily-bonus-grid" id="dailyBonusGrid"></div>
-            </div>
-
-            <!-- Subscribe Bonus -->
+            <!-- Subscribe Bonus Only -->
             <div class="bonus-section">
                 <div class="bonus-title">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                         <polyline points="22,6 12,13 2,6"/>
+                        <circle cx="12" cy="13" r="2"/>
                     </svg>
                     <span id="subscribeBonusTitle">CHANNEL BONUS</span>
                 </div>
                 <button class="subscribe-btn" id="subscribeBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                         <polyline points="22,6 12,13 2,6"/>
+                        <path d="M12 13v8M9 18l3 3 3-3"/>
                     </svg>
-                    <span id="subscribeBtnText">Join Channel & Get 5 W-T</span>
+                    <span id="subscribeBtnText">Join Channel & Get 1 W-T</span>
                 </button>
-                <div class="bonus-hint" id="subscribeHint">Telegram channel: @WavesTokenOfficial</div>
             </div>
 
             <div class="footer-note">W-T · Premium Wallet</div>
@@ -866,88 +787,204 @@
             tg.MainButton.hide();
             tg.BackButton.hide();
             
+            // ============================================
+            // SUPABASE CONFIGURATION - НАСТРОЙТЕ СВОИ ДАННЫЕ!
+            // ============================================
+            // 1. Зарегистрируйтесь на https://supabase.com
+            // 2. Создайте новый проект
+            // 3. Создайте таблицу "users" со следующими полями:
+            //    - id (bigint, primary key)
+            //    - telegram_id (text, unique)
+            //    - username (text)
+            //    - first_name (text)
+            //    - balance (float8, default: 0)
+            //    - today_taps (int, default: 0)
+            //    - total_taps (int, default: 0)
+            //    - last_tap_date (text)
+            //    - last_tap_time (bigint)
+            //    - subscribe_claimed (bool, default: false)
+            //    - created_at (timestamp, default: now())
+            //    - updated_at (timestamp, default: now())
+            // 4. Скопируйте URL и anon key ниже
+            // ============================================
+            
+            const SUPABASE_URL = "https://aoogkjqdsbozaeblxloc.supabase.co"; // Замените на ваш URL
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvb2dranFkc2JvemFlYmx4bG9jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxMjY5MTEsImV4cCI6MjA4OTcwMjkxMX0.w8Jm5AS8aW3yjD6Uw8iGSnlHYQQU-BCpfSqIdowhA2Y"; // Замените на ваш anon key
+            
+            // Для демонстрации используем localStorage, если Supabase не настроен
+            const USE_LOCAL_FALLBACK = true;
+            
+            let supabase = null;
+            let isSupabaseConnected = false;
+            
+            // Инициализация Supabase (если указаны данные)
+            if (SUPABASE_URL !== "YOUR_SUPABASE_URL" && SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY") {
+                try {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    isSupabaseConnected = true;
+                    console.log("Supabase connected");
+                } catch(e) {
+                    console.warn("Supabase init failed:", e);
+                    isSupabaseConnected = false;
+                }
+            }
+            
             const TAP_REWARD = 0.02;
             const MAX_TAPS_PER_DAY = 121;
             const COOLDOWN_SECONDS = 3;
             const CHANNEL_LINK = "https://t.me/+aNUeYrQ649w3YjUy";
-            const SUBSCRIBE_BONUS = 5;
-            const DAILY_BONUSES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            const SUBSCRIBE_BONUS = 1;
             
             let currentLang = 'ru';
-            let balance = 0;
-            let todayTaps = 0;
-            let totalTaps = 0;
-            let lastTapDate = null;
-            let lastTapTime = 0;
-            let dailyStreak = 0;
-            let lastDailyClaim = null;
-            let subscribeClaimed = false;
+            let userData = {
+                id: null,
+                telegram_id: null,
+                username: '',
+                first_name: '',
+                balance: 0,
+                today_taps: 0,
+                total_taps: 0,
+                last_tap_date: null,
+                last_tap_time: 0,
+                subscribe_claimed: false
+            };
             
-            // Telegram user data
-            let user = { id: 'anonymous', firstName: 'User', lastName: '', username: '', photoUrl: null };
+            let lastTapTime = 0;
+            let tgUser = { id: 'anonymous', firstName: 'User', lastName: '', username: '' };
+            
             try {
                 if (tg.initDataUnsafe?.user) {
-                    user.id = tg.initDataUnsafe.user.id || 'anonymous';
-                    user.firstName = tg.initDataUnsafe.user.first_name || 'User';
-                    user.lastName = tg.initDataUnsafe.user.last_name || '';
-                    user.username = tg.initDataUnsafe.user.username || '';
+                    tgUser.id = String(tg.initDataUnsafe.user.id);
+                    tgUser.firstName = tg.initDataUnsafe.user.first_name || 'User';
+                    tgUser.lastName = tg.initDataUnsafe.user.last_name || '';
+                    tgUser.username = tg.initDataUnsafe.user.username || '';
                 }
             } catch(e) {}
             
-            const translations = {
-                ru: {
-                    tokenSymbol: 'WAVES TOKEN', balanceLabel: 'ОБЩИЙ БАЛАНС', tapHintText: 'Тапай чтобы заработать | +0.02 W-T',
-                    todayLabel: 'ТАПОВ СЕГОДНЯ', totalTapsLabel: 'ВСЕГО ТАПОВ', footerNote: 'W-T · Тапай чтобы заработать | 0.02 W-T за тап · 3 сек · 121/день',
-                    profileTitle: 'Профиль', profileBalanceLabel: 'Баланс', profileTodayLabel: 'Тапов сегодня',
-                    profileTotalLabel: 'Всего тапов', profileEarnedLabel: 'Заработано',
-                    dailyBonusTitle: 'ЕЖЕДНЕВНЫЙ БОНУС', subscribeBonusTitle: 'БОНУС ЗА ПОДПИСКУ',
-                    subscribeBtnText: 'Подписаться на канал + 5 W-T', subscribeHint: 'Telegram канал: @WavesTokenOfficial',
-                    subscribeClaimedText: 'Бонус получен ✓', tapLimitReached: 'Дневной лимит',
-                    tapLimitReachedMsg: 'Вы использовали 121 тап сегодня. Возвращайтесь завтра!',
-                    tapCooldown: 'Подождите', tapCooldownMsg: 'Можно тапать раз в 3 секунды. Осталось {time} сек.',
-                    dayReset: 'Новый день! Лимит тапов обновлен.', day: 'День', bonusClaimed: 'Бонус получен!',
-                    bonusAvailable: 'Забрать бонус', subscribeBonusClaimed: 'Вы уже получили бонус за подписку!',
-                    subscribeBonusSuccess: 'Бонус получен! +5 W-T'
-                },
-                en: {
-                    tokenSymbol: 'WAVES TOKEN', balanceLabel: 'TOTAL BALANCE', tapHintText: 'Tap to earn | +0.02 W-T',
-                    todayLabel: 'TODAY TAPS', totalTapsLabel: 'TOTAL TAPS', footerNote: 'W-T · Tap to earn | 0.02 W-T per tap · 3s · 121/day',
-                    profileTitle: 'Profile', profileBalanceLabel: 'Balance', profileTodayLabel: 'Today Taps',
-                    profileTotalLabel: 'Total Taps', profileEarnedLabel: 'Total Earned',
-                    dailyBonusTitle: 'DAILY REWARD', subscribeBonusTitle: 'CHANNEL BONUS',
-                    subscribeBtnText: 'Join Channel + 5 W-T', subscribeHint: 'Telegram channel: @WavesTokenOfficial',
-                    subscribeClaimedText: 'Bonus claimed ✓', tapLimitReached: 'Daily limit',
-                    tapLimitReachedMsg: 'You have reached 121 taps today. Come back tomorrow!',
-                    tapCooldown: 'Wait', tapCooldownMsg: 'You can tap every 3 seconds. Wait {time} sec.',
-                    dayReset: 'New day! Tap limit refreshed.', day: 'Day', bonusClaimed: 'Bonus claimed!',
-                    bonusAvailable: 'Claim bonus', subscribeBonusClaimed: 'You already claimed the subscribe bonus!',
-                    subscribeBonusSuccess: 'Bonus claimed! +5 W-T'
-                }
-            };
-            
-            function getTodayStr() {
-                const d = new Date();
-                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            // Helper functions
+            function getNYDateStr() {
+                const nyDate = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+                return `${nyDate.getFullYear()}-${nyDate.getMonth() + 1}-${nyDate.getDate()}`;
             }
             
-            function isNewDay() { return lastTapDate !== getTodayStr(); }
-            function isNewDailyDay() { return lastDailyClaim !== getTodayStr(); }
+            function isNewDay() {
+                return userData.last_tap_date !== getNYDateStr();
+            }
             
-            function checkReset() {
-                if (isNewDay()) { todayTaps = 0; lastTapDate = getTodayStr(); save(); return true; }
+            function onCooldown() { 
+                return Date.now() - userData.last_tap_time < COOLDOWN_SECONDS * 1000; 
+            }
+            
+            function remainingCooldown() { 
+                return Math.max(0, COOLDOWN_SECONDS - (Date.now() - userData.last_tap_time) / 1000); 
+            }
+            
+            function canTap() {
+                if (isNewDay()) {
+                    userData.today_taps = 0;
+                    userData.last_tap_date = getNYDateStr();
+                }
+                return userData.today_taps < MAX_TAPS_PER_DAY && !onCooldown();
+            }
+            
+            // Local storage fallback
+            function loadFromLocal() {
+                const key = `wt_user_${tgUser.id}`;
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    try {
+                        const data = JSON.parse(raw);
+                        userData = { ...userData, ...data };
+                        if (isNewDay()) {
+                            userData.today_taps = 0;
+                            userData.last_tap_date = getNYDateStr();
+                        }
+                        return true;
+                    } catch(e) {}
+                }
                 return false;
             }
             
-            function onCooldown() { return Date.now() - lastTapTime < COOLDOWN_SECONDS * 1000; }
-            function remainingCooldown() { return Math.max(0, COOLDOWN_SECONDS - (Date.now() - lastTapTime) / 1000); }
-            
-            function canTap() {
-                checkReset();
-                return todayTaps < MAX_TAPS_PER_DAY && !onCooldown();
+            function saveToLocal() {
+                const key = `wt_user_${tgUser.id}`;
+                localStorage.setItem(key, JSON.stringify({
+                    balance: userData.balance,
+                    today_taps: userData.today_taps,
+                    total_taps: userData.total_taps,
+                    last_tap_date: userData.last_tap_date,
+                    last_tap_time: userData.last_tap_time,
+                    subscribe_claimed: userData.subscribe_claimed
+                }));
             }
             
-            function addTap() {
-                if (todayTaps >= MAX_TAPS_PER_DAY) {
+            // Supabase operations
+            async function loadFromSupabase() {
+                if (!isSupabaseConnected) return false;
+                try {
+                    const { data, error } = await supabase
+                        .from('users')
+                        .select('*')
+                        .eq('telegram_id', String(tgUser.id))
+                        .single();
+                    
+                    if (error && error.code !== 'PGRST116') throw error;
+                    
+                    if (data) {
+                        userData = {
+                            ...userData,
+                            balance: data.balance || 0,
+                            today_taps: data.today_taps || 0,
+                            total_taps: data.total_taps || 0,
+                            last_tap_date: data.last_tap_date,
+                            last_tap_time: data.last_tap_time || 0,
+                            subscribe_claimed: data.subscribe_claimed || false
+                        };
+                        if (isNewDay()) {
+                            userData.today_taps = 0;
+                            userData.last_tap_date = getNYDateStr();
+                            await saveToSupabase();
+                        }
+                        return true;
+                    } else {
+                        // Create new user
+                        userData.telegram_id = String(tgUser.id);
+                        userData.username = tgUser.username;
+                        userData.first_name = tgUser.firstName;
+                        userData.last_tap_date = getNYDateStr();
+                        await saveToSupabase();
+                        return true;
+                    }
+                } catch(e) {
+                    console.warn("Supabase load error:", e);
+                    return false;
+                }
+            }
+            
+            async function saveToSupabase() {
+                if (!isSupabaseConnected) return;
+                try {
+                    const { error } = await supabase
+                        .from('users')
+                        .upsert({
+                            telegram_id: String(tgUser.id),
+                            username: tgUser.username,
+                            first_name: tgUser.firstName,
+                            balance: userData.balance,
+                            today_taps: userData.today_taps,
+                            total_taps: userData.total_taps,
+                            last_tap_date: userData.last_tap_date,
+                            last_tap_time: userData.last_tap_time,
+                            subscribe_claimed: userData.subscribe_claimed,
+                            updated_at: new Date().toISOString()
+                        });
+                    if (error) throw error;
+                } catch(e) {
+                    console.warn("Supabase save error:", e);
+                }
+            }
+            
+            async function addTapToDB() {
+                if (userData.today_taps >= MAX_TAPS_PER_DAY) {
                     const t = translations[currentLang];
                     showAlert(t.tapLimitReached, t.tapLimitReachedMsg);
                     return false;
@@ -957,73 +994,58 @@
                     showAlert(t.tapCooldown, t.tapCooldownMsg.replace('{time}', Math.ceil(remainingCooldown())));
                     return false;
                 }
-                balance += TAP_REWARD;
-                todayTaps++;
-                totalTaps++;
-                lastTapTime = Date.now();
-                lastTapDate = getTodayStr();
-                save();
+                
+                userData.balance += TAP_REWARD;
+                userData.today_taps++;
+                userData.total_taps++;
+                userData.last_tap_time = Date.now();
+                userData.last_tap_date = getNYDateStr();
+                
+                if (isSupabaseConnected) {
+                    await saveToSupabase();
+                } else {
+                    saveToLocal();
+                }
+                
                 updateUI();
                 updateCooldown();
                 return true;
             }
             
-            function claimDailyBonus(dayIndex) {
+            async function claimSubscribeBonus() {
                 const t = translations[currentLang];
-                const reward = DAILY_BONUSES[dayIndex];
-                if (isNewDailyDay()) {
-                    dailyStreak = 0;
-                }
-                if (dayIndex !== dailyStreak) {
-                    return false;
-                }
-                balance += reward;
-                dailyStreak = (dailyStreak + 1) % DAILY_BONUSES.length;
-                lastDailyClaim = getTodayStr();
-                save();
-                updateUI();
-                showAlert(t.bonusClaimed, `+${reward} W-T`);
-                return true;
-            }
-            
-            function claimSubscribeBonus() {
-                const t = translations[currentLang];
-                if (subscribeClaimed) {
+                if (userData.subscribe_claimed) {
                     showAlert(t.subscribeBonusClaimed, '');
                     return false;
                 }
                 window.open(CHANNEL_LINK, '_blank');
-                balance += SUBSCRIBE_BONUS;
-                subscribeClaimed = true;
-                save();
+                userData.balance += SUBSCRIBE_BONUS;
+                userData.subscribe_claimed = true;
+                
+                if (isSupabaseConnected) {
+                    await saveToSupabase();
+                } else {
+                    saveToLocal();
+                }
+                
                 updateUI();
                 showAlert(t.subscribeBonusSuccess, `+${SUBSCRIBE_BONUS} W-T`);
                 return true;
             }
             
-            function save() {
-                localStorage.setItem('wt_tap_data', JSON.stringify({ 
-                    balance, todayTaps, totalTaps, lastTapDate, lastTapTime,
-                    dailyStreak, lastDailyClaim, subscribeClaimed
-                }));
-            }
-            
-            function load() {
-                const raw = localStorage.getItem('wt_tap_data');
-                if (raw) {
-                    try {
-                        const d = JSON.parse(raw);
-                        balance = d.balance || 0;
-                        todayTaps = d.todayTaps || 0;
-                        totalTaps = d.totalTaps || 0;
-                        lastTapDate = d.lastTapDate;
-                        lastTapTime = d.lastTapTime || 0;
-                        dailyStreak = d.dailyStreak || 0;
-                        lastDailyClaim = d.lastDailyClaim;
-                        subscribeClaimed = d.subscribeClaimed || false;
-                        if (isNewDay()) { todayTaps = 0; lastTapDate = getTodayStr(); save(); }
-                    } catch(e) {}
+            async function initData() {
+                let loaded = false;
+                if (isSupabaseConnected) {
+                    loaded = await loadFromSupabase();
                 }
+                if (!loaded && USE_LOCAL_FALLBACK) {
+                    loaded = loadFromLocal();
+                }
+                if (!loaded) {
+                    userData.last_tap_date = getNYDateStr();
+                    if (!isSupabaseConnected) saveToLocal();
+                }
+                updateUI();
             }
             
             function showAlert(title, msg) {
@@ -1061,12 +1083,15 @@
                 let x = e.clientX || (e.touches?.[0]?.clientX || rect.left + rect.width/2);
                 let y = e.clientY || (e.touches?.[0]?.clientY || rect.top + rect.height/2);
                 if (e.touches) e.preventDefault();
-                if (addTap()) {
-                    showTapAnimation(x, y);
-                    if (tg.HapticFeedback) tg.HapticFeedback.impact('light');
-                } else if (tg.HapticFeedback) {
-                    tg.HapticFeedback.notification('warning');
-                }
+                
+                addTapToDB().then(success => {
+                    if (success) {
+                        showTapAnimation(x, y);
+                        if (tg.HapticFeedback) tg.HapticFeedback.impact('light');
+                    } else if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notification('warning');
+                    }
+                });
             }
             
             function updateCooldown() {
@@ -1084,50 +1109,38 @@
                 }
             }
             
-            function renderDailyBonus() {
-                const container = document.getElementById('dailyBonusGrid');
-                const t = translations[currentLang];
-                const today = getTodayStr();
-                const canClaimToday = isNewDailyDay();
-                const nextIndex = canClaimToday ? dailyStreak : -1;
-                
-                container.innerHTML = DAILY_BONUSES.map((reward, idx) => {
-                    let statusClass = '';
-                    let statusIcon = '';
-                    let clickable = false;
-                    
-                    if (idx < dailyStreak && lastDailyClaim === today) {
-                        statusClass = 'claimed';
-                        statusIcon = '<div class="daily-check">✓</div>';
-                    } else if (idx === dailyStreak && canClaimToday) {
-                        statusClass = 'available';
-                        clickable = true;
-                    } else if (idx > dailyStreak) {
-                        statusClass = '';
-                    } else if (idx === dailyStreak && !canClaimToday) {
-                        statusClass = 'claimed';
-                        statusIcon = '<div class="daily-check">✓</div>';
-                    }
-                    
-                    return `
-                        <div class="daily-item ${statusClass}" data-day="${idx}" ${clickable ? 'style="cursor:pointer"' : ''}>
-                            ${statusIcon}
-                            <div class="daily-day">${t.day} ${idx + 1}</div>
-                            <div class="daily-reward">${reward} W-T</div>
-                        </div>
-                    `;
-                }).join('');
-                
-                document.querySelectorAll('.daily-item.available').forEach(el => {
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const day = parseInt(el.dataset.day);
-                        claimDailyBonus(day);
-                        renderDailyBonus();
-                        updateUI();
-                    });
-                });
-            }
+            const translations = {
+                ru: {
+                    tokenSymbol: 'WAVES TOKEN', balanceLabel: 'ОБЩИЙ БАЛАНС', tapHintText: 'Тапай чтобы заработать | +0.02 W-T',
+                    todayLabel: 'ТАПОВ СЕГОДНЯ', totalTapsLabel: 'ВСЕГО ТАПОВ', footerNote: 'W-T · Тапай чтобы заработать | 0.02 W-T за тап · 3 сек · 121/день',
+                    profileTitle: 'Профиль', profileBalanceLabel: 'Баланс', profileTodayLabel: 'Тапов сегодня',
+                    profileTotalLabel: 'Всего тапов', profileEarnedLabel: 'Заработано',
+                    subscribeBonusTitle: 'БОНУС ЗА ПОДПИСКУ',
+                    subscribeBtnText: 'Подписаться на канал + 1 W-T',
+                    subscribeClaimedText: 'Бонус получен ✓',
+                    tapLimitReached: 'Дневной лимит',
+                    tapLimitReachedMsg: 'Вы использовали 121 тап сегодня. Возвращайтесь завтра!',
+                    tapCooldown: 'Подождите',
+                    tapCooldownMsg: 'Можно тапать раз в 3 секунды. Осталось {time} сек.',
+                    subscribeBonusClaimed: 'Вы уже получили бонус!',
+                    subscribeBonusSuccess: 'Бонус получен! +1 W-T'
+                },
+                en: {
+                    tokenSymbol: 'WAVES TOKEN', balanceLabel: 'TOTAL BALANCE', tapHintText: 'Tap to earn | +0.02 W-T',
+                    todayLabel: 'TODAY TAPS', totalTapsLabel: 'TOTAL TAPS', footerNote: 'W-T · Tap to earn | 0.02 W-T per tap · 3s · 121/day',
+                    profileTitle: 'Profile', profileBalanceLabel: 'Balance', profileTodayLabel: 'Today Taps',
+                    profileTotalLabel: 'Total Taps', profileEarnedLabel: 'Total Earned',
+                    subscribeBonusTitle: 'CHANNEL BONUS',
+                    subscribeBtnText: 'Join Channel + 1 W-T',
+                    subscribeClaimedText: 'Bonus claimed ✓',
+                    tapLimitReached: 'Daily limit',
+                    tapLimitReachedMsg: 'You have reached 121 taps today. Come back tomorrow!',
+                    tapCooldown: 'Wait',
+                    tapCooldownMsg: 'You can tap every 3 seconds. Wait {time} sec.',
+                    subscribeBonusClaimed: 'You already claimed the bonus!',
+                    subscribeBonusSuccess: 'Bonus claimed! +1 W-T'
+                }
+            };
             
             function updateUI() {
                 const t = translations[currentLang];
@@ -1142,44 +1155,38 @@
                 document.getElementById('profileTodayLabel').innerText = t.profileTodayLabel;
                 document.getElementById('profileTotalLabel').innerText = t.profileTotalLabel;
                 document.getElementById('profileEarnedLabel').innerText = t.profileEarnedLabel;
-                document.getElementById('dailyBonusTitle').innerText = t.dailyBonusTitle;
                 document.getElementById('subscribeBonusTitle').innerText = t.subscribeBonusTitle;
-                document.getElementById('subscribeHint').innerText = t.subscribeHint;
                 
                 const subscribeBtn = document.getElementById('subscribeBtn');
-                if (subscribeClaimed) {
-                    subscribeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg> <span>${t.subscribeClaimedText}</span>`;
-                    subscribeBtn.classList.add('claimed');
+                if (userData.subscribe_claimed) {
+                    subscribeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> <span>${t.subscribeClaimedText}</span>`;
                     subscribeBtn.disabled = true;
                 } else {
-                    subscribeBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span>${t.subscribeBtnText}</span>`;
-                    subscribeBtn.classList.remove('claimed');
+                    subscribeBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/><path d="M12 13v8M9 18l3 3 3-3"/></svg> <span>${t.subscribeBtnText}</span>`;
                     subscribeBtn.disabled = false;
                 }
                 
-                document.getElementById('balanceDisplay').innerHTML = balance.toFixed(4) + ' <small>W-T</small>';
-                document.getElementById('todayTaps').innerText = todayTaps;
-                document.getElementById('totalTaps').innerText = totalTaps;
-                document.getElementById('tapProgress').style.width = (todayTaps / MAX_TAPS_PER_DAY * 100) + '%';
+                document.getElementById('balanceDisplay').innerHTML = userData.balance.toFixed(4) + ' <small>W-T</small>';
+                document.getElementById('todayTaps').innerText = userData.today_taps;
+                document.getElementById('totalTaps').innerText = userData.total_taps;
+                document.getElementById('tapProgress').style.width = (userData.today_taps / MAX_TAPS_PER_DAY * 100) + '%';
                 
-                const avatarLetter = user.firstName ? user.firstName[0].toUpperCase() : 'W';
+                const avatarLetter = tgUser.firstName ? tgUser.firstName[0].toUpperCase() : 'W';
                 document.getElementById('headerAvatar').innerText = avatarLetter;
                 document.getElementById('profileAvatar').innerText = avatarLetter;
-                const displayName = user.firstName + (user.lastName ? ' ' + user.lastName : '');
+                const displayName = tgUser.firstName + (tgUser.lastName ? ' ' + tgUser.lastName : '');
                 document.getElementById('headerName').innerText = displayName.length > 12 ? displayName.slice(0,10)+'..' : displayName;
                 document.getElementById('profileName').innerText = displayName || 'W-T User';
-                const shortId = user.id !== 'anonymous' ? user.id.toString().slice(-8) : 'guest_' + Math.random().toString(36).substr(2, 6);
+                const shortId = tgUser.id !== 'anonymous' ? tgUser.id.slice(-8) : 'guest_' + Math.random().toString(36).substr(2, 6);
                 document.getElementById('profileId').innerHTML = `ID: ${shortId}`;
-                document.getElementById('profileBalance').innerHTML = balance.toFixed(4) + ' W-T';
-                document.getElementById('profileTodayTaps').innerHTML = `${todayTaps} / ${MAX_TAPS_PER_DAY}`;
-                document.getElementById('profileTotalTaps').innerHTML = totalTaps;
-                document.getElementById('profileEarned').innerHTML = (totalTaps * TAP_REWARD).toFixed(4) + ' W-T';
+                document.getElementById('profileBalance').innerHTML = userData.balance.toFixed(4) + ' W-T';
+                document.getElementById('profileTodayTaps').innerHTML = `${userData.today_taps} / ${MAX_TAPS_PER_DAY}`;
+                document.getElementById('profileTotalTaps').innerHTML = userData.total_taps;
+                document.getElementById('profileEarned').innerHTML = (userData.total_taps * TAP_REWARD).toFixed(4) + ' W-T';
                 
                 document.querySelectorAll('.lang-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
                 });
-                
-                renderDailyBonus();
             }
             
             // Page transitions
@@ -1213,7 +1220,6 @@
                     if (lang && lang !== currentLang) {
                         currentLang = lang;
                         updateUI();
-                        save();
                     }
                 });
             });
@@ -1221,21 +1227,20 @@
             // Day reset checker
             setInterval(() => {
                 if (isNewDay()) {
-                    todayTaps = 0;
-                    lastTapDate = getTodayStr();
-                    save();
+                    userData.today_taps = 0;
+                    userData.last_tap_date = getNYDateStr();
+                    if (isSupabaseConnected) saveToSupabase();
+                    else saveToLocal();
                     updateUI();
-                    const t = translations[currentLang];
-                    if (tg.showPopup) tg.showPopup({ title: 'W-T', message: t.dayReset, buttons: [{ type: 'ok' }] });
                 }
             }, 60000);
             
             setInterval(updateCooldown, 50);
             
-            load();
-            updateUI();
-            updateCooldown();
-            window.addEventListener('beforeunload', () => save());
+            initData();
+            window.addEventListener('beforeunload', () => {
+                if (!isSupabaseConnected) saveToLocal();
+            });
         })();
     </script>
 </body>
