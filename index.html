@@ -2,2090 +2,633 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ORANGEWIN | Быстрые игры</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Exchange | USDT → RUB</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <script src="state.js"></script>
-    <script src="database.js"></script>
-    <script src="payment.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --orange-main: #FF6B35;
-            --orange-dark: #FF4D00;
-            --orange-light: #FF8E53;
-            --orange-glow: #FF9E6D;
-            --dark-bg: #0F0A07;
-            --card-bg: #1A130F;
-            --card-dark: #15100C;
-            --accent-gold: #FFB347;
-            --accent-red: #FF5E62;
-            --accent-blue: #4ECDC4;
-            --accent-green: #00FF88;
-            --text-light: #FFFFFF;
-            --text-dim: #CCB7A6;
-            --success: #7CFC00;
-            --gradient-orange: linear-gradient(135deg, var(--orange-main) 0%, var(--orange-dark) 100%);
-            --gradient-gold: linear-gradient(135deg, var(--accent-gold) 0%, #FF8A00 100%);
-            --gradient-card: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
-            --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.3);
-            --shadow-strong: 0 8px 25px rgba(255, 77, 0, 0.2);
-            --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.3);
-            --border-glow: 1px solid rgba(255, 107, 53, 0.2);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        html {
-            font-size: 14px;
-        }
-
-        @media (min-width: 768px) {
-            html {
-                font-size: 16px;
-            }
         }
 
         body {
-            background: var(--dark-bg);
-            color: var(--text-light);
-            min-height: 100vh;
-            font-family: 'Rajdhani', sans-serif;
-            position: relative;
-            overflow-x: hidden;
-            padding-bottom: 80px;
-        }
-
-        /* Адаптивный контейнер */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px;
-        }
-
-        @media (min-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-        }
-
-        /* Компактная шапка */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: rgba(26, 19, 15, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            margin-bottom: 20px;
-            border: var(--border-glow);
-            box-shadow: var(--shadow-card);
-            position: relative;
-            min-height: 60px;
-        }
-
-        @media (min-width: 768px) {
-            .header {
-                padding: 15px 20px;
-                border-radius: 20px;
-                margin-bottom: 25px;
-            }
-        }
-
-        /* Логотип */
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient-orange);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: white;
-            font-family: 'Orbitron', sans-serif;
-            box-shadow: var(--shadow-glow);
-            flex-shrink: 0;
-        }
-
-        @media (min-width: 768px) {
-            .logo-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-                border-radius: 12px;
-            }
-        }
-
-        .logo-text {
-            font-size: 1.2rem;
-            font-weight: 900;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            white-space: nowrap;
-        }
-
-        @media (min-width: 768px) {
-            .logo-text {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Компактная карточка баланса */
-        .balance-card {
-            background: var(--gradient-card);
-            padding: 8px 12px;
-            border-radius: 12px;
-            border: var(--border-glow);
-            text-align: right;
-            min-width: 120px;
-            max-width: 160px;
-            flex-shrink: 0;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .balance-card:hover {
-            border-color: var(--orange-main);
-            box-shadow: var(--shadow-glow);
-        }
-
-        @media (min-width: 768px) {
-            .balance-card {
-                padding: 10px 15px;
-                border-radius: 15px;
-                min-width: 150px;
-                max-width: 200px;
-            }
-        }
-
-        .balance-label {
-            font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        @media (min-width: 768px) {
-            .balance-label {
-                font-size: 0.8rem;
-                margin-bottom: 4px;
-            }
-        }
-
-        .balance-amount {
-            font-size: 1.3rem;
-            font-weight: 900;
-            color: var(--accent-gold);
-            font-family: 'Orbitron', sans-serif;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        @media (min-width: 768px) {
-            .balance-amount {
-                font-size: 1.6rem;
-            }
-        }
-
-        /* Баннеры */
-        .banners-container {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding: 8px 4px 16px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .banners-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .banner {
-            flex: 0 0 240px;
-            height: 120px;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: var(--shadow-strong);
-            flex-shrink: 0;
-            cursor: pointer;
-        }
-
-        @media (min-width: 768px) {
-            .banner {
-                flex: 0 0 280px;
-                height: 140px;
-                border-radius: 20px;
-            }
-        }
-
-        .banner-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .banner-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(15, 10, 7, 0.9), transparent);
-            padding: 12px;
-        }
-
-        @media (min-width: 768px) {
-            .banner-overlay {
-                padding: 15px;
-            }
-        }
-
-        .banner-title {
-            font-size: 1rem;
-            font-weight: 900;
-            color: white;
-            margin-bottom: 3px;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        @media (min-width: 768px) {
-            .banner-title {
-                font-size: 1.2rem;
-            }
-        }
-
-        /* Секция игр */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 25px 0 15px;
-            padding: 0 5px;
-        }
-
-        .section-title {
-            font-size: 1.2rem;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, var(--orange-main), var(--accent-gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        @media (min-width: 768px) {
-            .section-title {
-                font-size: 1.4rem;
-                gap: 12px;
-            }
-        }
-
-        .section-icon {
-            width: 35px;
-            height: 35px;
-            background: var(--gradient-orange);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            box-shadow: var(--shadow-glow);
-            flex-shrink: 0;
-        }
-
-        @media (min-width: 768px) {
-            .section-icon {
-                width: 40px;
-                height: 40px;
-                border-radius: 12px;
-                font-size: 1.2rem;
-            }
-        }
-
-        /* Сетка игр */
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        @media (min-width: 768px) {
-            .games-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-            }
-        }
-
-        .game-card {
-            background: var(--gradient-card);
-            border-radius: 16px;
-            padding: 15px;
-            border: var(--border-glow);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 140px;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        .game-card:hover {
-            border-color: var(--orange-main);
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-strong);
-        }
-
-        @media (min-width: 768px) {
-            .game-card {
-                padding: 18px;
-                border-radius: 18px;
-                min-height: 160px;
-            }
-        }
-
-        .game-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--gradient-orange);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.6rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            z-index: 2;
-        }
-
-        .game-icon {
-            width: 45px;
-            height: 45px;
-            background: rgba(255, 107, 53, 0.15);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            font-size: 1.5rem;
-            color: var(--orange-light);
-            border: 2px solid rgba(255, 107, 53, 0.2);
-            flex-shrink: 0;
-        }
-
-        @media (min-width: 768px) {
-            .game-icon {
-                width: 50px;
-                height: 50px;
-                border-radius: 14px;
-                font-size: 1.7rem;
-                margin-bottom: 15px;
-            }
-        }
-
-        .game-name {
-            font-size: 1rem;
-            font-weight: 900;
-            margin-bottom: 6px;
-            color: var(--text-light);
-            font-family: 'Orbitron', sans-serif;
-            line-height: 1.2;
-        }
-
-        @media (min-width: 768px) {
-            .game-name {
-                font-size: 1.1rem;
-                margin-bottom: 8px;
-            }
-        }
-
-        .game-desc {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin-bottom: 12px;
-            line-height: 1.3;
-            flex-grow: 1;
-        }
-
-        @media (min-width: 768px) {
-            .game-desc {
-                font-size: 0.8rem;
-            }
-        }
-
-        .game-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-        }
-
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-dim);
-            font-weight: 600;
-            font-size: 0.7rem;
-        }
-
-        @media (min-width: 768px) {
-            .stat {
-                gap: 6px;
-                font-size: 0.75rem;
-            }
-        }
-
-        .stat i {
-            color: var(--orange-main);
-            font-size: 0.8rem;
-        }
-
-        /* Колесо фортуны */
-        .wheel-card {
-            background: linear-gradient(135deg, var(--orange-dark) 0%, #E65100 100%);
-            border-radius: 18px;
-            padding: 18px;
-            margin: 25px 0;
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-strong);
-            cursor: pointer;
-        }
-
-        .wheel-card:hover {
-            transform: scale(1.02);
-        }
-
-        @media (min-width: 768px) {
-            .wheel-card {
-                border-radius: 22px;
-                padding: 22px;
-                margin: 30px 0;
-            }
-        }
-
-        .wheel-header {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-
-        @media (min-width: 768px) {
-            .wheel-header {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                gap: 0;
-                margin-bottom: 15px;
-            }
-        }
-
-        .wheel-title {
-            font-size: 1.3rem;
-            font-weight: 900;
-            color: white;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        @media (min-width: 768px) {
-            .wheel-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        .wheel-timer {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-weight: 900;
-            color: white;
-            font-family: 'Orbitron', sans-serif;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.9rem;
-            align-self: flex-start;
-        }
-
-        .wheel-desc {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 20px;
             line-height: 1.4;
         }
 
-        .wheel-prizes {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
         }
 
-        .wheel-prize {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(5px);
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-weight: 900;
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            font-size: 0.8rem;
+        .header {
+            margin-bottom: 32px;
+            text-align: center;
+            position: relative;
         }
 
-        /* Нижняя навигация */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(26, 19, 15, 0.98);
-            backdrop-filter: blur(15px);
-            border-top: 2px solid rgba(255, 107, 53, 0.2);
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-around;
-            z-index: 100;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        @media (min-width: 768px) {
-            .bottom-nav {
-                padding: 12px 20px;
-                max-width: 1200px;
-                margin: 0 auto;
-                left: 50%;
-                transform: translateX(-50%);
-                border-radius: 20px 20px 0 0;
-            }
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-dim);
-            transition: all 0.2s ease;
-            padding: 4px;
-            min-width: 60px;
-            cursor: pointer;
-        }
-
-        .nav-item.active {
-            color: var(--orange-main);
-        }
-
-        .nav-item.active .nav-icon {
-            background: var(--gradient-orange);
-            color: white;
-            box-shadow: var(--shadow-glow);
-            transform: translateY(-3px);
-        }
-
-        .nav-icon {
-            width: 38px;
-            height: 38px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: all 0.2s ease;
-            border: 2px solid rgba(255, 107, 53, 0.1);
-        }
-
-        @media (min-width: 768px) {
-            .nav-icon {
-                width: 42px;
-                height: 42px;
-                font-size: 1.2rem;
-            }
-        }
-
-        .nav-label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
-        .nav-notification {
+        .language-switch {
             position: absolute;
             top: 0;
             right: 0;
-            width: 16px;
-            height: 16px;
-            background: var(--accent-red);
-            color: white;
-            border-radius: 50%;
-            font-size: 0.6rem;
-            font-weight: 900;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--dark-bg);
-        }
-
-        /* Попап депозита */
-        .deposit-popup {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 10, 7, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .deposit-popup.active {
-            display: flex;
-        }
-
-        .deposit-content {
-            background: var(--gradient-card);
-            padding: 20px;
+            gap: 8px;
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            padding: 4px;
             border-radius: 20px;
-            border: 3px solid var(--orange-main);
-            box-shadow: 0 0 40px rgba(255, 107, 53, 0.5);
-            width: 100%;
-            max-width: 400px;
-            animation: slideUp 0.3s ease;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Модальное окно USDT */
-        .usdt-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 10, 7, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1001;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-        }
-
-        .usdt-content {
-            background: var(--gradient-card);
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 450px;
-            border: 3px solid var(--orange-main);
-            box-shadow: 0 0 50px rgba(255, 107, 53, 0.6);
-            animation: scaleIn 0.3s ease;
-        }
-
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Кнопки сумм в модалке USDT */
-        .usdt-amount-buttons {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        .usdt-amount-btn {
-            background: rgba(255, 107, 53, 0.1);
-            border: 2px solid transparent;
-            border-radius: 12px;
-            padding: 12px;
-            color: var(--text-light);
-            font-weight: 700;
-            font-size: 1rem;
+        .lang-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            border-radius: 16px;
+            background: transparent;
+            color: var(--tg-theme-hint-color, #8e8e93);
             cursor: pointer;
             transition: all 0.2s;
-            font-family: 'Orbitron', sans-serif;
         }
 
-        .usdt-amount-btn.active {
-            background: var(--gradient-orange);
-            border-color: var(--orange-main);
-            box-shadow: var(--shadow-glow);
-            color: white;
+        .lang-btn.active {
+            background: var(--tg-theme-button-color, #2c7be5);
+            color: var(--tg-theme-button-text-color, #ffffff);
         }
 
-        /* Кнопка админа */
-        .admin-btn {
-            position: fixed;
-            top: 20px;
-            right: 80px;
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #FF6B35, #FF4D00);
-            border-radius: 50%;
-            display: none;
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--tg-theme-button-color, #2c7be5);
+            border-radius: 24px;
+            margin: 0 auto 16px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 999;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
         }
 
-        /* Алерты */
-        .alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
+        .logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .rate-card {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .rate-label {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rate-value {
+            font-size: 36px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .rate-unit {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .form-card {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--tg-theme-text-color, #000000);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 50px 14px 16px;
+            font-size: 18px;
+            font-weight: 500;
+            border: 1px solid var(--tg-theme-hint-color, #e5e5ea);
             border-radius: 12px;
-            background: var(--accent-green);
-            color: var(--dark-bg);
-            font-weight: 900;
-            z-index: 10000;
-            animation: slideInRight 0.3s ease;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            transition: all 0.2s;
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #2c7be5);
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--tg-theme-hint-color, #c6c6c8);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .input-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .result-card {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 8px;
+        }
+
+        .result-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .fee-card {
+            background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fee-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fee-left svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .fee-label {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .fee-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .exchange-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: var(--tg-theme-button-color, #2c7be5);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .exchange-btn:active {
+            opacity: 0.8;
+        }
+
+        .exchange-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info {
+            text-align: center;
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .info-row {
+            margin-top: 8px;
+        }
+
+        /* Modal */
+        .modal {
             display: none;
-            max-width: 300px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(0, 255, 136, 0.3);
-            font-family: 'Orbitron', sans-serif;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
 
-        .alert.error {
-            background: var(--accent-red);
-            border-color: rgba(255, 94, 98, 0.3);
+        .modal.active {
+            display: flex;
         }
 
-        .alert.warning {
-            background: var(--accent-gold);
-            border-color: rgba(255, 179, 71, 0.3);
+        .modal-content {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 320px;
+            text-align: center;
         }
 
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
 
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+        .modal-text {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            margin-bottom: 20px;
         }
 
-        /* Для очень маленьких экранов */
-        @media (max-width: 320px) {
-            .banner {
-                flex: 0 0 220px;
-                height: 110px;
-            }
-            
-            .balance-card {
-                min-width: 100px;
-                padding: 6px 10px;
-            }
-            
-            .balance-amount {
-                font-size: 1.1rem;
-            }
-            
-            .game-card {
-                padding: 12px;
-                min-height: 130px;
-            }
-            
-            .game-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1.3rem;
-            }
-            
-            .usdt-amount-buttons {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            background: var(--tg-theme-button-color, #2c7be5);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            font-weight: 600;
+            cursor: pointer;
         }
-
-        /* Горизонтальная ориентация */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .container {
-                padding-bottom: 70px;
-            }
-            
-            .bottom-nav {
-                padding: 8px 12px;
-            }
-            
-            .nav-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
-            }
-            
-            .nav-label {
-                font-size: 0.6rem;
-            }
-        }
-
-        /* Добавь в существующий CSS */
-#walletModal {
-    animation: scaleIn 0.3s ease;
-}
-
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
     </style>
 </head>
 <body>
-    <!-- Кнопка админа -->
-    <div class="admin-btn" id="adminBtn">👑</div>
-    
     <div class="container">
-        <!-- Шапка -->
-        <header class="header">
-            <div class="logo" id="logo">
-                <div class="logo-icon">O</div>
-                <div class="logo-text">ORANGEWIN</div>
+        <div class="header">
+            <div class="language-switch">
+                <button class="lang-btn active" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="en">EN</button>
             </div>
-            <div class="balance-card" id="balanceCard">
-                <div class="balance-label">Ваш баланс</div>
-                <div class="balance-amount" id="balanceAmount">0 ₽</div>
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2V22M17 7L12 2L7 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 17L12 22L7 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 12H20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
             </div>
-        </header>
+            <div class="title" data-i18n="title">Exchange</div>
+            <div class="subtitle" data-i18n="subtitle">USDT → RUB</div>
+        </div>
 
-        <!-- Баннеры -->
-        <div class="banners-container">
-            <div class="banner" id="bannerDeposit">
-                <div class="banner-img"></div>
-                <div class="banner-overlay">
-                    <div class="banner-title">💎 ПОПОЛНИТЬ USDT</div>
-                    <div class="banner-subtitle">0% комиссия, моментальный перевод</div>
+        <div class="rate-card">
+            <div class="rate-label" data-i18n="rate_label">Current rate</div>
+            <div class="rate-value">75.00 <span class="rate-unit">RUB</span></div>
+            <div class="rate-label" style="margin-top: 4px;" data-i18n="rate_per">per 1 USDT</div>
+        </div>
+
+        <div class="form-card">
+            <div class="input-group">
+                <div class="input-label">
+                    <span data-i18n="you_send">You send</span>
+                    <span data-i18n="min_amount">min 10 USDT</span>
                 </div>
-            </div>
-            
-            <div class="banner" id="bannerBonuses">
-                <div class="banner-img"></div>
-                <div class="banner-overlay">
-                    <div class="banner-title">🎁 +200% БОНУС</div>
-                    <div class="banner-subtitle">На первый депозит</div>
-                </div>
-            </div>
-            
-            <div class="banner" id="bannerWheel">
-                <div class="banner-img"></div>
-                <div class="banner-overlay">
-                    <div class="banner-title">🎡 КОЛЕСО ФОРТУНЫ</div>
-                    <div class="banner-subtitle">Ежедневный бесплатный спин</div>
+                <div class="input-wrapper">
+                    <input type="number" id="usdtAmount" placeholder="0.00" step="any">
+                    <span class="input-icon">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M12 6V18M9 9L12 6L15 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 15L12 18L9 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
                 </div>
             </div>
         </div>
 
-        <!-- Быстрые игры -->
-        <div class="section-header">
-            <div class="section-title">
-                <div class="section-icon">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                БЫСТРЫЕ ИГРЫ
-            </div>
-            <div class="games-counter">4 ИГРЫ</div>
+        <div class="result-card">
+            <div class="result-label" data-i18n="you_receive">You receive</div>
+            <div class="result-value" id="rubAmount">0.00 RUB</div>
         </div>
 
-        <!-- Сетка игр -->
-        <div class="games-grid">
-            <div class="game-card" id="gameDice">
-                <div class="game-badge">ТОП</div>
-                <div class="game-icon">
-                    <i class="fas fa-dice"></i>
-                </div>
-                <div class="game-name">БЫСТРЫЕ КОСТИ</div>
-                <div class="game-desc">Угадай число от 1 до 6. Множитель до 10x</div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <i class="fas fa-users"></i>
-                        3.2K
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-chart-line"></i>
-                        98.5%
-                    </div>
-                </div>
+        <div class="fee-card">
+            <div class="fee-left">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2V22M17 7L12 2L7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 17L12 22L7 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="fee-label" data-i18n="service_fee">Service fee</span>
             </div>
-
-            <div class="game-card" id="gameCoin">
-                <div class="game-badge">НОВИНКА</div>
-                <div class="game-icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <div class="game-name">ОРЁЛ И РЕШКА</div>
-                <div class="game-desc">Классика с мгновенным результатом</div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <i class="fas fa-users"></i>
-                        2.1K
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-chart-line"></i>
-                        99.2%
-                    </div>
-                </div>
-            </div>
-
-            <div class="game-card" id="gameMines">
-                <div class="game-badge">ХИТ</div>
-                <div class="game-icon">
-                    <i class="fas fa-bomb"></i>
-                </div>
-                <div class="game-name">МИНЁР</div>
-                <div class="game-desc">Найди сокровища, избегая мин. Множитель до 50x</div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <i class="fas fa-users"></i>
-                        5.3K
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-chart-line"></i>
-                        97.3%
-                    </div>
-                </div>
-            </div>
-
-            <div class="game-card" id="gameSlot">
-                <div class="game-icon">
-                    <i class="fas fa-sliders-h"></i>
-                </div>
-                <div class="game-name">МГНОВЕННЫЙ СЛОТ</div>
-                <div class="game-desc">3 барабана, 5 линий, множители до 100x</div>
-                <div class="game-stats">
-                    <div class="stat">
-                        <i class="fas fa-users"></i>
-                        4.5K
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-chart-line"></i>
-                        96.8%
-                    </div>
-                </div>
-            </div>
+            <div class="fee-value" id="feeValue">0.00 RUB</div>
         </div>
 
-        <!-- Колесо фортуны -->
-        <div class="wheel-card" id="wheelCard">
-            <div class="wheel-header">
-                <div class="wheel-title">КРУТИ КАЖДЫЙ ДЕНЬ!</div>
-                <div class="wheel-timer" id="wheelTimer">23:59:45</div>
-            </div>
-            <div class="wheel-desc">Ежедневный бонусный спин с призами до 1000%</div>
-            <div class="wheel-prizes">
-                <div class="wheel-prize">375% БОНУС</div>
-                <div class="wheel-prize">+200$</div>
-                <div class="wheel-prize">БОНУС НА ДЕПОЗИТ</div>
-                <div class="wheel-prize">1/5 СПИНОВ</div>
-            </div>
+        <button class="exchange-btn" id="exchangeBtn" data-i18n="sell_btn">Sell USDT</button>
+
+        <div class="info">
+            <div class="info-row" data-i18n="info_instant">Instant exchange via CryptoPay</div>
+            <div class="info-row" data-i18n="info_rate">Best rate on market</div>
         </div>
     </div>
 
-    <!-- Нижняя навигация -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" id="navGames">
-            <div class="nav-icon">
-                <i class="fas fa-gamepad"></i>
-            </div>
-            <div class="nav-label">Игры</div>
-        </div>
-        
-        <div class="nav-item" id="navBonuses">
-            <div class="nav-icon">
-                <i class="fas fa-gift"></i>
-            </div>
-            <div class="nav-label">Бонусы</div>
-        </div>
-        
-        <div class="nav-item" id="navHistory">
-            <div class="nav-icon">
-                <i class="fas fa-history"></i>
-            </div>
-            <div class="nav-label">История</div>
-        </div>
-        
-        <div class="nav-item" id="navProfile">
-            <div class="nav-icon">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="nav-label">Профиль</div>
-        </div>
-    </nav>
-
-    <!-- Попап выбора метода оплаты -->
-    <div class="deposit-popup" id="depositPopup">
-        <div class="deposit-content">
-            <div style="font-size: 1.5rem; font-weight: 900; text-align: center; margin-bottom: 20px; color: var(--accent-gold); font-family: 'Orbitron', sans-serif;">
-                💎 ПОПОЛНИТЬ БАЛАНС
-            </div>
-            <div style="display: grid; gap: 12px; margin-bottom: 20px;">
-                <div id="depositUsdt" style="background: rgba(255, 107, 53, 0.15); border: 2px solid var(--orange-main); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
-                        💎
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 900; margin-bottom: 3px; color: var(--text-light); font-size: 1rem;">USDT (TRC20)</div>
-                        <div style="font-size: 0.8rem; color: var(--accent-green);">0% комиссия, моментально</div>
-                    </div>
-                    <div style="font-size: 0.7rem; background: var(--accent-green); color: var(--dark-bg); padding: 2px 8px; border-radius: 10px; font-weight: 900;">
-                        РЕКОМЕНДУЕМ
-                    </div>
-                </div>
-                
-                <div id="depositCard" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 700; margin-bottom: 3px; color: var(--text-light); font-size: 0.9rem;">Банковская карта</div>
-                        <div style="font-size: 0.8rem; color: var(--text-dim);">Visa, Mastercard, Мир</div>
-                    </div>
-                </div>
-                
-                <div id="depositCrypto" style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; cursor: pointer;">
-                    <div style="width: 40px; height: 40px; background: var(--gradient-orange); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: white;">
-                        <i class="fas fa-bitcoin"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 700; margin-bottom: 3px; color: var(--text-light); font-size: 0.9rem;">Криптовалюта</div>
-                        <div style="font-size: 0.8rem; color: var(--text-dim);">Bitcoin, Ethereum, USDT</div>
-                    </div>
-                </div>
-            </div>
-            <button id="closeDepositBtn" style="width: 100%; background: rgba(255, 107, 53, 0.2); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 15px; padding: 12px; color: var(--text-light); font-weight: 900; cursor: pointer; font-size: 0.9rem; font-family: 'Orbitron', sans-serif;">
-                ЗАКРЫТЬ
-            </button>
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Payment</div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="modal-btn" id="modalBtn">OK</button>
         </div>
     </div>
-
-    <!-- Модальное окно пополнения USDT -->
-    <div class="usdt-modal" id="usdtModal">
-        <div class="usdt-content">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 2rem; color: var(--orange-main); margin-bottom: 5px;">💎</div>
-                <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent-gold); font-family: 'Orbitron', sans-serif; margin-bottom: 5px;">
-                    ПОПОЛНЕНИЕ USDT
-                </div>
-                <div style="font-size: 0.9rem; color: var(--text-dim);">
-                    TRC20 (Tron Network) • 0% комиссия
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 20px;">
-                <div style="color: var(--text-dim); margin-bottom: 10px; font-size: 0.9rem;">
-                    Выберите сумму пополнения:
-                </div>
-                <div class="usdt-amount-buttons" id="usdtAmountButtons">
-                    <!-- Кнопки сумм будут добавлены через JS -->
-                </div>
-                
-                <div style="margin-top: 15px;">
-                    <input type="number" id="usdtCustomAmount" placeholder="Другая сумма (минимум 100 ₽)" 
-                           style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid rgba(255,107,53,0.3); background: rgba(255,255,255,0.1); color: var(--text-light); font-size: 1rem; font-family: 'Rajdhani', sans-serif;">
-                </div>
-            </div>
-            
-            <div style="background: rgba(0, 255, 136, 0.1); border: 2px solid var(--accent-green); border-radius: 12px; padding: 15px; margin: 20px 0;">
-                <div style="color: var(--accent-green); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
-                    💡 ИНФОРМАЦИЯ:
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-light); line-height: 1.5;">
-                    • Сеть: <span style="color: var(--accent-green); font-weight: 700;">TRC20 (Tron)</span><br>
-                    • Токен: <span style="color: var(--accent-green); font-weight: 700;">USDT</span><br>
-                    • Минимум: <span style="color: var(--accent-green); font-weight: 700;">100 ₽</span><br>
-                    • Комиссия: <span style="color: var(--accent-green); font-weight: 700;">0%</span><br>
-                    • Курс: <span style="color: var(--accent-green); font-weight: 700;">1 USDT = 100 ₽</span>
-                </div>
-            </div>
-            
-            <div style="background: rgba(255, 107, 53, 0.1); padding: 15px; border-radius: 12px; margin-top: 15px; border: 2px solid rgba(255, 107, 53, 0.3);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                    <span style="color: var(--text-dim);">Сумма в USDT:</span>
-                    <span style="color: var(--accent-gold); font-weight: 900; font-family: 'Orbitron', sans-serif;" id="usdtAmountDisplay">0.00</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: var(--text-dim);">Сумма в рублях:</span>
-                    <span style="color: var(--accent-green); font-weight: 900; font-family: 'Orbitron', sans-serif;" id="rubAmountDisplay">0 ₽</span>
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button id="processUsdtBtn" style="flex: 2; background: var(--gradient-orange); border: none; border-radius: 12px; padding: 14px; color: white; font-weight: 900; cursor: pointer; font-size: 1rem; font-family: 'Orbitron', sans-serif; box-shadow: var(--shadow-glow);">
-                    💎 ПОПОЛНИТЬ USDT
-                </button>
-                <button id="closeUsdtBtn" style="flex: 1; background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 12px; padding: 14px; color: var(--text-light); font-weight: 700; cursor: pointer; font-size: 0.9rem;">
-                    ОТМЕНА
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Алерты -->
-    <div class="alert" id="alert"></div>
 
     <script>
-        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.setHeaderColor('#0F0A07');
-        tg.setBackgroundColor('#0F0A07');
         
-        // Переменные
-        let currentUser = null;
-        let supabaseClient = null;
-        let selectedAmount = 500;
-        let selectedUsdtAmount = 0;
-        let isAdmin = false;
+        // Конфиг
+        const RATE = 75.00;
+        const FEE_PERCENT = 0.5;
+        const MIN_AMOUNT = 10;
         
-        // Элементы
-        const balanceEl = document.getElementById('balanceAmount');
-        const depositPopup = document.getElementById('depositPopup');
-        const usdtModal = document.getElementById('usdtModal');
-        const wheelTimer = document.getElementById('wheelTimer');
-        const adminBtn = document.getElementById('adminBtn');
+        // CryptoPay токен (публичный, для создания инвойсов)
+        const CRYPTOPAY_TOKEN = '506281:AA5l3vPE3YzFZbe8CCCAT8oukXYsMdTYJbP';
         
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 Инициализация ORANGEWIN...');
-            
-            // Инициализация глобального состояния
-            if (window.AppState) {
-                window.AppState.init();
-                
-                // Подписка на обновление баланса
-                window.AppState.on('balanceUpdated', () => {
-                    updateBalanceDisplay();
-                });
-                
-                // Подписка на изменение баланса
-                window.AppState.on('balanceChanged', (data) => {
-                    console.log('💰 Баланс изменен в глобальном состоянии:', data);
-                    updateBalanceDisplay();
-                });
-            }
-            
-            try {
-                // Инициализация Supabase
-                const { createClient } = window.supabase;
-                supabaseClient = createClient(
-                    window.SUPABASE_CONFIG.url,
-                    window.SUPABASE_CONFIG.key
-                );
-                console.log('✅ Supabase инициализирован');
-                
-                // Тестовый запрос для проверки
-                const { data: wallets, error } = await supabaseClient
-                    .from('payment_wallets')
-                    .select('*')
-                    .eq('is_active', true)
-                    .limit(1);
-                
-                if (error) {
-                    console.error('❌ Ошибка тестового запроса:', error);
-                    showAlert('Ошибка подключения к базе: ' + error.message, 'error');
-                } else {
-                    console.log('✅ База данных подключена, активных кошельков:', wallets?.length || 0);
+        // Translations
+        const translations = {
+            ru: {
+                title: 'Обменник',
+                subtitle: 'USDT → RUB',
+                rate_label: 'Актуальный курс',
+                rate_per: 'за 1 USDT',
+                you_send: 'Вы отдаете',
+                min_amount: 'мин 10 USDT',
+                you_receive: 'Вы получаете',
+                service_fee: 'Комиссия сервиса',
+                sell_btn: 'Продать USDT',
+                info_instant: 'Мгновенный обмен через CryptoPay',
+                info_rate: 'Лучший курс на рынке',
+                alerts: {
+                    enter_amount: 'Введите сумму',
+                    min_amount: 'Минимальная сумма: {amount} USDT',
+                    creating: 'Создание платежа...',
+                    success: 'Платеж создан! Оплатите через @send',
+                    error: 'Ошибка при создании платежа'
+                },
+                modal: {
+                    title: 'Оплата через CryptoPay',
+                    text: 'Нажмите OK, чтобы открыть @send и оплатить {amount} USDT',
+                    ok: 'OK'
                 }
-                
-            } catch (error) {
-                console.error('❌ Ошибка инициализации:', error);
-                showAlert('Ошибка инициализации приложения', 'error');
-                return;
-            }
-            
-            // Инициализация обработчиков событий
-            initEventListeners();
-            
-            await loadUserData();
-            initAmountButtons();
-            
-            // Запускаем таймер колеса
-            setInterval(updateWheelTimer, 1000);
-            updateWheelTimer();
-            
-            // Автообновление баланса каждые 10 секунд
-            setInterval(async () => {
-                await updateBalanceDisplay();
-            }, 10000);
-            
-            // Проверка депозитов каждые 30 секунд
-            setInterval(checkPendingDeposits, 30000);
-            
-            console.log('✅ ORANGEWIN запущен');
-        });
-        
-        // Инициализация всех обработчиков событий
-        function initEventListeners() {
-            // Логотип
-            document.getElementById('logo').addEventListener('click', () => {
-                tg.HapticFeedback.impactOccurred('light');
-                window.location.href = 'index.html';
-            });
-            
-            // Карточка баланса
-            document.getElementById('balanceCard').addEventListener('click', showDepositPopup);
-            
-            // Баннеры
-            document.getElementById('bannerDeposit').addEventListener('click', () => openBanner('deposit'));
-            document.getElementById('bannerBonuses').addEventListener('click', () => openBanner('bonuses'));
-            document.getElementById('bannerWheel').addEventListener('click', () => openBanner('wheel'));
-            
-            // Игры
-            document.getElementById('gameDice').addEventListener('click', () => openGame('dice'));
-            document.getElementById('gameCoin').addEventListener('click', () => openGame('coin'));
-            document.getElementById('gameMines').addEventListener('click', () => openGame('mines'));
-            document.getElementById('gameSlot').addEventListener('click', () => openGame('slot'));
-            
-            // Колесо фортуны
-            document.getElementById('wheelCard').addEventListener('click', openWheel);
-            
-            // Навигация
-            document.getElementById('navGames').addEventListener('click', () => switchTab('games'));
-            document.getElementById('navBonuses').addEventListener('click', () => switchTab('bonuses'));
-            document.getElementById('navHistory').addEventListener('click', () => switchTab('history'));
-            document.getElementById('navProfile').addEventListener('click', () => switchTab('profile'));
-            
-            // Попап депозита
-            document.getElementById('depositUsdt').addEventListener('click', () => selectDeposit('usdt'));
-            document.getElementById('depositCard').addEventListener('click', () => selectDeposit('card'));
-            document.getElementById('depositCrypto').addEventListener('click', () => selectDeposit('crypto'));
-            document.getElementById('closeDepositBtn').addEventListener('click', closeDepositPopup);
-            
-            // Модалка USDT
-            document.getElementById('closeUsdtBtn').addEventListener('click', closeUsdtModal);
-            document.getElementById('processUsdtBtn').addEventListener('click', processUsdtDeposit);
-            
-            // Поле ввода суммы
-            const customAmountInput = document.getElementById('usdtCustomAmount');
-            if (customAmountInput) {
-                customAmountInput.addEventListener('input', (e) => {
-                    const value = parseInt(e.target.value) || 0;
-                    if (value >= 100) {
-                        selectUsdtAmount(value);
-                    }
-                });
-            }
-        }
-        
-        // Загрузка данных пользователя
-        async function loadUserData() {
-            try {
-                const tgUser = tg.initDataUnsafe?.user;
-                
-                if (!tgUser || !tgUser.id) {
-                    console.error('❌ Пользователь Telegram не найден');
-                    showAlert('Пользователь не авторизован', 'warning');
-                    return;
-                }
-                
-                console.log('👤 Пользователь Telegram:', tgUser);
-                
-                // Преобразуем ID в число для БД
-                const userId = parseInt(tgUser.id);
-                
-                // Проверяем, есть ли пользователь в глобальном состоянии
-                if (window.AppState && window.AppState.isAuthenticated()) {
-                    currentUser = window.AppState.getUser();
-                    console.log('✅ Пользователь загружен из глобального состояния');
-                    
-                    // Обновляем last_seen в БД
-                    await supabaseClient
-                        .from('users')
-                        .update({ last_seen: new Date().toISOString() })
-                        .eq('id', userId);
-                        
-                    // Синхронизируем баланс с БД
-                    await syncBalanceWithDatabase(userId);
-                } else {
-                    // Загружаем из БД
-                    await loadUserFromDatabase(userId, tgUser);
-                }
-                
-                // Проверяем админ ли пользователь
-                if (userId === 8155919358) {
-                    isAdmin = true;
-                    adminBtn.style.display = 'flex';
-                    adminBtn.addEventListener('click', () => {
-                        window.location.href = 'admin.html';
-                    });
-                    console.log('👑 Пользователь является администратором');
-                }
-                
-                await updateBalanceDisplay();
-                
-            } catch (error) {
-                console.error('❌ Ошибка загрузки пользователя:', error);
-                showAlert('Ошибка загрузки данных', 'error');
-            }
-        }
-        
-        // Загрузка пользователя из базы данных
-        async function loadUserFromDatabase(userId, tgUser) {
-            const { data: existingUser, error: fetchError } = await supabaseClient
-                .from('users')
-                .select('*')
-                .eq('id', userId)
-                .single();
-            
-            if (fetchError && fetchError.code === 'PGRST116') {
-                // Пользователь не найден, создаем нового
-                console.log('Создаем нового пользователя...');
-                
-                const newUserData = {
-                    id: userId,
-                    username: tgUser.username || `user_${tgUser.id}`,
-                    balance: 1000, // Стартовый баланс 10 ₽
-                    last_seen: new Date().toISOString(),
-                    created_at: new Date().toISOString()
-                };
-                
-                const { data: newUser, error: createError } = await supabaseClient
-                    .from('users')
-                    .insert([newUserData])
-                    .select()
-                    .single();
-                
-                if (createError) {
-                    console.error('❌ Ошибка создания пользователя:', createError);
-                    showAlert('Ошибка создания профиля', 'error');
-                    return;
-                }
-                
-                currentUser = newUser;
-                console.log('✅ Новый пользователь создан:', newUser);
-                
-                // Устанавливаем в глобальное состояние
-                if (window.AppState) {
-                    window.AppState.setUser(newUser);
-                }
-                
-                // Создаем стартовую транзакцию
-                await createTransaction(userId, 'bonus', 1000, 'Стартовый бонус');
-                
-                showAlert('🎉 Добро пожаловать! Получен стартовый бонус 10 ₽!', 'success');
-                
-            } else if (fetchError) {
-                console.error('❌ Ошибка загрузки пользователя:', fetchError);
-                showAlert('Ошибка загрузки профиля', 'error');
-            } else {
-                currentUser = existingUser;
-                console.log('✅ Пользователь загружен из БД:', existingUser);
-                
-                // Устанавливаем в глобальное состояние
-                if (window.AppState) {
-                    window.AppState.setUser(existingUser);
-                }
-                
-                // Обновляем last_seen
-                await supabaseClient
-                    .from('users')
-                    .update({ last_seen: new Date().toISOString() })
-                    .eq('id', userId);
-            }
-        }
-        
-        // Синхронизация баланса с базой данных
-        async function syncBalanceWithDatabase(userId) {
-            try {
-                const { data: user, error } = await supabaseClient
-                    .from('users')
-                    .select('balance')
-                    .eq('id', userId)
-                    .single();
-                
-                if (!error && user) {
-                    const dbBalance = user.balance || 0;
-                    const localBalance = window.AppState ? window.AppState.getBalance() : 0;
-                    
-                    // Если есть расхождение, обновляем глобальное состояние
-                    if (dbBalance !== localBalance) {
-                        console.log(`🔄 Синхронизация баланса: локальный=${localBalance}, база=${dbBalance}`);
-                        
-                        if (window.AppState) {
-                            window.AppState.updateBalance(dbBalance);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Ошибка синхронизации баланса:', error);
-            }
-        }
-        
-        // Создание транзакции
-        async function createTransaction(userId, type, amount, description) {
-            try {
-                const { error } = await supabaseClient
-                    .from('transactions')
-                    .insert([{
-                        user_id: userId,
-                        type: type,
-                        amount: amount,
-                        status: 'completed',
-                        description: description,
-                        created_at: new Date().toISOString()
-                    }]);
-                
-                if (error) {
-                    console.error('Ошибка создания транзакции:', error);
-                    return false;
-                }
-                
-                // Добавляем в глобальное состояние
-                if (window.AppState) {
-                    window.AppState.addTransaction({
-                        user_id: userId,
-                        type: type,
-                        amount: amount,
-                        status: 'completed',
-                        description: description,
-                        created_at: new Date().toISOString()
-                    });
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Ошибка:', error);
-                return false;
-            }
-        }
-        
-        // Обновление отображения баланса (синхронизированное)
-        async function updateBalanceDisplay() {
-            try {
-                // Получаем баланс из глобального состояния
-                let currentBalance = 0;
-                
-                if (window.AppState && window.AppState.isAuthenticated()) {
-                    currentBalance = window.AppState.getBalance();
-                } else if (currentUser) {
-                    currentBalance = currentUser.balance || 0;
-                }
-                
-                // Обновляем отображение
-                if (balanceEl) {
-                    balanceEl.textContent = `${(currentBalance / 100).toLocaleString('ru-RU', { 
-                        minimumFractionDigits: 2, 
-                        maximumFractionDigits: 2 
-                    })} ₽`;
-                }
-                
-                // Синхронизируем с базой данных (в фоне)
-                if (currentUser) {
-                    const { data: user, error } = await supabaseClient
-                        .from('users')
-                        .select('balance')
-                        .eq('id', currentUser.id)
-                        .single();
-                    
-                    if (!error && user) {
-                        const dbBalance = user.balance || 0;
-                        
-                        // Если есть расхождение, обновляем состояние
-                        if (dbBalance !== currentBalance) {
-                            console.log(`🔄 Расхождение баланса: локальный=${currentBalance}, база=${dbBalance}`);
-                            
-                            if (window.AppState) {
-                                window.AppState.updateBalance(dbBalance);
-                            } else {
-                                currentUser.balance = dbBalance;
-                            }
-                        }
-                    }
-                }
-                
-            } catch (error) {
-                console.error('❌ Ошибка обновления баланса:', error);
-            }
-        }
-        
-        // Проверка ожидающих депозитов
-        async function checkPendingDeposits() {
-            if (!currentUser) return;
-            
-            try {
-                const { data: deposits, error } = await supabaseClient
-                    .from('deposit_requests')
-                    .select('id, status, amount_rub, tx_hash')
-                    .eq('user_id', currentUser.id)
-                    .eq('status', 'completed')
-                    .eq('notified', false)
-                    .limit(5);
-                
-                if (error || !deposits) return;
-                
-                for (const deposit of deposits) {
-                    if (deposit.status === 'completed') {
-                        const amountRub = deposit.amount_rub || 0;
-                        
-                        // Обновляем глобальное состояние
-                        if (window.AppState) {
-                            window.AppState.changeBalance(amountRub, 'deposit');
-                        } else if (currentUser) {
-                            currentUser.balance = (currentUser.balance || 0) + amountRub;
-                        }
-                        
-                        showAlert(`✅ Депозит ${(amountRub/100).toFixed(2)} ₽ подтвержден!`, 'success');
-                        
-                        // Создаем транзакцию
-                        await createTransaction(currentUser.id, 'deposit', amountRub, 'Пополнение баланса');
-                        
-                        // Помечаем как уведомленное
-                        await supabaseClient
-                            .from('deposit_requests')
-                            .update({ notified: true })
-                            .eq('id', deposit.id);
-                        
-                        // Обновляем отображение баланса
-                        await updateBalanceDisplay();
-                    }
-                }
-                
-            } catch (error) {
-                console.error('Ошибка проверки депозитов:', error);
-            }
-        }
-        
-        // Инициализация кнопок сумм USDT
-        function initAmountButtons() {
-            const amounts = [100, 500, 1000, 2000, 5000, 10000];
-            const container = document.getElementById('usdtAmountButtons');
-            
-            if (!container) return;
-            
-            container.innerHTML = amounts.map(amount => `
-                <button class="usdt-amount-btn" data-amount="${amount}">
-                    ${amount.toLocaleString()} ₽
-                </button>
-            `).join('');
-            
-            // Добавляем обработчики на кнопки
-            document.querySelectorAll('.usdt-amount-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const amount = parseInt(btn.getAttribute('data-amount'));
-                    selectUsdtAmount(amount);
-                });
-            });
-            
-            // Выбираем первую сумму по умолчанию
-            selectUsdtAmount(amounts[1]);
-        }
-        
-        // Выбор суммы USDT
-        function selectUsdtAmount(amount) {
-            selectedUsdtAmount = amount;
-            
-            // Снимаем активный класс со всех кнопок
-            document.querySelectorAll('.usdt-amount-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Добавляем активный класс выбранной кнопке
-            document.querySelectorAll('.usdt-amount-btn').forEach(btn => {
-                if (parseInt(btn.getAttribute('data-amount')) === amount) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // Заполняем поле ввода
-            document.getElementById('usdtCustomAmount').value = amount;
-            
-            // Обновляем отображение сумм
-            const usdtAmount = (amount / 100).toFixed(2);
-            document.getElementById('usdtAmountDisplay').textContent = usdtAmount + ' USDT';
-            document.getElementById('rubAmountDisplay').textContent = amount.toLocaleString('ru-RU') + ' ₽';
-        }
-        
-        // Таймер колеса
-        function updateWheelTimer() {
-            const now = new Date();
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            
-            const diff = tomorrow - now;
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            wheelTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-        
-        // Функции навигации
-        function openGame(gameId) {
-            tg.HapticFeedback.impactOccurred('light');
-            
-            switch(gameId) {
-                case 'dice':
-                    window.location.href = 'dice.html';
-                    break;
-                case 'coin':
-                    window.location.href = 'coin.html';
-                    break;
-                case 'mines':
-                    window.location.href = 'mines.html';
-                    break;
-                case 'slot':
-                    showAlert('Слот скоро будет доступен!', 'warning');
-                    break;
-            }
-        }
-        
-        function switchTab(tabId) {
-            tg.HapticFeedback.impactOccurred('light');
-            
-            // Снимаем активный класс
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            // Добавляем активный класс
-            const activeNav = document.getElementById(`nav${tabId.charAt(0).toUpperCase() + tabId.slice(1)}`);
-            if (activeNav) {
-                activeNav.classList.add('active');
-            }
-            
-            // Перенаправляем на соответствующую страницу
-            switch(tabId) {
-                case 'games':
-                    window.location.href = 'index.html';
-                    break;
-                case 'bonuses':
-                    window.location.href = 'bonuses.html';
-                    break;
-                case 'history':
-                    window.location.href = 'history.html';
-                    break;
-                case 'profile':
-                    window.location.href = 'profile.html';
-                    break;
-            }
-        }
-        
-        // Управление попапами
-        function showDepositPopup() {
-            if (!currentUser && (!window.AppState || !window.AppState.isAuthenticated())) {
-                showAlert('Сначала авторизуйтесь', 'error');
-                return;
-            }
-            
-            tg.HapticFeedback.impactOccurred('light');
-            depositPopup.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeDepositPopup() {
-            tg.HapticFeedback.impactOccurred('light');
-            depositPopup.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        
-        function showUsdtModal() {
-            tg.HapticFeedback.impactOccurred('light');
-            usdtModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-        
-        function closeUsdtModal() {
-            tg.HapticFeedback.impactOccurred('light');
-            usdtModal.style.display = 'none';
-            document.body.style.overflow = '';
-            closeDepositPopup();
-        }
-        
-        // Выбор метода оплаты
-        function selectDeposit(method) {
-            tg.HapticFeedback.impactOccurred('medium');
-            
-            switch(method) {
-                case 'usdt':
-                    closeDepositPopup();
-                    setTimeout(() => showUsdtModal(), 300);
-                    break;
-                case 'card':
-                    showAlert('Пополнение картой скоро будет доступно', 'warning');
-                    break;
-                case 'crypto':
-                    showAlert('Пополнение криптовалютой скоро будет доступно', 'warning');
-                    break;
-            }
-        }
-        
-        // Обработка пополнения USDT
-async function processUsdtDeposit() {
-    const customAmount = document.getElementById('usdtCustomAmount').value;
-    
-    // Проверяем сумму
-    let amountRub;
-    if (customAmount && customAmount >= 100) {
-        amountRub = parseInt(customAmount);
-    } else {
-        amountRub = selectedUsdtAmount;
-    }
-    
-    if (amountRub < 100) {
-        showAlert('Минимальная сумма 100 ₽', 'error');
-        return;
-    }
-    
-    if (amountRub > 100000) {
-        showAlert('Максимальная сумма 100,000 ₽', 'error');
-        return;
-    }
-    
-    let userId;
-    if (window.AppState && window.AppState.isAuthenticated()) {
-        userId = window.AppState.getUser().id;
-    } else if (currentUser) {
-        userId = currentUser.id;
-    } else {
-        showAlert('Пользователь не найден', 'error');
-        return;
-    }
-    
-    try {
-        showAlert('🔄 Создание заявки...', 'warning');
-        
-        // Получаем активный кошелек
-        const walletAddress = await window.Payment.getActiveWallet();
-        if (!walletAddress) {
-            showAlert('Ошибка получения кошелька', 'error');
-            return;
-        }
-        
-        const amountUsdt = (amountRub / 100).toFixed(2);
-        
-        // Создаем заявку
-        const result = await window.Payment.createDepositRequest(
-            userId,
-            amountUsdt,
-            amountRub,
-            walletAddress
-        );
-        
-        if (result.success) {
-            closeUsdtModal();
-            
-            // Показываем информацию о кошельке
-            const walletInfo = `
-                ✅ Заявка на ${amountRub} ₽ создана!
-                
-                💎 Кошелек для оплаты:
-                ${walletAddress}
-                
-                💵 Сумма: ${amountUsdt} USDT
-                📝 При переводе укажите ID: ${result.depositId?.substring(0, 8) || 'N/A'}
-            `;
-            
-            // Создаем красивое окно с информацией
-            showWalletModal(walletAddress, amountUsdt, amountRub, result.depositId);
-            
-        } else {
-            showAlert('❌ ' + (result.message || 'Ошибка создания заявки'), 'error');
-        }
-        
-    } catch (error) {
-        console.error('Ошибка:', error);
-        showAlert('Ошибка обработки запроса: ' + error.message, 'error');
-    }
-}
-
-// Функция для показа модального окна с кошельком
-function showWalletModal(walletAddress, amountUsdt, amountRub, depositId) {
-    // Создаем модальное окно
-    const modal = document.createElement('div');
-    modal.id = 'walletModal';
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(15, 10, 7, 0.95);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1002;
-        padding: 20px;
-        backdrop-filter: blur(10px);
-    `;
-    
-    modal.innerHTML = `
-        <div style="
-            background: linear-gradient(145deg, #1F1814 0%, #1A130F 100%);
-            border-radius: 20px;
-            padding: 25px;
-            width: 100%;
-            max-width: 500px;
-            border: 3px solid var(--orange-main);
-            box-shadow: 0 0 50px rgba(255, 107, 53, 0.6);
-        ">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 2rem; color: var(--orange-main); margin-bottom: 10px;">💎</div>
-                <div style="font-size: 1.5rem; font-weight: 900; color: var(--accent-gold); font-family: 'Orbitron', sans-serif; margin-bottom: 10px;">
-                    ОПЛАТА USDT
-                </div>
-                <div style="font-size: 0.9rem; color: var(--text-dim);">
-                    TRC20 (Tron Network)
-                </div>
-            </div>
-            
-            <div style="background: rgba(0, 255, 136, 0.1); border: 2px solid var(--accent-green); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                <div style="color: var(--accent-green); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
-                    📝 ИНФОРМАЦИЯ О ПЕРЕВОДЕ:
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-light); line-height: 1.5;">
-                    • Сумма: <span style="color: var(--accent-green); font-weight: 700;">${amountUsdt} USDT</span><br>
-                    • Рубли: <span style="color: var(--accent-green); font-weight: 700;">${amountRub} ₽</span><br>
-                    • Сеть: <span style="color: var(--accent-green); font-weight: 700;">TRC20 (Tron)</span><br>
-                    • Токен: <span style="color: var(--accent-green); font-weight: 700;">USDT</span><br>
-                    • ID заявки: <span style="color: var(--accent-green); font-weight: 700;">${depositId?.substring(0, 8) || 'N/A'}</span>
-                </div>
-            </div>
-            
-            <div style="background: rgba(255, 107, 53, 0.1); border: 2px solid rgba(255, 107, 53, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                <div style="color: var(--orange-main); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
-                    💰 КОШЕЛЕК ДЛЯ ОПЛАТЫ:
-                </div>
-                <div style="
-                    background: rgba(0, 0, 0, 0.3);
-                    padding: 15px;
-                    border-radius: 10px;
-                    font-family: monospace;
-                    font-size: 1.1rem;
-                    color: var(--accent-gold);
-                    word-break: break-all;
-                    text-align: center;
-                    margin-bottom: 15px;
-                    border: 2px dashed rgba(255, 107, 53, 0.5);
-                ">
-                    ${walletAddress}
-                </div>
-                <button onclick="copyWalletAddress('${walletAddress}')" style="
-                    width: 100%;
-                    background: var(--gradient-orange);
-                    border: none;
-                    border-radius: 12px;
-                    padding: 12px;
-                    color: white;
-                    font-weight: 900;
-                    cursor: pointer;
-                    font-family: 'Orbitron', sans-serif;
-                    margin-bottom: 10px;
-                ">
-                    📋 КОПИРОВАТЬ АДРЕС
-                </button>
-            </div>
-            
-            <div style="background: rgba(255, 179, 71, 0.1); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                <div style="color: var(--accent-gold); font-weight: 900; margin-bottom: 10px; font-family: 'Orbitron', sans-serif;">
-                    ⚠️ ВАЖНО:
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-light); line-height: 1.5;">
-                    1. Отправляйте <span style="color: var(--accent-gold); font-weight: 700;">ТОЛЬКО USDT</span><br>
-                    2. Используйте <span style="color: var(--accent-gold); font-weight: 700;">TRC20 сеть</span><br>
-                    3. Проверьте адрес перед отправкой<br>
-                    4. Баланс обновится после 1 подтверждения
-                </div>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeWalletModal()" style="
-                    flex: 1;
-                    background: rgba(255, 255, 255, 0.1);
-                    border: 2px solid rgba(255, 255, 255, 0.3);
-                    border-radius: 12px;
-                    padding: 14px;
-                    color: var(--text-light);
-                    font-weight: 700;
-                    cursor: pointer;
-                    font-size: 0.9rem;
-                ">
-                    ЗАКРЫТЬ
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
-
-// Функция копирования адреса
-function copyWalletAddress(address) {
-    navigator.clipboard.writeText(address).then(() => {
-        showAlert('✅ Адрес скопирован в буфер обмена', 'success');
-        tg.HapticFeedback.impactOccurred('light');
-    }).catch(err => {
-        showAlert('❌ Не удалось скопировать', 'error');
-    });
-}
-
-// Закрытие модалки кошелька
-function closeWalletModal() {
-    const modal = document.getElementById('walletModal');
-    if (modal) {
-        modal.remove();
-    }
-    tg.HapticFeedback.impactOccurred('light');
-}
-        
-        function openBanner(bannerId) {
-            tg.HapticFeedback.impactOccurred('light');
-            switch(bannerId) {
-                case 'deposit':
-                    showDepositPopup();
-                    break;
-                case 'bonuses':
-                    window.location.href = 'bonuses.html';
-                    break;
-                case 'wheel':
-                    showAlert('Колесо фортуны скоро будет доступно', 'warning');
-                    break;
-            }
-        }
-        
-        function openWheel() {
-            tg.HapticFeedback.impactOccurred('medium');
-            showAlert('Колесо фортуны скоро будет доступно', 'warning');
-        }
-        
-        // Показать алерт
-        function showAlert(message, type = 'success') {
-            const alert = document.getElementById('alert');
-            
-            if (!alert) return;
-            
-            alert.textContent = message;
-            alert.className = `alert ${type}`;
-            alert.style.display = 'block';
-            
-            setTimeout(() => {
-                alert.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => {
-                    alert.style.display = 'none';
-                    alert.style.animation = '';
-                }, 300);
-            }, 3000);
-        }
-        
-        // Экспорт функций
-        window.App = {
-            getCurrentUser: () => currentUser,
-            getSupabaseClient: () => supabaseClient,
-            showAlert,
-            updateBalance: updateBalanceDisplay,
-            createTransaction: createTransaction,
-            
-            // Функции для работы с балансом, которые будут использоваться в играх
-            changeBalance: (amount, type) => {
-                if (window.AppState) {
-                    window.AppState.changeBalance(amount, type);
-                } else if (currentUser) {
-                    if (type === 'deposit' || type === 'win' || type === 'bonus') {
-                        currentUser.balance += amount;
-                    } else if (type === 'withdraw' || type === 'bet') {
-                        currentUser.balance -= amount;
-                    }
-                }
-                updateBalanceDisplay();
             },
-            
-            getBalance: () => {
-                if (window.AppState) {
-                    return window.AppState.getBalance();
+            en: {
+                title: 'Exchange',
+                subtitle: 'USDT → RUB',
+                rate_label: 'Current rate',
+                rate_per: 'per 1 USDT',
+                you_send: 'You send',
+                min_amount: 'min 10 USDT',
+                you_receive: 'You receive',
+                service_fee: 'Service fee',
+                sell_btn: 'Sell USDT',
+                info_instant: 'Instant exchange via CryptoPay',
+                info_rate: 'Best rate on market',
+                alerts: {
+                    enter_amount: 'Enter amount',
+                    min_amount: 'Minimum amount: {amount} USDT',
+                    creating: 'Creating payment...',
+                    success: 'Payment created! Pay via @send',
+                    error: 'Error creating payment'
+                },
+                modal: {
+                    title: 'CryptoPay Payment',
+                    text: 'Click OK to open @send and pay {amount} USDT',
+                    ok: 'OK'
                 }
-                return currentUser ? currentUser.balance || 0 : 0;
-            },
-            
-            // Получение баланса в копейках для игр
-            getBalanceKop: () => {
-                if (window.AppState) {
-                    return window.AppState.getBalance();
-                }
-                return currentUser ? currentUser.balance || 0 : 0;
-            },
-            
-            // Получение баланса в рублях
-            getBalanceRub: () => {
-                const balance = window.AppState ? window.AppState.getBalance() : (currentUser ? currentUser.balance || 0 : 0);
-                return (balance / 100).toFixed(2);
             }
         };
+        
+        let currentLang = 'ru';
+        
+        // Elements
+        const i18nElements = document.querySelectorAll('[data-i18n]');
+        const usdtInput = document.getElementById('usdtAmount');
+        const rubAmount = document.getElementById('rubAmount');
+        const feeValue = document.getElementById('feeValue');
+        const exchangeBtn = document.getElementById('exchangeBtn');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const modalBtn = document.getElementById('modalBtn');
+        
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const t = translations[lang];
+            
+            i18nElements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+            
+            exchangeBtn.textContent = t.sell_btn;
+        }
+        
+        function formatNumber(num) {
+            return num.toLocaleString(currentLang === 'ru' ? 'ru-RU' : 'en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+        
+        function calculate() {
+            let usdt = parseFloat(usdtInput.value);
+            if (isNaN(usdt)) usdt = 0;
+            
+            let rubGross = usdt * RATE;
+            let fee = rubGross * (FEE_PERCENT / 100);
+            let rubNet = rubGross - fee;
+            
+            if (rubNet < 0) rubNet = 0;
+            
+            rubAmount.textContent = formatNumber(rubNet) + ' RUB';
+            feeValue.textContent = formatNumber(fee) + ' RUB';
+            
+            return { usdt, rubNet, fee };
+        }
+        
+        function showModal(title, text, onClose) {
+            modalTitle.textContent = title;
+            modalText.textContent = text;
+            modal.classList.add('active');
+            
+            const closeModal = () => {
+                modal.classList.remove('active');
+                if (onClose) onClose();
+            };
+            
+            modalBtn.onclick = closeModal;
+        }
+        
+        // Создание инвойса через CryptoPay API напрямую
+        async function createInvoice(amount, description) {
+            const url = 'https://pay.crypt.bot/api/createInvoice';
+            const params = new URLSearchParams();
+            params.append('asset', 'USDT');
+            params.append('amount', amount.toString());
+            params.append('description', description);
+            params.append('paid_btn_name', 'callback');
+            params.append('paid_btn_url', window.location.href);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Crypto-Pay-API-Token': CRYPTOPAY_TOKEN,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params
+                });
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error creating invoice:', error);
+                throw error;
+            }
+        }
+        
+        async function handleExchange() {
+            let usdt = parseFloat(usdtInput.value);
+            const t = translations[currentLang];
+            
+            if (isNaN(usdt) || usdt <= 0) {
+                tg.showAlert(t.alerts.enter_amount);
+                return;
+            }
+            
+            if (usdt < MIN_AMOUNT) {
+                tg.showAlert(t.alerts.min_amount.replace('{amount}', MIN_AMOUNT));
+                return;
+            }
+            
+            exchangeBtn.disabled = true;
+            exchangeBtn.textContent = t.alerts.creating;
+            
+            try {
+                // Создаем инвойс в CryptoPay
+                const invoice = await createInvoice(usdt, `Exchange ${usdt} USDT to RUB`);
+                
+                if (invoice.ok && invoice.result) {
+                    const payUrl = invoice.result.pay_url;
+                    const invoiceId = invoice.result.invoice_id;
+                    
+                    // Отправляем данные в Telegram для открытия @send
+                    tg.sendData(JSON.stringify({
+                        action: 'pay',
+                        invoiceId: invoiceId,
+                        payUrl: payUrl,
+                        amount: usdt,
+                        currency: 'USDT'
+                    }));
+                    
+                    // Показываем модальное окно с ссылкой
+                    showModal(
+                        t.modal.title,
+                        t.modal.text.replace('{amount}', usdt),
+                        () => {
+                            // Открываем ссылку для оплаты
+                            tg.openTelegramLink(payUrl);
+                        }
+                    );
+                    
+                    exchangeBtn.disabled = false;
+                    exchangeBtn.textContent = t.sell_btn;
+                } else {
+                    throw new Error('Failed to create invoice');
+                }
+            } catch (error) {
+                console.error('Exchange error:', error);
+                tg.showAlert(t.alerts.error);
+                exchangeBtn.disabled = false;
+                exchangeBtn.textContent = t.sell_btn;
+            }
+        }
+        
+        // Language buttons
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.getAttribute('data-lang');
+                currentLang = lang;
+                
+                document.querySelectorAll('.lang-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+                
+                updateLanguage(lang);
+                calculate();
+            });
+        });
+        
+        // Event listeners
+        usdtInput.addEventListener('input', function() {
+            let val = this.value.replace(/,/g, '.');
+            if (val.split('.')[1]?.length > 4) {
+                val = parseFloat(val).toFixed(4);
+                this.value = val;
+            }
+            calculate();
+        });
+        
+        exchangeBtn.addEventListener('click', handleExchange);
+        
+        // Initialize
+        updateLanguage('ru');
+        calculate();
+        tg.ready();
     </script>
 </body>
 </html>
