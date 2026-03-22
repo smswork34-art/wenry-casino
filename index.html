@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Exchange | USDT → RUB</title>
+    <title>Crypto Exchange | USDT → RUB</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -247,7 +247,7 @@
             margin: 0;
         }
         
-        .btn-content {
+        .btn-text {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -317,10 +317,15 @@
             const tg = window.Telegram.WebApp;
             tg.expand();
             
+            // Supabase configuration
             const SUPABASE_URL = 'https://mstekqneofdufkyqghqu.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zdGVrcW5lb2ZkdWZreXFnaHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxODQzMjksImV4cCI6MjA4OTc2MDMyOX0.N8E1vfkz8lv_eQPmsZGJ7UGxmO23_eQnsi0yciLBGY0';
             
             const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // CryptoPay configuration - IMPORTANT: Replace with your bot token
+            const CRYPTOPAY_BOT_TOKEN = '506281:AA5l3vPE3YzFZbe8CCCAT8oukXYsMdTYJbP';
+            const BOT_USERNAME = 'YOUR_BOT_USERNAME';
             
             const RATE = 75.00;
             const FEE_PERCENT = 0.5;
@@ -342,8 +347,9 @@
                     alerts: {
                         enter_amount: 'Введите сумму',
                         min_amount: 'Минимальная сумма: 10 USDT',
-                        creating: 'Создание инвойса...',
-                        error: 'Ошибка при создании инвойса'
+                        creating: 'Создание счета...',
+                        error: 'Ошибка при создании счета',
+                        check_payment: 'Проверяем оплату...'
                     },
                     status: {
                         pending: '⏳ Ожидание оплаты...',
@@ -366,7 +372,8 @@
                         enter_amount: 'Enter amount',
                         min_amount: 'Minimum amount: 10 USDT',
                         creating: 'Creating invoice...',
-                        error: 'Error creating invoice'
+                        error: 'Error creating invoice',
+                        check_payment: 'Checking payment...'
                     },
                     status: {
                         pending: '⏳ Waiting for payment...',
@@ -396,7 +403,7 @@
                     if (t[key]) el.textContent = t[key];
                 });
                 
-                if (btnText && !exchangeBtn.disabled) {
+                if (btnText && !exchangeBtn.disabled && btnText.innerHTML.indexOf('loader') === -1) {
                     btnText.textContent = t.sell_btn;
                 }
             }
@@ -435,10 +442,10 @@
                 statusContainer.classList.add('hidden');
             }
             
-            function setButtonLoading(isLoading) {
+            function setButtonLoading(isLoading, text = null) {
                 if (isLoading) {
                     exchangeBtn.disabled = true;
-                    btnText.innerHTML = `<span class="loader"></span>${translations[currentLang].alerts.creating}`;
+                    btnText.innerHTML = `<span class="loader"></span>${text || translations[currentLang].alerts.creating}`;
                 } else {
                     exchangeBtn.disabled = false;
                     btnText.innerHTML = translations[currentLang].sell_btn;
@@ -475,59 +482,57 @@
                 }
             }
             
-            async function createInvoice(usdtAmount, userId) {
-                return new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error('Timeout'));
-                    }, 10000);
-                    
-                    fetch('https://pay.crypt.bot/api/createInvoice', {
-                        method: 'POST',
-                        headers: {
-                            'Crypto-Pay-API-Token': 'YOUR_CRYPTOPAY_TOKEN',
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: new URLSearchParams({
-                            asset: 'USDT',
-                            amount: usdtAmount.toString(),
-                            description: `Exchange ${usdtAmount} USDT to RUB`
-                        })
+            async function createCryptoPayInvoice(usdtAmount, userId) {
+                // Create invoice via CryptoPay API
+                const response = await fetch('https://pay.crypt.bot/api/createInvoice', {
+                    method: 'POST',
+                    headers: {
+                        'Crypto-Pay-API-Token': CRYPTOPAY_BOT_TOKEN,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        asset: 'USDT',
+                        amount: usdtAmount.toString(),
+                        description: `Exchange ${usdtAmount} USDT to RUB`,
+                        hidden_message: `Exchange ${usdtAmount} USDT to RUB`,
+                        paid_btn_name: 'openBot',
+                        paid_btn_url: `https://t.me/${BOT_USERNAME}`,
+                        payload: `exchange_${userId}_${Date.now()}`
                     })
-                    .then(async (response) => {
-                        clearTimeout(timeout);
-                        const data = await response.json();
-                        
-                        if (data.ok && data.result) {
-                            const { error: insertError } = await supabaseClient
-                                .from('invoices')
-                                .insert({
-                                    invoice_id: data.result.invoice_id,
-                                    user_id: userId,
-                                    amount: usdtAmount,
-                                    currency: 'USDT',
-                                    pay_url: data.result.pay_url,
-                                    status: 'pending'
-                                });
-                            
-                            if (insertError) {
-                                reject(insertError);
-                                return;
-                            }
-                            
-                            resolve({
-                                success: true,
-                                invoice_id: data.result.invoice_id,
-                                pay_url: data.result.pay_url
-                            });
-                        } else {
-                            reject(new Error('CryptoPay error'));
-                        }
-                    })
-                    .catch((error) => {
-                        clearTimeout(timeout);
-                        reject(error);
-                    });
                 });
+                
+                const data = await response.json();
+                
+                if (!data.ok) {
+                    throw new Error(data.error || 'Failed to create invoice');
+                }
+                
+                const invoice = data.result;
+                
+                // Save invoice to database
+                const { error: insertError } = await supabaseClient
+                    .from('invoices')
+                    .insert({
+                        invoice_id: invoice.invoice_id,
+                        user_id: userId,
+                        amount: usdtAmount,
+                        currency: 'USDT',
+                        pay_url: invoice.pay_url,
+                        status: 'pending',
+                        hash: invoice.hash,
+                        mini_app_invoice_url: invoice.mini_app_invoice_url
+                    });
+                
+                if (insertError) {
+                    console.error('Failed to save invoice:', insertError);
+                }
+                
+                return {
+                    success: true,
+                    invoice_id: invoice.invoice_id,
+                    pay_url: invoice.pay_url,
+                    mini_app_invoice_url: invoice.mini_app_invoice_url
+                };
             }
             
             async function saveTransaction(userId, usdtAmount, rubAmountVal, feeAmount, invoiceId) {
@@ -572,7 +577,7 @@
                 hideStatus();
                 
                 try {
-                    const invoice = await createInvoice(usdt, userId);
+                    const invoice = await createCryptoPayInvoice(usdt, userId);
                     
                     if (!invoice || !invoice.success) {
                         throw new Error('Failed to create invoice');
@@ -586,7 +591,14 @@
                     
                     showStatus(t.status.pending, 'pending');
                     
-                    tg.openTelegramLink(invoice.pay_url);
+                    // Use mini app invoice URL if available, otherwise use regular pay URL
+                    const payUrl = invoice.mini_app_invoice_url || invoice.pay_url;
+                    
+                    if (payUrl) {
+                        tg.openTelegramLink(payUrl);
+                    } else {
+                        throw new Error('No payment URL received');
+                    }
                     
                     if (checkInterval) {
                         clearInterval(checkInterval);
@@ -599,7 +611,7 @@
                             clearInterval(checkInterval);
                             checkInterval = null;
                         }
-                    }, 2000);
+                    }, 3000);
                     
                     setTimeout(() => {
                         if (checkInterval) {
@@ -608,6 +620,7 @@
                             if (exchangeBtn.disabled) {
                                 resetButton();
                             }
+                            showStatus('Payment timeout', 'error');
                         }
                     }, 300000);
                     
@@ -619,6 +632,7 @@
                 }
             }
             
+            // Language buttons
             const langBtns = document.querySelectorAll('.lang-btn');
             for (let i = 0; i < langBtns.length; i++) {
                 langBtns[i].addEventListener('click', function(e) {
@@ -637,6 +651,7 @@
                 });
             }
             
+            // Input handler
             usdtInput.addEventListener('input', function(e) {
                 let val = this.value;
                 if (val === '') {
@@ -650,14 +665,21 @@
                 calculate();
             });
             
+            // Exchange button handler
             exchangeBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 handleExchange();
             });
             
+            // Initialize
             updateLanguage('ru');
             calculate();
             tg.ready();
+            
+            // Log user info for debugging
+            if (tg.initDataUnsafe?.user) {
+                console.log('User:', tg.initDataUnsafe.user);
+            }
         })();
     </script>
 </body>
